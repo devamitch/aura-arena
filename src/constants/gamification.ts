@@ -1,0 +1,342 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — Gamification Constants
+// Tiers, Achievements, Missions, Challenges, AI Opponents, XP/Points config
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import type { Tier, Achievement, AiOpponent, DailyMission, WeeklyChallenge } from '@types';
+
+// ─── TIERS ────────────────────────────────────────────────────────────────────
+
+export const TIERS: Tier[] = [
+  {
+    id: 'bronze', name: 'Bronze', color: '#cd7f32', glowColor: 'rgba(205,127,50,0.4)',
+    icon: '🥉', xpMin: 0, xpMax: 999,
+  },
+  {
+    id: 'silver', name: 'Silver', color: '#c0c0c0', glowColor: 'rgba(192,192,192,0.4)',
+    icon: '🥈', xpMin: 1000, xpMax: 4999,
+  },
+  {
+    id: 'gold', name: 'Gold', color: '#ffd700', glowColor: 'rgba(255,215,0,0.5)',
+    icon: '🥇', xpMin: 5000, xpMax: 14999,
+  },
+  {
+    id: 'plat', name: 'Platinum', color: '#e5e4e2', glowColor: 'rgba(229,228,226,0.5)',
+    icon: '💎', xpMin: 15000, xpMax: 39999,
+  },
+  {
+    id: 'champ', name: 'Champion', color: '#00f0ff', glowColor: 'rgba(0,240,255,0.5)',
+    icon: '🏆', xpMin: 40000, xpMax: 99999,
+  },
+  {
+    id: 'elite', name: 'Elite', color: '#ff00ff', glowColor: 'rgba(255,0,255,0.5)',
+    icon: '⚡', xpMin: 100000, xpMax: Infinity,
+  },
+];
+
+// ─── XP / POINTS CONFIG ───────────────────────────────────────────────────────
+
+export const XP_CONFIG = {
+  sessionBase: 50,
+  difficultyMultiplier: [1, 1.3, 1.6, 2.0, 2.5],
+  streakBonus: 5,         // per streak day, capped at 50
+  perfectBonus: 25,       // score >= 90
+  firstSessionBonus: 100,
+  pveWinBase: 100,
+  pveLossBase: 30,
+  reelPostBonus: 20,
+  reelLikeBonus: 2,       // per like received, capped at 50/day
+  missionComplete: 50,
+  weeklyComplete: 150,
+} as const;
+
+export const POINTS_CONFIG = {
+  sessionBase: 100,
+  difficultyMultiplier: [1, 1.3, 1.6, 2.0, 2.5],
+  pveWinBase: 200,
+  pveLossBase: 60,
+  leagueBonus: 500,
+} as const;
+
+// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+
+export const ACHIEVEMENTS: Achievement[] = [
+  // ── Training ──────────────────────────────────────────────────────────────
+  {
+    id: 'first_step', name: 'First Step', icon: '👟',
+    description: 'Complete your first training session.',
+    condition: 'Complete 1 session',
+    rarity: 'Common', xpReward: 50, secret: false, category: 'training',
+  },
+  {
+    id: 'perfect_form', name: 'Perfect Form', icon: '✨',
+    description: 'Score 90+ in any session.',
+    condition: 'Score ≥ 90',
+    rarity: 'Rare', xpReward: 100, secret: false, category: 'training',
+  },
+  {
+    id: 'accuracy_master', name: 'Accuracy Master', icon: '🎯',
+    description: 'Achieve 95%+ accuracy in a session.',
+    condition: 'Accuracy ≥ 95%',
+    rarity: 'Rare', xpReward: 120, secret: false, category: 'training',
+  },
+  {
+    id: 'fast_learner', name: 'Fast Learner', icon: '🧠',
+    description: 'Score 75+ within your first 5 sessions.',
+    condition: 'Score ≥ 75 in first 5 sessions',
+    rarity: 'Rare', xpReward: 150, secret: false, category: 'training',
+  },
+  {
+    id: 'disciplined', name: 'Disciplined', icon: '🗓️',
+    description: 'Complete 50 training sessions.',
+    condition: '50 sessions completed',
+    rarity: 'Epic', xpReward: 300, secret: false, category: 'training',
+  },
+  {
+    id: 'centurion', name: 'Centurion', icon: '💯',
+    description: 'Complete 100 training sessions.',
+    condition: '100 sessions completed',
+    rarity: 'Epic', xpReward: 500, secret: false, category: 'training',
+  },
+  {
+    id: 'diverse', name: 'Renaissance Athlete', icon: '🌍',
+    description: 'Train in 3 different disciplines.',
+    condition: '3 disciplines trained',
+    rarity: 'Rare', xpReward: 200, secret: false, category: 'training',
+  },
+  {
+    id: 'coachs_pet', name: "Coach's Favourite", icon: '⭐',
+    description: 'Complete 10 AI-coached sessions.',
+    condition: '10 sessions with AI coach',
+    rarity: 'Common', xpReward: 80, secret: false, category: 'training',
+  },
+  // ── Combos ────────────────────────────────────────────────────────────────
+  {
+    id: 'combo_king', name: 'Combo King', icon: '🔥',
+    description: 'Achieve a 15x combo in a single session.',
+    condition: 'Combo ≥ 15',
+    rarity: 'Epic', xpReward: 250, secret: false, category: 'training',
+  },
+  {
+    id: 'combo_legend', name: 'Combo Legend', icon: '⚡',
+    description: 'Achieve a 30x combo in a single session.',
+    condition: 'Combo ≥ 30',
+    rarity: 'Legendary', xpReward: 500, secret: false, category: 'mastery',
+  },
+  // ── Streaks ───────────────────────────────────────────────────────────────
+  {
+    id: 'iron_week', name: 'Iron Week', icon: '💪',
+    description: 'Maintain a 7-day training streak.',
+    condition: '7-day streak',
+    rarity: 'Rare', xpReward: 200, secret: false, category: 'training',
+  },
+  {
+    id: 'month_warrior', name: 'Month Warrior', icon: '🗡️',
+    description: 'Maintain a 30-day training streak.',
+    condition: '30-day streak',
+    rarity: 'Epic', xpReward: 600, secret: false, category: 'mastery',
+  },
+  // ── Battle ────────────────────────────────────────────────────────────────
+  {
+    id: 'first_blood', name: 'First Blood', icon: '🩸',
+    description: 'Win your first PvE battle.',
+    condition: 'Win 1 PvE battle',
+    rarity: 'Common', xpReward: 100, secret: false, category: 'battle',
+  },
+  {
+    id: 'flawless', name: 'Flawless', icon: '🛡️',
+    description: 'Win 5 PvE battles in a row.',
+    condition: '5 consecutive PvE wins',
+    rarity: 'Epic', xpReward: 400, secret: false, category: 'battle',
+  },
+  {
+    id: 'pve_veteran', name: 'PvE Veteran', icon: '⚔️',
+    description: 'Win 25 PvE battles.',
+    condition: '25 PvE wins',
+    rarity: 'Rare', xpReward: 300, secret: false, category: 'battle',
+  },
+  // ── Social ────────────────────────────────────────────────────────────────
+  {
+    id: 'crowd_favorite', name: 'Crowd Favourite', icon: '👏',
+    description: 'Receive 50 total likes on your reels.',
+    condition: '50 total reel likes',
+    rarity: 'Rare', xpReward: 200, secret: false, category: 'social',
+  },
+  {
+    id: 'viral_reel', name: 'Viral Reel', icon: '🚀',
+    description: 'Get 100 likes on a single reel.',
+    condition: '100 likes on one reel',
+    rarity: 'Epic', xpReward: 400, secret: false, category: 'social',
+  },
+  {
+    id: 'social_athlete', name: 'Social Athlete', icon: '📱',
+    description: 'Post 10 training reels.',
+    condition: '10 reels posted',
+    rarity: 'Common', xpReward: 150, secret: false, category: 'social',
+  },
+  // ── Progression ───────────────────────────────────────────────────────────
+  {
+    id: 'league_contender', name: 'League Contender', icon: '🏟️',
+    description: 'Reach Silver tier.',
+    condition: 'Reach Silver tier',
+    rarity: 'Common', xpReward: 100, secret: false, category: 'progression',
+  },
+  {
+    id: 'silver_ascent', name: 'Silver Ascent', icon: '🥈',
+    description: 'Achieve Silver tier ranking.',
+    condition: 'Silver tier',
+    rarity: 'Common', xpReward: 100, secret: false, category: 'progression',
+  },
+  {
+    id: 'gold_warrior', name: 'Gold Warrior', icon: '🥇',
+    description: 'Achieve Gold tier ranking.',
+    condition: 'Gold tier',
+    rarity: 'Rare', xpReward: 250, secret: false, category: 'progression',
+  },
+  {
+    id: 'platinum_elite', name: 'Platinum Elite', icon: '💎',
+    description: 'Achieve Platinum tier ranking.',
+    condition: 'Platinum tier',
+    rarity: 'Epic', xpReward: 500, secret: false, category: 'progression',
+  },
+  {
+    id: 'champion_tier', name: 'Champion', icon: '🏆',
+    description: 'Achieve Champion tier ranking.',
+    condition: 'Champion tier',
+    rarity: 'Legendary', xpReward: 1000, secret: false, category: 'progression',
+  },
+  {
+    id: 'global_elite', name: 'Global Elite', icon: '⚡',
+    description: 'Achieve Elite tier — the highest rank.',
+    condition: 'Elite tier',
+    rarity: 'Legendary', xpReward: 2000, secret: false, category: 'mastery',
+  },
+  // ── Secret ────────────────────────────────────────────────────────────────
+  {
+    id: 'secret_perfect_100', name: 'The Absolute', icon: '🌟',
+    description: 'Achieve a perfect score of 100.',
+    condition: 'Score exactly 100',
+    rarity: 'Legendary', xpReward: 2000, secret: true, category: 'special',
+  },
+  {
+    id: 'secret_midnight', name: 'Night Owl', icon: '🦉',
+    description: 'Train at the stroke of midnight.',
+    condition: 'Train at 12:00 AM',
+    rarity: 'Rare', xpReward: 300, secret: true, category: 'special',
+  },
+  {
+    id: 'secret_commentator', name: 'Commentator', icon: '🎙️',
+    description: 'Post 20 comments on reels.',
+    condition: '20 comments posted',
+    rarity: 'Common', xpReward: 150, secret: true, category: 'social',
+  },
+  {
+    id: 'secret_all_disciplines', name: 'Omnidiscipline', icon: '🌐',
+    description: 'Train in all 10 disciplines.',
+    condition: 'All 10 disciplines trained',
+    rarity: 'Legendary', xpReward: 1500, secret: true, category: 'mastery',
+  },
+  {
+    id: 'secret_cross_discipline', name: 'Cross-Discipline Icon', icon: '✡️',
+    description: 'Receive likes from athletes in different disciplines.',
+    condition: 'Liked by 10 different discipline groups',
+    rarity: 'Epic', xpReward: 400, secret: true, category: 'social',
+  },
+  {
+    id: 'secret_hard_mode', name: 'No Mercy', icon: '💀',
+    description: 'Score 85+ on a Level 5 difficulty drill.',
+    condition: 'Score ≥ 85 at difficulty 5',
+    rarity: 'Epic', xpReward: 600, secret: true, category: 'mastery',
+  },
+];
+
+// ─── AI OPPONENTS ─────────────────────────────────────────────────────────────
+
+export const AI_OPPONENTS: AiOpponent[] = [
+  {
+    id: 'novice-nina', name: 'Novice Nina', discipline: 'fitness',
+    targetScore: 45, color: '#6b7280', difficulty: 1,
+    avatar: '👤', styleNote: 'Inconsistent form, slow combos',
+    description: 'A beginner still learning the basics.',
+    usersBeaten: 12480,
+  },
+  {
+    id: 'rookie-raj', name: 'Rookie Raj', discipline: 'boxing',
+    targetScore: 55, color: '#3b82f6', difficulty: 2,
+    avatar: '🥊', styleNote: 'Basic combos, weak guard',
+    description: 'Getting comfortable with fundamentals.',
+    usersBeaten: 8920,
+  },
+  {
+    id: 'club-carlos', name: 'Club Carlos', discipline: 'dance',
+    targetScore: 65, color: '#a855f7', difficulty: 3,
+    avatar: '💃', styleNote: 'Solid timing, limited expression',
+    description: 'Club-level dancer with real rhythm.',
+    usersBeaten: 5670,
+  },
+  {
+    id: 'kata-kenji', name: 'Kata Kenji', discipline: 'martialarts',
+    subDiscipline: 'karate_shotokan',
+    targetScore: 73, color: '#ef4444', difficulty: 3,
+    avatar: '🥋', styleNote: 'Clean stances, powerful kihon',
+    description: 'Black belt-level kata specialist.',
+    usersBeaten: 3240,
+  },
+  {
+    id: 'yogi-yara', name: 'Yogi Yara', discipline: 'yoga',
+    subDiscipline: 'ashtanga',
+    targetScore: 78, color: '#34d399', difficulty: 4,
+    avatar: '🧘', styleNote: 'Exceptional balance, deep flexibility',
+    description: 'Ashtanga practitioner with 5 years experience.',
+    usersBeaten: 1890,
+  },
+  {
+    id: 'dance-diva-priya', name: 'Priya Dev', discipline: 'dance',
+    subDiscipline: 'bharatnatyam',
+    targetScore: 82, color: '#f59e0b', difficulty: 4,
+    avatar: '🪔', styleNote: 'Precise mudras, classical Adavus',
+    description: 'Bharatnatyam Arangetram graduate.',
+    usersBeaten: 1120,
+  },
+  {
+    id: 'champ-chen', name: 'Champion Chen', discipline: 'martialarts',
+    subDiscipline: 'kung_fu_wushu',
+    targetScore: 88, color: '#f97316', difficulty: 5,
+    avatar: '🏯', styleNote: 'Competition Wushu routines',
+    description: 'National Wushu champion. Almost unbeatable.',
+    usersBeaten: 340,
+  },
+  {
+    id: 'elite-elena', name: 'Elite Elena', discipline: 'gymnastics',
+    targetScore: 94, color: '#f472b6', difficulty: 5,
+    avatar: '🤸', styleNote: 'Olympic-level floor routine',
+    description: 'Former Olympic gymnast. The ultimate test.',
+    usersBeaten: 89,
+  },
+];
+
+// ─── DAILY MISSION TEMPLATES ──────────────────────────────────────────────────
+
+export const MISSION_TEMPLATES: Omit<DailyMission, 'id' | 'current' | 'complete' | 'missionDate'>[] = [
+  { icon: '🎯', name: 'Hit the Mark', description: 'Complete 2 training sessions today', type: 'sessions', target: 2, reward: 50 },
+  { icon: '⭐', name: 'High Scorer', description: 'Score 80+ in a session', type: 'accuracy', target: 80, reward: 60 },
+  { icon: '🥊', name: 'Battle Ready', description: 'Win a PvE battle', type: 'pve_win', target: 1, reward: 80 },
+  { icon: '📱', name: 'Content Creator', description: 'Post a training reel', type: 'reel', target: 1, reward: 40 },
+  { icon: '❤️', name: 'Social Butterfly', description: 'Receive 5 likes on your reels', type: 'likes', target: 5, reward: 30 },
+  { icon: '🔥', name: 'Combo Starter', description: 'Hit a 7x combo in a session', type: 'combo', target: 7, reward: 70 },
+  { icon: '⚡', name: 'Hard Mode', description: 'Complete a difficulty 3+ drill', type: 'difficulty', target: 3, reward: 90 },
+  { icon: '⏱️', name: 'Endurance Run', description: 'Train for 20+ minutes total', type: 'duration', target: 1200, reward: 65 },
+  { icon: '💪', name: 'Push Harder', description: 'Complete 3 training sessions', type: 'sessions', target: 3, reward: 75 },
+  { icon: '🎪', name: 'Showtime', description: 'Score 85+ in a session', type: 'accuracy', target: 85, reward: 100 },
+];
+
+// ─── WEEKLY CHALLENGE TEMPLATES ───────────────────────────────────────────────
+
+export const WEEKLY_TEMPLATES: Omit<WeeklyChallenge, 'id' | 'current' | 'complete' | 'weekStart'>[] = [
+  { icon: '🗓️', name: '5-Day Warrior', description: 'Train 5 days this week', type: 'sessions', target: 5, reward: 200 },
+  { icon: '🏆', name: 'Win Streak', description: 'Win 3 PvE battles this week', type: 'pve_win', target: 3, reward: 250 },
+  { icon: '📈', name: 'Score Climber', description: 'Average 75+ score this week', type: 'accuracy', target: 75, reward: 180 },
+  { icon: '🎬', name: 'Reel Week', description: 'Post 5 reels this week', type: 'reel', target: 5, reward: 150 },
+  { icon: '🔥', name: 'Combo Week', description: 'Hit 10x combo 3 times this week', type: 'combo', target: 3, reward: 220 },
+  { icon: '💎', name: 'Elite Training', description: 'Complete 2 difficulty-5 drills', type: 'difficulty', target: 2, reward: 300 },
+];

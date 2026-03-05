@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURA ARENA — Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      min-height: 100vh;
+      background: #040610;
+      color: #f4f6ff;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .container { max-width: 320px; }
+    .orb {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,223,255,0.15) 0%, transparent 70%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      margin: 0 auto 2rem;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); opacity: 0.8; }
+      50%      { transform: scale(1.05); opacity: 1; }
+    }
+    h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+    p  { color: #9ba8c4; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,223,255,0.08);
+      border: 1px solid rgba(0,223,255,0.2);
+      color: #00dfff;
+      border-radius: 999px;
+      padding: 0.4rem 1rem;
+      font-size: 0.75rem;
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 2rem;
+    }
+    button {
+      background: linear-gradient(135deg, #00dfff, #006eff);
+      color: #040610;
+      border: none;
+      border-radius: 14px;
+      padding: 0.85rem 2rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.15s;
+    }
+    button:active { opacity: 0.85; }
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.7rem;
+      color: #5a6a8a;
+      font-family: 'Space Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="orb">⚡</div>
+    <div class="badge">⚪ Offline Mode</div>
+    <h1>No Connection</h1>
+    <p>Your last session data is saved locally. Training data will sync automatically when you're back online.</p>
+    <button onclick="window.location.reload()">Try Again</button>
+    <p class="footer">AURA ARENA · Movement Intelligence</p>
+  </div>
+</body>
+</html>
