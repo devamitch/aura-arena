@@ -33,6 +33,9 @@ import {
 import { useRef, type TouchEvent as RTE, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// ─── Always-cyan accent for bottom nav (never discipline-dependent) ──────────
+const NAV_ACCENT = "#00f0ff";
+
 const FULLSCREEN = [
   "/arena/train",
   "/battle/pve",
@@ -53,21 +56,21 @@ const QUICK = [
     label: "Quick Train",
     sub: "Start session",
     path: "/arena/train",
-    color: "#00dfff",
+    color: "#00f0ff",
   },
   {
     icon: Swords,
     label: "PvE Battle",
     sub: "vs AI",
     path: "/battle/pve/select",
-    color: "#a855f7", // Neon Purple
+    color: "#a855f7",
   },
   {
     icon: Bot,
     label: "Live Battle",
     sub: "vs Human",
     path: "/battle/live/lobby",
-    color: "#0066ff", // Electric Blue
+    color: "#60a5fa",
   },
   {
     icon: Video,
@@ -109,9 +112,9 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[60]"
         style={{
-          background: "rgba(4,6,16,0.72)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
+          background: "rgba(2,4,12,0.78)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
         }}
         onClick={onClose}
       />
@@ -128,8 +131,13 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="bg-s1 rounded-t-[28px] border-t border-b1 pt-3 pb-10"
-          style={{ boxShadow: "0 -24px 80px rgba(0,0,0,0.75)" }}
+          className="rounded-t-[28px] pt-3 pb-10"
+          style={{
+            background: "var(--s1)",
+            border: "1px solid var(--b1)",
+            borderBottom: "none",
+            boxShadow: "0 -24px 80px rgba(0,0,0,0.75)",
+          }}
         >
           <div className="w-8 h-1 bg-b2 rounded-full mx-auto mb-5" />
 
@@ -207,12 +215,11 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     )?.id ?? "home";
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-void text-t1 overflow-hidden">
-      {/* Scrollable Container for all sub-pages */}
-      <div className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden relative scroll-smooth pb-safe">
-        {children}
-      </div>
+    <div className="flex flex-col h-full w-full bg-void text-t1">
+      {/* Main scrollable area — each page uses .page class for its own scroll */}
+      <div className="flex-1 flex flex-col min-h-0">{children}</div>
 
+      {/* ── Bottom Navigation ── */}
       <AnimatePresence>
         {!isFS && (
           <motion.nav
@@ -221,15 +228,10 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 72, opacity: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className="fixed bottom-0 left-0 right-0 z-[60] touch-none"
+            className="fixed bottom-0 left-0 right-0 z-[60]"
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           >
-            <div
-              className="flex items-center pt-2.5 pb-4 px-2 rounded-t-[32px] glass-heavy border-t border-white/10"
-              style={{
-                boxShadow: "0 -8px 48px rgba(0,0,0,0.85)",
-              }}
-            >
+            <div className="flex items-center pt-2.5 pb-4 px-2 rounded-t-[28px] glass-heavy">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const active = tab.id === activeId;
@@ -244,8 +246,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                         layoutId="nav-indicator"
                         className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
                         style={{
-                          background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
-                          boxShadow: `0 0 10px ${accentColor}`,
+                          background: `linear-gradient(90deg, transparent, ${NAV_ACCENT}, transparent)`,
+                          boxShadow: `0 0 12px ${NAV_ACCENT}`,
                         }}
                         transition={{
                           type: "spring",
@@ -255,7 +257,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                       />
                     )}
                     <motion.div
-                      animate={{ scale: active ? 1.1 : 1, y: active ? -1 : 0 }}
+                      animate={{ scale: active ? 1.15 : 1, y: active ? -2 : 0 }}
                       transition={{
                         type: "spring",
                         stiffness: 500,
@@ -264,22 +266,22 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                     >
                       <Icon
                         className={cn(
-                          "w-[21px] h-[21px] transition-colors duration-200",
-                          active ? "" : "opacity-35",
+                          "w-[22px] h-[22px] transition-colors duration-200",
+                          active ? "" : "opacity-30",
                         )}
                         style={{
-                          color: active ? accentColor : "rgba(255,255,255,0.7)",
+                          color: active ? NAV_ACCENT : "rgba(255,255,255,0.5)",
                         }}
-                        strokeWidth={active ? 2.2 : 1.8}
+                        strokeWidth={active ? 2.4 : 1.6}
                       />
                     </motion.div>
                     <span
                       className={cn(
-                        "text-[9px] font-mono uppercase tracking-[0.1em] transition-colors duration-200",
-                        active ? "font-bold" : "opacity-35",
+                        "text-[9px] font-mono uppercase tracking-[0.12em] transition-colors duration-200",
+                        active ? "font-bold" : "opacity-30",
                       )}
                       style={{
-                        color: active ? accentColor : "rgba(255,255,255,0.7)",
+                        color: active ? NAV_ACCENT : "rgba(255,255,255,0.5)",
                       }}
                     >
                       {tab.label}
@@ -296,12 +298,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                   className="w-[54px] h-[54px] rounded-[18px] flex items-center justify-center shadow-2xl"
                   style={{
                     background: showSheet
-                      ? "#141628"
-                      : `linear-gradient(145deg, ${accentColor}, ${accentColor}cc)`,
-                    border: showSheet ? `1.5px solid ${accentColor}50` : "none",
+                      ? "#0a0e1f"
+                      : `linear-gradient(145deg, ${NAV_ACCENT}, ${NAV_ACCENT}bb)`,
+                    border: showSheet ? `1.5px solid ${NAV_ACCENT}44` : "none",
                     boxShadow: showSheet
-                      ? `0 0 20px ${accentColor}30`
-                      : `0 8px 32px ${accentColor}66`,
+                      ? `0 0 20px ${NAV_ACCENT}20`
+                      : `0 8px 32px ${NAV_ACCENT}55`,
                     transition: "background 0.2s, box-shadow 0.2s",
                   }}
                 >
@@ -311,7 +313,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                   >
                     <Plus
                       className="w-6 h-6"
-                      style={{ color: showSheet ? accentColor : "#030510" }}
+                      style={{ color: showSheet ? NAV_ACCENT : "#030510" }}
                       strokeWidth={showSheet ? 2 : 2.8}
                     />
                   </motion.div>

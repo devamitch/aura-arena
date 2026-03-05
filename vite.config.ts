@@ -134,7 +134,7 @@ export default defineConfig(({ mode }) => {
       include: ["react", "react-dom", "framer-motion", "zustand"],
     },
     server: {
-      port: 5173,
+      port: 8082,
       host: true,
     },
   };

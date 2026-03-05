@@ -11,7 +11,7 @@ export default function LivePrePage() {
   const user = useUser();
 
   return (
-    <div className="min-h-screen bg-void pb-24">
+    <div className="page pb-safe bg-void">
       <div className="flex items-center gap-3 px-5 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}

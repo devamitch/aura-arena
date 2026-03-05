@@ -71,10 +71,7 @@ export default function ProfilePage() {
   } = usePersonalization();
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      style={{ background: "var(--void)" }}
-    >
+    <div className="page pb-safe" style={{ background: "var(--void)" }}>
       {/* header */}
       <div className="px-5 pt-6 pb-3 flex-shrink-0 relative overflow-hidden">
         <div
@@ -420,7 +417,11 @@ const CoachTab = () => {
 };
 
 /* ── Trophies ── */
-const TrophiesTab = ({ accentColor }: { accentColor: string }) => {
+const TrophiesTab = ({
+  accentColor: _accentColor,
+}: {
+  accentColor: string;
+}) => {
   const earned = useEarnedAchievements();
   const cats = [
     "training",
@@ -497,7 +498,7 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
   const soundEnabled = useSoundEnabled();
   const reduceMotion = useReduceMotion();
   const masterVolume = useMasterVolume();
-  const { accentColor } = usePersonalization();
+  const { accentColor: _accentColor } = usePersonalization();
   return (
     <div className="space-y-3.5 pt-3 pb-4">
       <div className="card rounded-[20px] p-4 space-y-4">

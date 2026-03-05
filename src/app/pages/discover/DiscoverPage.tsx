@@ -22,7 +22,7 @@ export default function DiscoverPage() {
   const { accentColor } = usePersonalization();
 
   return (
-    <div className="flex-1 overflow-y-auto pb-28 bg-void">
+    <div className="page pb-safe bg-void">
       {/* Header */}
       <div className="px-5 pt-6 pb-4">
         <p className="text-xs font-mono text-t3 uppercase tracking-widest mb-1">

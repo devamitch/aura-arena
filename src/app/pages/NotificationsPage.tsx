@@ -13,12 +13,12 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const TYPE_ICONS: Record<string, { icon: typeof Bell; color: string }> = {
-  achievement: { icon: Trophy, color: "#fbbf24" },
-  battle: { icon: Swords, color: "#f97316" },
-  social: { icon: Heart, color: "#ec4899" },
+  achievement: { icon: Trophy, color: "#00f0ff" },
+  battle: { icon: Swords, color: "#a855f7" },
+  social: { icon: Heart, color: "#60a5fa" },
   tier: { icon: Star, color: "#00f0ff" },
-  challenge: { icon: Star, color: "#22c55e" },
-  system: { icon: Bell, color: "#6b7280" },
+  challenge: { icon: Star, color: "#34d399" },
+  system: { icon: Bell, color: "#64748b" },
 };
 
 export default function NotificationsPage() {
@@ -28,7 +28,7 @@ export default function NotificationsPage() {
   const { markNotificationRead, markAllRead } = useStore();
 
   return (
-    <div className="min-h-screen bg-void pb-24">
+    <div className="page pb-safe bg-void">
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
         <div className="flex items-center gap-3">
           <button
