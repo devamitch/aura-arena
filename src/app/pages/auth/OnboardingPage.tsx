@@ -97,7 +97,7 @@ const INTRO_SLIDES = [
     title: "Compete Globally",
     desc: "Climb the ranks in your discipline and battle athletes from around the world.",
     icon: "Swords",
-    color: "#f59e0b",
+    color: "#a855f7",
   },
 ];
 
@@ -167,7 +167,7 @@ export default function OnboardingPage() {
 
   const handleFinish = async () => {
     setSaving(true);
-    const _welcomeMsg = await generateWelcomeMessage(
+    await generateWelcomeMessage(
       disciplineId,
       subDisciplineId,
       experience,
@@ -280,7 +280,7 @@ export default function OnboardingPage() {
                             (s - 1 + INTRO_SLIDES.length) % INTRO_SLIDES.length,
                         );
                     }}
-                    className="w-full max-w-sm aspect-square rounded-[3rem] bg-s1 border border-b1 flex flex-col items-center justify-center p-8 relative overflow-hidden group cursor-grab active:cursor-grabbing"
+                    className="w-full max-w-sm aspect-square rounded-[3rem] bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex flex-col items-center justify-center p-8 relative overflow-hidden group cursor-grab active:cursor-grabbing"
                   >
                     {/* Background Glow */}
                     <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
@@ -409,7 +409,7 @@ export default function OnboardingPage() {
                       </div>
                       <p className="font-bold text-t1 text-sm">{d.name}</p>
                       {d.subDisciplines.length > 0 && (
-                        <p className="text-[10px] text-t3 mt-0.5">
+                        <p className="text-[10px] text-t3 mt-0.5 opacity-60">
                           {d.subDisciplines.length} styles
                         </p>
                       )}
@@ -439,7 +439,7 @@ export default function OnboardingPage() {
                   setSubDisciplineId(undefined);
                   next();
                 }}
-                className="w-full mb-4 py-3 rounded-xl bg-s1 border border-b1 text-sm text-t2 font-semibold text-center active:scale-95"
+                className="w-full mb-4 py-3 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm text-sm text-t2 font-semibold text-center active:scale-95"
               >
                 All {disc.name} styles (no preference)
               </button>
@@ -481,7 +481,8 @@ export default function OnboardingPage() {
                       experience === l.id
                         ? {
                             borderColor: disc.color,
-                            background: `${disc.color}10`,
+                            background: `${disc.color}15`,
+                            boxShadow: `0 0 20px ${disc.color}15`,
                           }
                         : {}
                     }
@@ -614,7 +615,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setCoachName(e.target.value)}
                 placeholder="e.g. Aria, Max, Sensei…"
                 maxLength={20}
-                className="w-full bg-s1 border border-b1 rounded-xl px-4 py-4 text-t1 text-lg text-center font-bold placeholder:text-t3 focus:outline-none focus:border-opacity-60 transition-colors"
+                className="w-full bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl px-4 py-4 text-t1 text-lg text-center font-bold placeholder:text-t3 focus:outline-none focus:border-opacity-60 transition-colors"
                 style={{ "--tw-border-opacity": 1 } as any}
               />
               <div className="flex gap-2 flex-wrap justify-center mt-4">
@@ -623,7 +624,7 @@ export default function OnboardingPage() {
                     <button
                       key={n}
                       onClick={() => setCoachName(n)}
-                      className="px-3 py-1.5 rounded-full bg-s1 border border-b1 text-xs text-t2 hover:text-t1 transition-colors"
+                      className="px-3 py-1.5 rounded-full bg-card/60 backdrop-blur-xl border-white/10 shadow-sm text-xs text-t2 hover:text-t1 transition-colors"
                     >
                       {n}
                     </button>

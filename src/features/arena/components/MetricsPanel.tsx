@@ -30,7 +30,7 @@ export function MetricsPanel({
       label: statLabels[2] || "Timing",
       value: score.timing,
       icon: Zap,
-      color: "text-yellow-400",
+      color: "text-accent",
     },
     {
       label: statLabels[3] || "Energy",
@@ -42,7 +42,7 @@ export function MetricsPanel({
       label: statLabels[4] || "Power",
       value: score.power,
       icon: Crosshair,
-      color: "text-orange-400",
+      color: "text-accent",
     },
     {
       label: statLabels[5] || "Balance",

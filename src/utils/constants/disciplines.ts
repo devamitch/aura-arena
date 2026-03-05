@@ -124,7 +124,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "பரதநாட்டியம்",
     parentDiscipline: "dance",
     icon: "Sparkles",
-    color: "#f59e0b",
+    color: "#a855f7", // Neon Purple
     origin: "Tamil Nadu, India",
     description:
       "Ancient classical dance from Tamil Nadu. Emphasis on Abhinaya (expression), Nritta (pure dance), Nritya (expressive dance).",
@@ -213,7 +213,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "कत्थक",
     parentDiscipline: "dance",
     icon: "Repeat",
-    color: "#a78bfa",
+    color: "#0066ff", // Electric Blue
     origin: "Uttar Pradesh, India",
     description:
       "North Indian classical dance known for its lightning-fast spins (chakkar), intricate footwork, and expressive storytelling.",
@@ -293,7 +293,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "ଓଡ଼ିଶୀ",
     parentDiscipline: "dance",
     icon: "Columns",
-    color: "#fb923c",
+    color: "#22d3ee", // Cyan
     origin: "Odisha, India",
     description:
       "Temple dance tradition of Odisha. Distinguished by the tribhangi (three-part body bend) and chauka (square stance).",
@@ -501,7 +501,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "সত্ৰীয়া",
     parentDiscipline: "dance",
     icon: "User",
-    color: "#fcd34d",
+    color: "#38bdf8", // Sky Blue
     origin: "Assam, India",
     description:
       "Monastic dance tradition from Vaishnavite monasteries of Assam.",
@@ -542,7 +542,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "ਭੰਗੜਾ",
     parentDiscipline: "dance",
     icon: "Music",
-    color: "#f97316",
+    color: "#818cf8", // Indigo
     origin: "Punjab, India/Pakistan",
     description:
       "High-energy Punjabi folk dance originally performed at harvest festivals.",
@@ -676,7 +676,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "ડાંડિયા",
     parentDiscipline: "dance",
     icon: "🎋",
-    color: "#fbbf24",
+    color: "#0ea5e9", // Deep Cyan
     origin: "Gujarat, India",
     description: "Stick dance of Gujarat performed in pairs during Navratri.",
     rhythmBPM: 116,
@@ -716,7 +716,7 @@ export const DANCE_SUB_DISCIPLINES: SubDiscipline[] = [
     nameLocal: "Ballet",
     parentDiscipline: "dance",
     icon: "Activity",
-    color: "#f9a8d4",
+    color: "#d8b4fe", // Light Purple
     origin: "France/Italy",
     description:
       "Classical Western dance technique emphasising turnout, extensions, and pointe work.",
@@ -2250,9 +2250,9 @@ export const DISCIPLINES: Discipline[] = [
     id: "boxing",
     name: "Boxing",
     icon: "Swords",
-    color: "#ff6b35",
-    glow: "rgba(255,107,53,0.4)",
-    bg: "rgba(255,107,53,0.08)",
+    color: "#00f0ff",
+    glow: "rgba(0,240,255,0.4)",
+    bg: "rgba(0,240,255,0.08)",
     coachingTone: "aggressive",
     statLabels: {
       accuracy: "Strike Accuracy",
@@ -2413,9 +2413,9 @@ export const DISCIPLINES: Discipline[] = [
     id: "martialarts",
     name: "Martial Arts",
     icon: "Zap",
-    color: "#f87171",
-    glow: "rgba(248,113,113,0.4)",
-    bg: "rgba(248,113,113,0.08)",
+    color: "#a855f7",
+    glow: "rgba(168,85,247,0.4)",
+    bg: "rgba(168,85,247,0.08)",
     coachingTone: "technical",
     statLabels: {
       accuracy: "Technique Form",
@@ -2572,9 +2572,9 @@ export const DISCIPLINES: Discipline[] = [
     id: "bodybuilding",
     name: "Bodybuilding",
     icon: "User",
-    color: "#fbbf24",
-    glow: "rgba(251,191,36,0.4)",
-    bg: "rgba(251,191,36,0.08)",
+    color: "#2dd4bf",
+    glow: "rgba(45,212,191,0.4)",
+    bg: "rgba(45,212,191,0.08)",
     coachingTone: "technical",
     statLabels: {
       accuracy: "Pose Quality",

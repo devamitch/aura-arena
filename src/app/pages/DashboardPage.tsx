@@ -10,6 +10,7 @@ import { formatNumber, timeAgo } from "@lib/utils";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { Skeleton } from "@shared/components/ui/Skeleton";
 import { TierBadge } from "@shared/components/ui/TierBadge";
+import { Card, CardContent } from "@shared/components/ui/card";
 import {
   useDailyMissions,
   useDailyStreak,
@@ -36,8 +37,8 @@ const StatPill = ({
   suffix?: string;
   color: string;
 }) => (
-  <div className="glass rounded-2xl px-4 py-3 border border-white/5 flex flex-col gap-0.5 shadow-xl transition-transform active:scale-95">
-    <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-t3 opacity-70">
+  <Card className="px-4 py-3 flex flex-col gap-0.5 transition-transform active:scale-95 bg-card/60 backdrop-blur-xl border-white/10 shadow-lg">
+    <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground opacity-80">
       {label}
     </p>
     <p
@@ -47,7 +48,7 @@ const StatPill = ({
       {value}
       {suffix && <span className="text-sm ml-0.5 opacity-80">{suffix}</span>}
     </p>
-  </div>
+  </Card>
 );
 
 // ─── Orb background ────────────────────────────────────────────────────────────
@@ -108,19 +109,16 @@ export default function DashboardPage() {
   const recentSess = sessions.slice(0, 3);
   const doneMissions = missions.filter((m) => m.complete).length;
 
+  // Added greeting to the UI
   return (
     <div className="page relative pb-safe bg-void">
       <OrbBg color={accentColor} />
 
       {/* ── Header ── */}
-      <div className="px-5 pt-14 pb-2 relative">
-        <div className="flex items-start justify-between mb-5">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <p className="text-xs font-mono text-t3 uppercase tracking-widest mb-0.5">
+      <div className="px-5 pt-14 pb-4 relative">
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex flex-col">
+            <p className="text-[10px] font-mono text-t3 uppercase tracking-[0.3em] mb-1 opacity-70">
               {greeting}
             </p>
             <h1 className="text-3xl font-black text-t1 leading-none">
@@ -145,22 +143,31 @@ export default function DashboardPage() {
                 </span>
               )}
             </div>
-          </motion.div>
+          </div>
 
-          <button
-            onClick={() => navigate("/notifications")}
-            className="btn-icon relative mt-1"
-          >
-            <Bell className="w-4.5 h-4.5 text-t2" />
-            {unread > 0 && (
-              <span
-                className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-void"
-                style={{ background: accentColor }}
-              >
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl glass p-1 border-white/10 shadow-[0_0_20px_rgba(0,240,255,0.1)] overflow-hidden hidden sm:block">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <button
+              onClick={() => navigate("/notifications")}
+              className="btn-icon relative"
+            >
+              <Bell className="w-4.5 h-4.5 text-t2" />
+              {unread > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-void"
+                  style={{ background: accentColor }}
+                >
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* XP bar */}
@@ -170,7 +177,7 @@ export default function DashboardPage() {
               <span>{formatNumber(xp)} XP</span>
               <span className="flex items-center gap-1">
                 <DynamicIcon name={nextTier.icon} className="w-2.5 h-2.5" />
-                {nextTier.name} at {formatNumber(nextTier.xpMin)}
+                {nextTier.name} (Tier {tier}) at {formatNumber(nextTier.xpMin)}
               </span>
             </div>
             <div className="h-1.5 bg-s2 rounded-full overflow-hidden">
@@ -193,11 +200,11 @@ export default function DashboardPage() {
       <div className="px-5 grid grid-cols-3 gap-2 mb-5">
         {[
           { label: "Total XP", value: formatNumber(xp), color: accentColor },
-          { label: "Streak", value: streak, suffix: "🔥", color: "#fb923c" },
+          { label: "Streak", value: streak, suffix: "x", color: accentColor },
           {
             label: "Avg Score",
             value: user?.averageScore ?? 0,
-            color: "#34d399",
+            color: accentColor,
           },
         ].map((s, i) => (
           <motion.div
@@ -212,56 +219,53 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Quick start CTAs ── */}
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={() => navigate("/arena/train")}
-        className="relative overflow-hidden rounded-3xl p-6 text-left glass border-white/10 group"
-      >
-        <div
-          className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-30 transition-opacity group-hover:opacity-50"
-          style={{ background: accentColor }}
-        />
-        <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
-          <Zap className="w-6 h-6" style={{ color: accentColor }} />
-        </div>
-        <p className="font-black text-t1 text-base leading-none mb-1 tracking-tight">
-          Train
-        </p>
-        <p className="text-[11px] text-t3 font-mono uppercase tracking-widest opacity-60">
-          Start session
-        </p>
-      </motion.button>
-
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={() => navigate("/battle/pve/select")}
-        className="relative overflow-hidden rounded-3xl p-6 text-left glass border-white/10 group"
-      >
-        <div
-          className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-30 transition-opacity group-hover:opacity-50"
-          style={{ background: "#f97316" }}
-        />
-        <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
-          <Swords className="w-6 h-6 text-orange-400" />
-        </div>
-        <p className="font-black text-t1 text-base leading-none mb-1 tracking-tight">
-          Battle
-        </p>
-        <p className="text-[11px] text-t3 font-mono uppercase tracking-widest opacity-60">
-          vs AI opponent
-        </p>
-      </motion.button>
-
-      {/* ── Daily tip ── */}
-      <div className="px-5 mb-6">
-        <div
-          className="glass rounded-3xl overflow-hidden border-white/5 shadow-2xl"
-          style={{
-            background: `linear-gradient(145deg, ${accentColor}08, rgba(255,255,255,0.02))`,
-          }}
+      <motion.div whileTap={{ scale: 0.95 }} className="w-full">
+        <Card
+          onClick={() => navigate("/arena/train")}
+          className="relative overflow-hidden p-6 text-left border-white/10 bg-card/60 backdrop-blur-xl group cursor-pointer mb-3 shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:border-accent/40 transition-colors"
         >
           <div
-            className="px-5 py-3 flex items-center gap-2 border-b border-white/5"
+            className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 transition-opacity group-hover:opacity-40"
+            style={{ background: accentColor }}
+          />
+          <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
+            <Zap className="w-6 h-6" style={{ color: accentColor }} />
+          </div>
+          <p className="font-black text-foreground text-base leading-none mb-1 tracking-tight">
+            Train
+          </p>
+          <p className="text-[11px] text-muted-foreground font-mono uppercase tracking-widest opacity-80">
+            Start session
+          </p>
+        </Card>
+      </motion.div>
+
+      <motion.div whileTap={{ scale: 0.95 }} className="w-full">
+        <Card
+          onClick={() => navigate("/battle/pve/select")}
+          className="relative overflow-hidden p-6 text-left border-white/10 bg-card/60 backdrop-blur-xl group cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:border-secondary/40 transition-colors"
+        >
+          <div
+            className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 transition-opacity group-hover:opacity-40"
+            style={{ background: accentColor }}
+          />
+          <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
+            <Swords className="w-6 h-6" style={{ color: accentColor }} />
+          </div>
+          <p className="font-black text-foreground text-base leading-none mb-1 tracking-tight">
+            Battle
+          </p>
+          <p className="text-[11px] text-muted-foreground font-mono uppercase tracking-widest opacity-80">
+            vs AI opponent
+          </p>
+        </Card>
+      </motion.div>
+
+      {/* ── Daily tip ── */}
+      <div className="px-5 mb-6 pt-3">
+        <Card className="overflow-hidden border-white/10 shadow-2xl bg-card/80 backdrop-blur-xl">
+          <div
+            className="px-5 py-3 flex items-center gap-2 border-b border-border/50"
             style={{
               background: `linear-gradient(90deg, ${accentColor}15, transparent)`,
             }}
@@ -271,23 +275,23 @@ export default function DashboardPage() {
               className="w-3.5 h-3.5"
               style={{ color: accentColor }}
             />
-            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-t2">
+            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
               {user?.aiCoachName ?? "Coach"} insights
             </p>
           </div>
-          <div className="px-5 py-4">
+          <CardContent className="px-5 py-4">
             {tipLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-3 w-full rounded" />
                 <Skeleton className="h-3 w-3/4 rounded" />
               </div>
             ) : (
-              <p className="text-sm font-medium text-t1 leading-relaxed italic opacity-90">
+              <p className="text-sm font-medium text-foreground leading-relaxed italic opacity-90">
                 "{tip}"
               </p>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Daily missions ── */}
@@ -342,7 +346,7 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.06 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-s1 border border-b1"
+                className="flex items-center gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm"
               >
                 <DynamicIcon
                   name={disc.icon}

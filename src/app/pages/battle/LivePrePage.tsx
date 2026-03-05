@@ -1,4 +1,5 @@
 import { usePersonalization } from "@hooks/usePersonalization";
+import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { useUser } from "@store";
 import { motion } from "framer-motion";
 import { ArrowLeft, Globe, Users, Wifi, Zap } from "lucide-react";
@@ -14,7 +15,7 @@ export default function LivePrePage() {
       <div className="flex items-center gap-3 px-5 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl bg-s1 border border-b1 flex items-center justify-center"
+          className="w-9 h-9 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex items-center justify-center"
         >
           <ArrowLeft className="w-4 h-4 text-t2" />
         </button>
@@ -36,9 +37,10 @@ export default function LivePrePage() {
             style={{
               background: `${accentColor}20`,
               border: `2px solid ${accentColor}40`,
+              color: accentColor,
             }}
           >
-            {disc.icon}
+            <DynamicIcon name={disc.icon} className="w-10 h-10" />
           </motion.div>
           <p className="font-black text-t1 text-xl mb-1">Live Match</p>
           <p className="text-sm text-t3 mb-6">

@@ -152,6 +152,7 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
   const frameScoresRef = useRef<FrameScore[]>([]);
   const comboHistoryRef = useRef<number[]>([]);
   const scanStartRef = useRef<number>(Date.now());
+  const uiUpdateRef = useRef<number>(0);
 
   // React state (drives UI)
   const [permission, setPermission] = useState<CameraPermission>("idle");
@@ -222,9 +223,7 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
       const timestamp = video.currentTime * 1000;
       const elapsedMs = now - sessionStartRef.current;
 
-      // Scan line animation (0→1 in 2.5s)
       const scanMs = now - scanStartRef.current;
-      if (scanMs < 2500) setScanProgress(scanMs / 2500);
 
       let result: VisionFrameResult;
       let score: FrameScore;
@@ -306,12 +305,6 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
         }
         lastComboTimeRef.current = output.newLastComboTime;
 
-        // Gesture events
-        const gesture = result.gestures[0]?.[0];
-        if (gesture && gesture.categoryName !== "None" && gesture.score > 0.7) {
-          onGesture?.(gesture.categoryName, output.newCombo);
-        }
-
         // Face expression coaching feedback
         if (result.faceBlendshapes[0]?.length) {
           const exprs = parseFaceExpressions(result.faceBlendshapes[0]);
@@ -321,7 +314,7 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
           setCoachMessage(null);
         }
 
-        setLastResult(result);
+        // Result is stored inside the throttle block below
       } else {
         // Simulation mode
         const simLandmarks = simulateLandmarks(elapsedMs);
@@ -346,7 +339,19 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
         score.combo,
       ];
 
-      setCurrentScore(score);
+      // Throttle UI React state updates to ~15fps (every 66ms) to prevent excessive re-renders
+      if (now - uiUpdateRef.current > 66) {
+        if (scanMs < 2500) {
+          setScanProgress(scanMs / 2500);
+        } else {
+          setScanProgress((prev) => (prev < 1 ? 1 : prev));
+        }
+
+        setCurrentScore(score);
+        if (result) setLastResult(result);
+
+        uiUpdateRef.current = now;
+      }
 
       // Render canvas
       renderFrameToCanvas(canvas, result, accentColor, {

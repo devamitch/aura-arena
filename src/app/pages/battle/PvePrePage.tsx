@@ -2,46 +2,51 @@
 // AURA ARENA — PvE Opponent Selection Page
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Shield, Zap, Users } from 'lucide-react';
-import { useStore } from '@store';
-import { usePersonalization } from '@hooks/usePersonalization';
-import { AI_OPPONENTS } from '@utils/constants';
-import { cn } from '@lib/utils';
-import type { AiOpponent } from '@types';
+import { usePersonalization } from "@hooks/usePersonalization";
+import { useStore } from "@store";
+import type { AiOpponent } from "@types";
+import { AI_OPPONENTS } from "@utils/constants";
+import { motion } from "framer-motion";
+import { ArrowLeft, Users, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const DIFF_STARS = ['', '★', '★★', '★★★', '★★★★', '★★★★★'];
-const DIFF_COLORS = ['', '#6b7280', '#22c55e', '#f59e0b', '#f97316', '#ef4444'];
+const DIFF_STARS = ["", "★", "★★", "★★★", "★★★★", "★★★★★"];
+const DIFF_COLORS = ["", "#3b82f6", "#22d3ee", "#00f0ff", "#a855f7", "#ff00ff"];
 
 export default function PvePrePage() {
   const navigate = useNavigate();
   const { selectOpponent, setBattlePhase } = useStore();
-  const { discipline: disc, accentColor } = usePersonalization();
+  const { discipline: disc } = usePersonalization();
 
-  const opponents = AI_OPPONENTS.filter((o) => o.discipline === disc.id || true);
+  const opponents = AI_OPPONENTS.filter(
+    (o) => o.discipline === disc.id || true,
+  );
 
   const handleSelect = (opp: AiOpponent) => {
     selectOpponent(opp);
-    setBattlePhase('select');
-    navigate('/battle/pve');
+    setBattlePhase("select");
+    navigate("/battle/pve");
   };
 
   return (
     <div className="min-h-screen bg-void pb-24">
       <div className="flex items-center gap-3 px-5 pt-6 pb-4">
-        <button onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl bg-s1 border border-b1 flex items-center justify-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-9 h-9 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex items-center justify-center"
+        >
           <ArrowLeft className="w-4 h-4 text-t2" />
         </button>
         <div>
-          <p className="text-xs font-mono text-t3 uppercase tracking-widest">Choose Opponent</p>
+          <p className="text-xs font-mono text-t3 uppercase tracking-widest">
+            Choose Opponent
+          </p>
           <p className="font-black text-t1">PvE Battle</p>
         </div>
       </div>
 
       <div className="px-5 space-y-3">
-        {AI_OPPONENTS.map((opp, i) => {
+        {opponents.map((opp, i) => {
           const diffColor = DIFF_COLORS[opp.difficulty];
           return (
             <motion.button
@@ -67,16 +72,21 @@ export default function PvePrePage() {
                       {DIFF_STARS[opp.difficulty]}
                     </span>
                   </div>
-                  <p className="text-xs text-t3 mt-0.5 leading-tight">{opp.description}</p>
+                  <p className="text-xs text-t3 mt-0.5 leading-tight">
+                    {opp.description}
+                  </p>
                   <div className="flex items-center gap-4 mt-2">
                     <span className="flex items-center gap-1 text-[10px] text-t3">
                       <Zap className="w-3 h-3" /> Target: {opp.targetScore}
                     </span>
                     <span className="flex items-center gap-1 text-[10px] text-t3">
-                      <Users className="w-3 h-3" /> {opp.usersBeaten.toLocaleString()} beaten
+                      <Users className="w-3 h-3" />{" "}
+                      {opp.usersBeaten.toLocaleString()} beaten
                     </span>
                   </div>
-                  <p className="text-[10px] text-t3 italic mt-1">{opp.styleNote}</p>
+                  <p className="text-[10px] text-t3 italic mt-1">
+                    {opp.styleNote}
+                  </p>
                 </div>
               </div>
             </motion.button>

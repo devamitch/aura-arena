@@ -60,14 +60,14 @@ const QUICK = [
     label: "PvE Battle",
     sub: "vs AI",
     path: "/battle/pve/select",
-    color: "#f97316",
+    color: "#a855f7", // Neon Purple
   },
   {
     icon: Bot,
     label: "Live Battle",
     sub: "vs Human",
     path: "/battle/live/lobby",
-    color: "#a78bfa",
+    color: "#0066ff", // Electric Blue
   },
   {
     icon: Video,
@@ -207,8 +207,11 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     )?.id ?? "home";
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-void overflow-hidden">
-      <div className="flex-1 overflow-hidden">{children}</div>
+    <div className="fixed inset-0 flex flex-col bg-void text-t1 overflow-hidden">
+      {/* Scrollable Container for all sub-pages */}
+      <div className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden relative scroll-smooth pb-safe">
+        {children}
+      </div>
 
       <AnimatePresence>
         {!isFS && (
@@ -218,13 +221,13 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 72, opacity: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className="flex-shrink-0 relative z-50"
+            className="fixed bottom-0 left-0 right-0 z-[60] touch-none"
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           >
             <div
-              className="flex items-center pt-2 pb-3 px-2 rounded-t-[32px] glass-heavy border-t border-white/10"
+              className="flex items-center pt-2.5 pb-4 px-2 rounded-t-[32px] glass-heavy border-t border-white/10"
               style={{
-                boxShadow: "0 -8px 40px rgba(0,0,0,0.8)",
+                boxShadow: "0 -8px 48px rgba(0,0,0,0.85)",
               }}
             >
               {TABS.map((tab) => {
@@ -239,10 +242,10 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                     {active && (
                       <motion.div
                         layoutId="nav-indicator"
-                        className="absolute -top-2 left-1/2 -translate-x-1/2 h-0.5 w-7 rounded-full"
+                        className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
                         style={{
-                          background: accentColor,
-                          boxShadow: `0 0 8px ${accentColor}`,
+                          background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+                          boxShadow: `0 0 10px ${accentColor}`,
                         }}
                         transition={{
                           type: "spring",

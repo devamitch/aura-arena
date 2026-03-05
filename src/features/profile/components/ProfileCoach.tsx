@@ -99,7 +99,24 @@ function DailyMessage({
   }, [disc.id, streak, avgScore]);
 
   return (
-    <div className="bg-s1 border border-b1 rounded-xl overflow-hidden">
+    <div className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl overflow-hidden">
+      <div className="px-5 pt-8 pb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black text-white leading-none">
+            AI Coach
+          </h1>
+          <p className="text-[10px] font-mono text-t3 uppercase tracking-[0.3em] mt-1.5 opacity-70">
+            Personal Performance Insights
+          </p>
+        </div>
+        <div className="w-12 h-12 rounded-xl glass p-2 border-white/10 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
       <div
         className="px-4 py-2 border-b border-b1 flex items-center gap-2"
         style={{ background: `${disc.color}10` }}
@@ -188,6 +205,7 @@ function TrainingPlan({ disc }: { disc: ReturnType<typeof getDiscipline> }) {
 
   useEffect(() => {
     generate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disc.id]);
 
   return (
@@ -217,7 +235,7 @@ function TrainingPlan({ disc }: { disc: ReturnType<typeof getDiscipline> }) {
           {plan.days.map((day, i) => (
             <div
               key={i}
-              className="bg-s1 border border-b1 rounded-xl overflow-hidden"
+              className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl overflow-hidden"
             >
               <button
                 onClick={() => setExpanded(expanded === i ? null : i)}
@@ -304,7 +322,7 @@ function CoachingHistory({
 
   if (entries.length === 0) {
     return (
-      <div className="text-center py-6 bg-s1 border border-b1 rounded-xl">
+      <div className="text-center py-6 bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl">
         <p className="text-t3 text-sm">
           Complete sessions to build your coaching history
         </p>
@@ -321,7 +339,7 @@ function CoachingHistory({
         {sorted.map((entry) => (
           <div
             key={entry.id}
-            className="bg-s1 border border-b1 rounded-xl p-3"
+            className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl p-3"
             style={entry.pinned ? { borderColor: `${accentColor}40` } : {}}
           >
             <div className="flex items-center justify-between mb-1.5">

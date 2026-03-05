@@ -29,11 +29,11 @@ import { useNavigate } from "react-router-dom";
 const DIFF = ["", "Beginner", "Easy", "Medium", "Hard", "Elite"] as const;
 const DIFF_C = [
   "",
-  "#6b7280",
-  "#22c55e",
-  "#f59e0b",
-  "#f97316",
-  "#ef4444",
+  "#3b82f6", // Blue
+  "#22d3ee", // Cyan
+  "#00f0ff", // Neon Cyan
+  "#a855f7", // Purple
+  "#ff00ff", // Magenta
 ] as const;
 
 type Tab = "drill" | "style";
@@ -83,6 +83,8 @@ export default function TrainingPage() {
     },
   });
 
+  // ── Destructure stable callbacks to avoid re-render loops ─────────────────
+  const { stopCamera, getSessionSummary } = camera;
   const { currentScore } = camera;
 
   // Clear gesture after 2s
@@ -124,10 +126,10 @@ export default function TrainingPage() {
     };
   }, [phase, setSessionTimer]);
 
-  /* end session */
+  /* end session — uses destructured stable refs, not the whole camera object */
   const handleEnd = useCallback(async () => {
-    camera.stopCamera();
-    const summary = camera.getSessionSummary();
+    stopCamera();
+    const summary = getSessionSummary();
     endSession({
       ...summary,
       framesScored: summary.totalFrames,
@@ -146,7 +148,8 @@ export default function TrainingPage() {
       summary.maxCombo,
     );
   }, [
-    camera,
+    stopCamera,
+    getSessionSummary,
     currentScore,
     diff,
     disc.id,
@@ -157,13 +160,13 @@ export default function TrainingPage() {
     coachAI,
   ]);
 
-  /* cleanup */
+  /* cleanup on unmount — stable refs only, no camera object in deps */
   useEffect(
     () => () => {
-      camera.stopCamera();
+      stopCamera();
       resetSession();
     },
-    [camera, resetSession],
+    [stopCamera, resetSession],
   );
 
   const mm = String(Math.floor(sessionTimer / 60)).padStart(2, "0");
@@ -179,7 +182,7 @@ export default function TrainingPage() {
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={() => {
-            camera.stopCamera();
+            stopCamera();
             resetSession();
             navigate(-1);
           }}
@@ -226,8 +229,9 @@ export default function TrainingPage() {
                 className="flex-1 py-2.5 rounded-2xl font-display font-bold text-sm transition-all"
                 style={{
                   background: tab === t ? accentColor : "var(--s2)",
-                  color: tab === t ? "#040610" : "var(--t3)",
-                  boxShadow: tab === t ? `0 0 20px ${accentColor}40` : "none",
+                  color: tab === t ? "#030510" : "var(--t3)",
+                  boxShadow: tab === t ? `0 0 24px ${accentColor}40` : "none",
+                  border: `1px solid ${tab === t ? "transparent" : "var(--b1)"}`,
                 }}
               >
                 {t === "drill" ? "Drill" : "Style"}
@@ -288,12 +292,15 @@ export default function TrainingPage() {
                   exit={{ opacity: 0, scale: 1.2, y: -20 }}
                   className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
                 >
-                  <div className="bg-primary/20 backdrop-blur-xl border border-primary/40 rounded-3xl px-6 py-3 flex flex-col items-center gap-1 shadow-2xl shadow-primary/20">
-                    <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-                    <p className="font-display font-black text-xl text-white uppercase tracking-tighter">
+                  <div className="glass-heavy border-white/20 rounded-[2rem] px-8 py-4 flex flex-col items-center gap-2 shadow-[0_0_50px_rgba(0,0,240,0.3)]">
+                    <Sparkles
+                      className="w-10 h-10 animate-pulse"
+                      style={{ color: accentColor }}
+                    />
+                    <p className="font-display font-black text-2xl text-white uppercase tracking-tighter">
                       {lastGesture.label.replace("_", " ")}!
                     </p>
-                    <p className="text-[10px] font-mono text-primary uppercase tracking-[0.2em]">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-60">
                       Aura Boost Activated
                     </p>
                   </div>
@@ -355,15 +362,15 @@ export default function TrainingPage() {
             <AnimatePresence mode="wait">
               <motion.p
                 key={countdown}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.6, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="font-display font-extrabold leading-none"
+                initial={{ scale: 0.2, opacity: 0, rotate: -15 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                exit={{ scale: 2, opacity: 0, rotate: 15 }}
+                transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                className="font-display font-black leading-none italic"
                 style={{
-                  fontSize: "clamp(80px,25vw,120px)",
+                  fontSize: "clamp(100px,30vw,160px)",
                   color: accentColor,
-                  textShadow: `0 0 60px ${accentColor}88`,
+                  textShadow: `0 0 80px ${accentColor}aa`,
                 }}
               >
                 {countdown}

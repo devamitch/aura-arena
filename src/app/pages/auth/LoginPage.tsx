@@ -7,7 +7,6 @@ import {
   Box,
   Dumbbell,
   Music,
-  Sparkles,
   Swords,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +24,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { loginWithGoogle, loading } = useAuth();
   const savedAccounts = useStore((s) => s.savedAccounts);
-  const { setUser, addSavedAccount } = useStore();
+  const { setUser } = useStore();
 
   const handleGuest = () => {
     setUser({
@@ -49,12 +48,17 @@ export default function LoginPage() {
       experienceLevel: "beginner",
       aiCoachName: "Coach",
       bio: "",
+      bestStreak: 0,
+      dailyStreak: 0,
+      streakFreezeCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isPremium: false,
       lastActiveDate: "",
       avatarUrl: "",
       country: "UN",
       sessionDuration: 0,
       tier: "bronze",
-      isPremium: false,
     });
     navigate("/onboarding", { replace: true });
   };
@@ -66,13 +70,14 @@ export default function LoginPage() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-4xl shadow-2xl relative"
-          style={{ boxShadow: "0 0 40px rgba(0,240,255,0.4)" }}
+          className="w-24 h-24 rounded-[2rem] glass border-white/20 flex items-center justify-center shadow-2xl relative overflow-hidden"
+          style={{ boxShadow: "0 0 40px rgba(0,240,255,0.25)" }}
         >
-          <span className="relative z-10 text-white">
-            <Sparkles className="w-10 h-10" />
-          </span>
-          <div className="absolute inset-0 bg-white/20 animate-pulse rounded-3xl" />
+          <img
+            src="/logo.png"
+            alt="AURA ARENA Logo"
+            className="w-full h-full object-cover p-3"
+          />
         </motion.div>
 
         <motion.div
@@ -100,7 +105,7 @@ export default function LoginPage() {
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.3 + i * 0.06 }}
-                  className="w-12 h-12 rounded-2xl bg-s1 border border-b1 flex items-center justify-center text-primary"
+                  className="w-12 h-12 rounded-2xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex items-center justify-center text-primary"
                 >
                   <Icon className="w-6 h-6" />
                 </motion.div>
@@ -122,7 +127,7 @@ export default function LoginPage() {
               <button
                 key={acc.sub}
                 onClick={() => loginWithGoogle()}
-                className="w-full flex items-center gap-3 p-3 bg-s1 border border-b1 rounded-xl hover:border-opacity-40 transition-all"
+                className="w-full flex items-center gap-3 p-3 bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl hover:border-opacity-40 transition-all"
               >
                 <div className="w-10 h-10 rounded-xl bg-s2 flex items-center justify-center text-lg font-bold text-t1">
                   {acc.email[0].toUpperCase()}
@@ -142,7 +147,7 @@ export default function LoginPage() {
         <button
           onClick={() => loginWithGoogle()}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white text-gray-900 font-bold text-sm transition-all active:scale-95"
+          className="w-full h-[60px] flex items-center justify-center gap-3 rounded-2xl bg-white text-gray-900 font-black text-sm transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />

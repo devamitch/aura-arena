@@ -40,7 +40,6 @@ function SessionHeatmap({
   const weeks = 13; // ~3 months
   const days = weeks * 7;
 
-  const sessionDates = new Set(sessions.map((s) => s.createdAt.split("T")[0]));
   const sessionsByDate = sessions.reduce<Record<string, number>>((acc, s) => {
     const d = s.createdAt.split("T")[0];
     acc[d] = (acc[d] ?? 0) + 1;
@@ -155,7 +154,7 @@ function PersonalBests({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className="bg-s1 border border-b1 rounded-xl p-3"
+            className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl p-3"
             style={{ borderLeft: `3px solid ${accentColor}60` }}
           >
             <div className="flex items-center gap-2 mb-1">
@@ -215,7 +214,7 @@ function PerformanceRadar({
       <p className="text-xs font-mono text-t3 mb-3 uppercase tracking-widest">
         Performance Profile
       </p>
-      <div className="bg-s1 border border-b1 rounded-xl p-4 h-56">
+      <div className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl p-4 h-56">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={data}>
             <PolarGrid stroke="#1e2035" />
@@ -279,7 +278,10 @@ function ComparativeStats({
       </p>
       <div className="space-y-3">
         {metrics.map((m) => (
-          <div key={m.label} className="bg-s1 border border-b1 rounded-xl p-3">
+          <div
+            key={m.label}
+            className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl p-3"
+          >
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs text-t2">{m.label}</span>
               <div className="flex gap-3 text-xs font-mono">
@@ -347,7 +349,9 @@ export function ProfileStatsTab() {
                 key={r}
                 onClick={() => setRange(r)}
                 className={`px-2 py-1 rounded-lg text-[10px] font-mono transition-colors ${
-                  range === r ? "text-void" : "text-t3 bg-s1 border border-b1"
+                  range === r
+                    ? "text-void"
+                    : "text-t3 bg-card/60 backdrop-blur-xl border-white/10 shadow-sm"
                 }`}
                 style={range === r ? { background: accentColor } : {}}
               >
@@ -359,7 +363,7 @@ export function ProfileStatsTab() {
 
         <div
           ref={chartRef}
-          className="bg-s1 border border-b1 rounded-xl p-4 h-48"
+          className="bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl p-4 h-48"
         >
           {chartVisible && chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">

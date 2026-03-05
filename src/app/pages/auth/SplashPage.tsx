@@ -49,11 +49,11 @@ export default function SplashPage() {
             }}
           />
         ))}
-        <div className="w-32 h-32 rounded-[2.5rem] glass overflow-hidden relative z-10 shadow-[0_0_50px_rgba(0,240,255,0.3)] border-white/20">
+        <div className="w-40 h-40 rounded-[3rem] glass overflow-hidden relative z-10 shadow-[0_0_60px_rgba(0,240,255,0.2)] border-white/20">
           <img
             src="/logo.png"
             alt="AURA ARENA Logo"
-            className="w-full h-full object-cover p-4"
+            className="w-full h-full object-contain p-4"
           />
         </div>
       </motion.div>

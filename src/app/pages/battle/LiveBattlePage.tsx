@@ -44,7 +44,7 @@ export default function LiveBattlePage() {
             camera.stopCamera();
             navigate(-1);
           }}
-          className="w-9 h-9 rounded-xl bg-s1 border border-b1 flex items-center justify-center"
+          className="w-9 h-9 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex items-center justify-center"
         >
           <X className="w-4 h-4 text-t2" />
         </button>

@@ -731,8 +731,8 @@ const _renderObjects = (
 ): void => {
   if (!detections.length) return;
   ctx.save();
-  ctx.strokeStyle = "#fbbf24";
-  ctx.fillStyle = "#fbbf24";
+  ctx.strokeStyle = "#00f0ff";
+  ctx.fillStyle = "#00f0ff";
   ctx.lineWidth = 2;
   ctx.font = "11px monospace";
   for (const det of detections) {
