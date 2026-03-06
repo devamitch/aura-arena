@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useStore } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import {
   AnimatePresence,
   animate,
@@ -56,6 +57,7 @@ const REELS = [
         linear-gradient(170deg, #040610 0%, #0a0c1a 100%)`,
     duration: 23,
     isVerified: true,
+    avatar: PREMIUM_ASSETS.ATHLETES.BOXER,
   },
   {
     id: "r2",
@@ -77,6 +79,7 @@ const REELS = [
         linear-gradient(160deg, #040610 0%, #0a0c1a 100%)`,
     duration: 31,
     isVerified: false,
+    avatar: PREMIUM_ASSETS.ATHLETES.WARRIOR,
   },
   {
     id: "r3",
@@ -98,6 +101,7 @@ const REELS = [
         linear-gradient(155deg, #040610 0%, #0a0c1a 100%)`,
     duration: 45,
     isVerified: true,
+    avatar: PREMIUM_ASSETS.ATHLETES.WARRIOR,
   },
   {
     id: "r4",
@@ -119,6 +123,7 @@ const REELS = [
         linear-gradient(165deg, #040610 0%, #050e0a 100%)`,
     duration: 38,
     isVerified: false,
+    avatar: PREMIUM_ASSETS.ATHLETES.YOGI,
   },
   {
     id: "r5",
@@ -139,6 +144,7 @@ const REELS = [
         linear-gradient(160deg, #040610 0%, #0a0c1a 100%)`,
     duration: 12,
     isVerified: true,
+    avatar: PREMIUM_ASSETS.ATHLETES.ARENA,
   },
 ];
 
@@ -356,14 +362,16 @@ const ReelView = memo(({ reel, active }: { reel: Reel; active: boolean }) => {
         {/* User row */}
         <div className="flex items-center gap-2.5 mb-2.5">
           <div
-            className="w-8 h-8 rounded-2xl font-black text-sm flex items-center justify-center flex-shrink-0"
+            className="w-8 h-8 rounded-2xl overflow-hidden flex-shrink-0"
             style={{
-              background: `${reel.accentColor}25`,
               border: `1.5px solid ${reel.accentColor}50`,
-              color: reel.accentColor,
             }}
           >
-            {reel.arenaName[0]}
+            <img
+              src={reel.avatar}
+              alt={reel.arenaName}
+              className="w-full h-full object-cover"
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">

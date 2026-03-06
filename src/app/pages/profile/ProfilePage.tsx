@@ -18,7 +18,13 @@ import {
   useUser,
   useXP,
 } from "@store";
-import { DISCIPLINE_ATHLETE, PREMIUM_ASSETS, TIER_BADGE } from "@utils/assets";
+import {
+  COACH_IMAGES,
+  DISCIPLINE_ATHLETE,
+  PREMIUM_ASSETS,
+  TIER_BADGE,
+  pickImage,
+} from "@utils/assets";
 import { ACHIEVEMENTS } from "@utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -34,7 +40,7 @@ import {
   Trophy,
   Volume2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Line,
@@ -449,12 +455,16 @@ const CoachTab = ({ accentColor }: { accentColor: string }) => {
   } = useDailyTip(disc.id, subDiscipline?.id);
   const { plan, loading: planL } = useTrainingPlan(disc.id, subDiscipline?.id);
 
-  const coachImg =
-    user?.aiCoachName === "Aria"
-      ? PREMIUM_ASSETS.COACHES.ARIA
-      : user?.aiCoachName === "Max"
-        ? PREMIUM_ASSETS.COACHES.MAX
-        : PREMIUM_ASSETS.COACHES.SENSEI;
+  // Cycle through all images for the selected coach every 3s
+  const coachName = user?.aiCoachName || "Sensei";
+  const coachImages = COACH_IMAGES[coachName] ?? COACH_IMAGES.Sensei;
+  const [imgIdx, setImgIdx] = useState(0);
+  useEffect(() => {
+    if (coachImages.length <= 1) return;
+    const t = setInterval(() => setImgIdx((i) => i + 1), 3000);
+    return () => clearInterval(t);
+  }, [coachImages.length]);
+  const coachImg = pickImage(coachImages, imgIdx);
 
   return (
     <div className="space-y-3 pt-4 pb-4">

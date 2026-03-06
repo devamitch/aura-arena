@@ -10,6 +10,7 @@ import {
   useUser,
 } from "@store";
 import type { Achievement } from "@types";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { ACHIEVEMENTS } from "@utils/constants";
 import { getDiscipline } from "@utils/constants/disciplines";
 import { format, isThisWeek, parseISO } from "date-fns";
@@ -577,7 +578,7 @@ export function ProfileSettingsTab() {
       {/* ── Cinematic Header Banner ── */}
       <div className="relative w-full h-[180px] rounded-[32px] overflow-hidden mb-8 shadow-2xl border border-[var(--glass-border)] group">
         <img
-          src="/assets/images/generated/training_hub_teal.png"
+          src={PREMIUM_ASSETS.ATMOSPHERE.TRAINING_HUB_HERO}
           alt="Settings Banner"
           className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000"
         />

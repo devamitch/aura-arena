@@ -9,7 +9,13 @@ import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
 import { PREMIUM_ASSETS } from "@utils/assets";
 import { AI_OPPONENTS } from "@utils/constants";
-import { AnimatePresence, motion, useMotionValue, useSpring, animate } from "framer-motion";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
 import { Globe, Swords, Timer, Trophy, X, Zap } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -18,9 +24,9 @@ import { useNavigate, useParams } from "react-router-dom";
 // Simulates a realistic AI athlete that trends toward targetScore with variance
 
 function nextAIScore(current: number, target: number, diff: number): number {
-  const variance = 14 - diff * 2;            // diff 1 → ±12, diff 5 → ±4
-  const pull = (target - current) * 0.12;   // gravity toward target
-  const noise = (Math.random() - 0.42) * variance;  // slight positive bias
+  const variance = 14 - diff * 2; // diff 1 → ±12, diff 5 → ±4
+  const pull = (target - current) * 0.12; // gravity toward target
+  const noise = (Math.random() - 0.42) * variance; // slight positive bias
   const next = current + pull + noise;
   return Math.max(0, Math.min(99, Math.round(next)));
 }
@@ -30,8 +36,14 @@ function nextAIScore(current: number, target: number, diff: number): number {
 const BATTLE_DURATION = 60; // seconds
 
 // Animated score number using Framer Motion spring
-function AnimatedScore({ value, color = "white", size = "text-4xl" }: {
-  value: number; color?: string; size?: string;
+function AnimatedScore({
+  value,
+  color = "white",
+  size = "text-4xl",
+}: {
+  value: number;
+  color?: string;
+  size?: string;
 }) {
   const mv = useMotionValue(value);
   const spring = useSpring(mv, { stiffness: 80, damping: 18 });
@@ -63,16 +75,24 @@ export default function PveBattlePage() {
   const user = useUser();
 
   const opp = AI_OPPONENTS.find((o) => o.id === opponentId) ?? AI_OPPONENTS[0];
-  const firstName = (user?.arenaName || user?.displayName || "You").split(" ")[0];
+  const firstName = (user?.arenaName || user?.displayName || "You").split(
+    " ",
+  )[0];
 
   // ── Battle State ────────────────────────────────────────────────────────────
   const [phase, setPhase] = useState<"pre" | "battle" | "result">("pre");
   const [playerScore, setPlayerScore] = useState(0);
   const [oppScore, setOppScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
-  const [result, setResult] = useState<{ won: boolean; xpGained: number; pointsGained: number } | null>(null);
+  const [result, setResult] = useState<{
+    won: boolean;
+    xpGained: number;
+    pointsGained: number;
+  } | null>(null);
   const [oppCombo, setOppCombo] = useState(0);
-  const [oppMomentum, setOppMomentum] = useState<"rising" | "falling" | "steady">("steady");
+  const [oppMomentum, setOppMomentum] = useState<
+    "rising" | "falling" | "steady"
+  >("steady");
   const [showComboFlash, setShowComboFlash] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -81,9 +101,12 @@ export default function PveBattlePage() {
 
   const camera = useCamera({
     discipline: disc.id,
-    onFrame: useCallback((_res: any, s: any) => {
-      if (phase === "battle") setPlayerScore(s.overall);
-    }, [phase]),
+    onFrame: useCallback(
+      (_res: any, s: any) => {
+        if (phase === "battle") setPlayerScore(s.overall);
+      },
+      [phase],
+    ),
   });
 
   const clearTimers = () => {
@@ -193,9 +216,16 @@ export default function PveBattlePage() {
   }, [camera, addXP, addPoints, updateUser, opp.difficulty, user]);
 
   const fmtTime = (s: number) =>
-    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+    `${Math.floor(s / 60)
+      .toString()
+      .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
-  const momentumColor = oppMomentum === "rising" ? "#f97316" : oppMomentum === "falling" ? "#22d3ee" : "rgba(255,255,255,0.4)";
+  const momentumColor =
+    oppMomentum === "rising"
+      ? "#f97316"
+      : oppMomentum === "falling"
+        ? "#22d3ee"
+        : "rgba(255,255,255,0.4)";
 
   // ── Result Screen ────────────────────────────────────────────────────────────
   if (phase === "result" && result) {
@@ -204,13 +234,19 @@ export default function PveBattlePage() {
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#040914] overflow-hidden">
         {/* Background fx */}
         <img
-          src={won ? PREMIUM_ASSETS.ATMOSPHERE.VICTORY_FX : PREMIUM_ASSETS.ATMOSPHERE.FLOOR_GRID}
+          src={
+            won
+              ? PREMIUM_ASSETS.ATMOSPHERE.BATTLE_VICTORY
+              : PREMIUM_ASSETS.ATMOSPHERE.TRAINING_HUB_HERO
+          }
           alt=""
           className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none"
         />
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse at center, ${won ? accentColor : "#ef4444"}10 0%, transparent 70%)` }}
+          style={{
+            background: `radial-gradient(ellipse at center, ${won ? accentColor : "#ef4444"}10 0%, transparent 70%)`,
+          }}
         />
 
         <motion.div
@@ -223,7 +259,12 @@ export default function PveBattlePage() {
           <motion.div
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 360, damping: 18, delay: 0.15 }}
+            transition={{
+              type: "spring",
+              stiffness: 360,
+              damping: 18,
+              delay: 0.15,
+            }}
             className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
             style={{
               background: `${won ? accentColor : "#ef4444"}12`,
@@ -261,19 +302,27 @@ export default function PveBattlePage() {
             }}
           >
             <div className="flex-1 text-center">
-              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">XP Gained</p>
-              <p className="text-2xl font-black" style={{ color: accentColor }}>+{xpGained}</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">
+                XP Gained
+              </p>
+              <p className="text-2xl font-black" style={{ color: accentColor }}>
+                +{xpGained}
+              </p>
             </div>
             <div className="w-px h-8 bg-white/8" />
             <div className="flex-1 text-center">
-              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">Aura Points</p>
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">
+                Aura Points
+              </p>
               <p className="text-2xl font-black text-white">+{pointsGained}</p>
             </div>
             {won && (
               <>
                 <div className="w-px h-8 bg-white/8" />
                 <div className="flex-1 text-center">
-                  <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">PvE Win</p>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">
+                    PvE Win
+                  </p>
                   <p className="text-2xl font-black text-[#22d3ee]">+1</p>
                 </div>
               </>
@@ -313,7 +362,8 @@ export default function PveBattlePage() {
   // ── In-Battle Fullscreen ─────────────────────────────────────────────────────
   if (phase === "battle") {
     const timePercent = (timeLeft / BATTLE_DURATION) * 100;
-    const timeColor = timeLeft <= 10 ? "#ef4444" : timeLeft <= 20 ? "#f97316" : accentColor;
+    const timeColor =
+      timeLeft <= 10 ? "#ef4444" : timeLeft <= 20 ? "#f97316" : accentColor;
 
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-black">
@@ -339,8 +389,14 @@ export default function PveBattlePage() {
           >
             {/* Player */}
             <div className="flex-1 text-center">
-              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">{firstName}</p>
-              <AnimatedScore value={playerScore} color={accentColor} size="text-3xl" />
+              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">
+                {firstName}
+              </p>
+              <AnimatedScore
+                value={playerScore}
+                color={accentColor}
+                size="text-3xl"
+              />
             </div>
 
             {/* Timer center */}
@@ -354,7 +410,9 @@ export default function PveBattlePage() {
                   {fmtTime(timeLeft)}
                 </span>
               </div>
-              <span className="text-[8px] font-mono text-white/20 tracking-widest">LIVE MATCH</span>
+              <span className="text-[8px] font-mono text-white/20 tracking-widest">
+                LIVE MATCH
+              </span>
             </div>
 
             {/* Opponent */}
@@ -362,7 +420,11 @@ export default function PveBattlePage() {
               <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">
                 {opp.name.split(" ")[0]}
               </p>
-              <AnimatedScore value={oppScore} color="rgba(255,255,255,0.6)" size="text-3xl" />
+              <AnimatedScore
+                value={oppScore}
+                color="rgba(255,255,255,0.6)"
+                size="text-3xl"
+              />
               {/* Momentum indicator */}
               <AnimatePresence>
                 {oppCombo >= 3 && showComboFlash && (
@@ -371,7 +433,10 @@ export default function PveBattlePage() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.3 }}
                     className="absolute -top-3 right-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-lg"
-                    style={{ background: `${momentumColor}25`, color: momentumColor }}
+                    style={{
+                      background: `${momentumColor}25`,
+                      color: momentumColor,
+                    }}
                   >
                     {oppCombo}x
                   </motion.span>
@@ -412,13 +477,23 @@ export default function PveBattlePage() {
 
   // ── Pre-Battle VS Screen ─────────────────────────────────────────────────────
   const DIFF_LABELS = ["", "Beginner", "Easy", "Medium", "Hard", "Elite"];
-  const DIFF_COLORS = ["", "#3b82f6", "#22d3ee", "#f97316", "#a855f7", "#ff00ff"];
+  const DIFF_COLORS = [
+    "",
+    "#3b82f6",
+    "#22d3ee",
+    "#f97316",
+    "#a855f7",
+    "#ff00ff",
+  ];
 
   return (
-    <div className="page min-h-screen pb-safe pt-12 relative overflow-hidden" style={{ background: "var(--background)" }}>
+    <div
+      className="page min-h-screen pb-safe pt-12 relative overflow-hidden"
+      style={{ background: "var(--background)" }}
+    >
       {/* Arena bg */}
       <img
-        src="/assets/images/generated/battle_arena_teal.png"
+        src={PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA}
         alt=""
         className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-screen pointer-events-none"
       />
@@ -428,7 +503,8 @@ export default function PveBattlePage() {
       <div
         className="absolute inset-x-0 top-[40%] bottom-0 opacity-[0.06] pointer-events-none"
         style={{
-          backgroundImage: "linear-gradient(#00f0ff 1px,transparent 1px),linear-gradient(90deg,#00f0ff 1px,transparent 1px)",
+          backgroundImage:
+            "linear-gradient(#00f0ff 1px,transparent 1px),linear-gradient(90deg,#00f0ff 1px,transparent 1px)",
           backgroundSize: "36px 36px",
         }}
       />
@@ -438,21 +514,31 @@ export default function PveBattlePage() {
         <button
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
         >
           <X className="w-4 h-4 text-white/50" />
         </button>
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5">
           <Globe className="w-3 h-3 text-[#00f0ff]" />
-          <span className="text-[9px] font-mono tracking-[0.2em] text-[#00f0ff] uppercase">Global PvE</span>
+          <span className="text-[9px] font-mono tracking-[0.2em] text-[#00f0ff] uppercase">
+            Global PvE
+          </span>
         </div>
         <div className="w-9" />
       </div>
 
       {/* Title */}
       <div className="text-center relative z-10 mb-8">
-        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/30 mb-1">Round 1</p>
-        <h2 className="text-3xl font-black uppercase tracking-[0.1em]" style={{ color: accentColor }}>
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/30 mb-1">
+          Round 1
+        </p>
+        <h2
+          className="text-3xl font-black uppercase tracking-[0.1em]"
+          style={{ color: accentColor }}
+        >
           PvE Battle
         </h2>
       </div>
@@ -464,15 +550,24 @@ export default function PveBattlePage() {
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[55%] w-14 h-14 flex items-center justify-center z-30"
           style={{
             background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}88 100%)`,
-            clipPath: "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+            clipPath:
+              "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
             boxShadow: `0 0 30px ${accentColor}60`,
           }}
         >
           <div
             className="w-[52px] h-[52px] flex items-center justify-center bg-[#040914]"
-            style={{ clipPath: "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)" }}
+            style={{
+              clipPath:
+                "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+            }}
           >
-            <span className="font-black italic text-lg" style={{ color: accentColor }}>VS</span>
+            <span
+              className="font-black italic text-lg"
+              style={{ color: accentColor }}
+            >
+              VS
+            </span>
           </div>
         </div>
 
@@ -488,16 +583,31 @@ export default function PveBattlePage() {
           >
             <div className="absolute inset-0 backdrop-blur-sm z-0" />
             {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" className="absolute inset-0 w-full h-full object-cover z-0 opacity-60" />
+              <img
+                src={user.avatarUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
+              />
             ) : (
-              <span className="text-6xl font-black z-10" style={{ color: `${accentColor}90` }}>
+              <span
+                className="text-6xl font-black z-10"
+                style={{ color: `${accentColor}90` }}
+              >
                 {firstName[0]}
               </span>
             )}
-            <div className="absolute top-0 inset-x-0 h-1 z-20" style={{ background: accentColor, boxShadow: `0 4px 15px ${accentColor}` }} />
+            <div
+              className="absolute top-0 inset-x-0 h-1 z-20"
+              style={{
+                background: accentColor,
+                boxShadow: `0 4px 15px ${accentColor}`,
+              }}
+            />
           </div>
           <div className="mt-3 text-center">
-            <h3 className="text-base font-black text-white uppercase tracking-widest mb-3">{firstName}</h3>
+            <h3 className="text-base font-black text-white uppercase tracking-widest mb-3">
+              {firstName}
+            </h3>
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleStart}
@@ -519,7 +629,8 @@ export default function PveBattlePage() {
             className="flex-1 relative overflow-hidden"
             style={{
               clipPath: "polygon(0 0,85% 0,100% 100%,15% 100%)",
-              background: "linear-gradient(180deg,rgba(8,20,25,0.9) 0%,rgba(0,0,0,0.85) 100%)",
+              background:
+                "linear-gradient(180deg,rgba(8,20,25,0.9) 0%,rgba(0,0,0,0.85) 100%)",
               border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
@@ -542,8 +653,12 @@ export default function PveBattlePage() {
             </div>
           </div>
           <div className="mt-3 text-center">
-            <h3 className="text-base font-black text-white/50 uppercase tracking-widest mb-1">{opp.name}</h3>
-            <p className="text-[9px] font-mono text-white/25 mb-3">{opp.discipline} · Target {opp.targetScore}</p>
+            <h3 className="text-base font-black text-white/50 uppercase tracking-widest mb-1">
+              {opp.name}
+            </h3>
+            <p className="text-[9px] font-mono text-white/25 mb-3">
+              {opp.discipline} · Target {opp.targetScore}
+            </p>
             <div
               className="w-full py-2 rounded-[12px] text-[10px] font-bold text-white/30 uppercase tracking-widest text-center"
               style={{
@@ -558,10 +673,13 @@ export default function PveBattlePage() {
       </div>
 
       {/* Match info strip */}
-      <div className="relative z-10 mx-5 rounded-[18px] px-5 py-4" style={{
-        background: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.05)",
-      }}>
+      <div
+        className="relative z-10 mx-5 rounded-[18px] px-5 py-4"
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
         <div className="flex justify-around">
           {[
             { label: "Duration", value: `${BATTLE_DURATION}s` },
@@ -569,7 +687,9 @@ export default function PveBattlePage() {
             { label: "Discipline", value: disc.name },
           ].map((s) => (
             <div key={s.label} className="text-center">
-              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/25 mb-0.5">{s.label}</p>
+              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/25 mb-0.5">
+                {s.label}
+              </p>
               <p className="text-xs font-bold text-white/70">{s.value}</p>
             </div>
           ))}

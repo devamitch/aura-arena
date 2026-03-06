@@ -30,48 +30,42 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ── Athlete roster (using available public images) ──
+// ── Athlete roster (built from ALL available images — loops in the scroll) ──
 const ROSTER = [
+  { name: "Boxer", image: PREMIUM_ASSETS.ATHLETES.BOXER, status: "IN BATTLE" },
+  { name: "Yogi", image: PREMIUM_ASSETS.ATHLETES.YOGI, status: "ONLINE" },
+  { name: "Warrior", image: PREMIUM_ASSETS.ATHLETES.WARRIOR, status: "READY" },
+  { name: "Fighter", image: PREMIUM_ASSETS.AVATARS.FIGHTER, status: "ONLINE" },
+  { name: "Roman", image: PREMIUM_ASSETS.AVATARS.ROMAN, status: "READY" },
+  { name: "Zen", image: PREMIUM_ASSETS.AVATARS.ZEN, status: "ONLINE" },
+  { name: "Champion", image: PREMIUM_ASSETS.ATHLETES.ARENA, status: "OFFLINE" },
+  { name: "Referee", image: PREMIUM_ASSETS.ATHLETES.REFEREE, status: "ONLINE" },
   {
-    name: "Boxer",
-    image: PREMIUM_ASSETS.ATHLETES.BOXER,
+    name: "Boxer II",
+    image: PREMIUM_ASSETS.ATHLETES.BOXER_ALT,
+    status: "READY",
+  },
+  {
+    name: "Yogi II",
+    image: PREMIUM_ASSETS.ATHLETES.YOGI_ALT,
     status: "IN BATTLE",
   },
   {
-    name: "Yogi",
-    image: PREMIUM_ASSETS.ATHLETES.YOGI,
+    name: "Samurai",
+    image: PREMIUM_ASSETS.ATHLETES.WARRIOR_ALT,
     status: "ONLINE",
   },
   {
-    name: "Warrior",
-    image: PREMIUM_ASSETS.ATHLETES.WARRIOR,
+    name: "Arena II",
+    image: PREMIUM_ASSETS.ATHLETES.ARENA_ALT,
     status: "READY",
   },
   {
-    name: "Fighter",
-    image: PREMIUM_ASSETS.AVATARS.FIGHTER,
+    name: "Judge",
+    image: PREMIUM_ASSETS.ATHLETES.REFEREE_ALT,
     status: "ONLINE",
   },
-  {
-    name: "Roman",
-    image: PREMIUM_ASSETS.AVATARS.ROMAN,
-    status: "READY",
-  },
-  {
-    name: "Zen",
-    image: PREMIUM_ASSETS.AVATARS.ZEN,
-    status: "ONLINE",
-  },
-  {
-    name: "Champion",
-    image: PREMIUM_ASSETS.ATHLETES.ARENA,
-    status: "OFFLINE",
-  },
-  {
-    name: "Referee",
-    image: PREMIUM_ASSETS.ATHLETES.REFEREE,
-    status: "ONLINE",
-  },
+  { name: "Ocean", image: PREMIUM_ASSETS.ATHLETES.OCEAN, status: "READY" },
 ];
 
 // ── Settings Sheet ──

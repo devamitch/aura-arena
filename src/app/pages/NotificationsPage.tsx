@@ -3,16 +3,24 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useNotifications, useStore } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { motion } from "framer-motion";
 import { Bell, CheckCheck, ChevronLeft, Trophy, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ACCENT = "#00f0ff";
 
-const ICON_MAP: Record<string, { icon: typeof Bell; color: string }> = {
-  achievement: { icon: Trophy, color: "#a855f7" },
-  xp: { icon: Zap, color: ACCENT },
-  streak: { icon: Zap, color: "#2dd4bf" },
+const ICON_MAP: Record<
+  string,
+  { icon: typeof Bell; color: string; image?: string }
+> = {
+  achievement: {
+    icon: Trophy,
+    color: "#a855f7",
+    image: PREMIUM_ASSETS.BADGES.PROFESSIONAL_3D,
+  },
+  xp: { icon: Zap, color: ACCENT, image: PREMIUM_ASSETS.CURRENCY.AURA_COIN },
+  streak: { icon: Zap, color: "#2dd4bf", image: PREMIUM_ASSETS.GOALS.FITNESS },
   default: { icon: Bell, color: "#60a5fa" },
 };
 
@@ -96,10 +104,18 @@ export default function NotificationsPage() {
                 }}
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
                   style={{ background: `${cfg.color}12` }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: cfg.color }} />
+                  {cfg.image ? (
+                    <img
+                      src={cfg.image}
+                      alt=""
+                      className="w-7 h-7 object-contain"
+                    />
+                  ) : (
+                    <Icon className="w-5 h-5" style={{ color: cfg.color }} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white">{n.title}</p>

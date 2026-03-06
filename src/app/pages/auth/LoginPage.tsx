@@ -6,6 +6,7 @@
 import { useAuth } from "@hooks/useAuth";
 import { Button } from "@shared/components/ui/button";
 import { useStore } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 

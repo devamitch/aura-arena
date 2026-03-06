@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import * as THREE from "three";
 
 export function AvatarModel({
-  url = "/assets/models/avatar.vrm",
+  url = "/assets/models/Xbot.glb",
 }: {
   url?: string;
 }) {
