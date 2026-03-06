@@ -7,8 +7,9 @@ import { AuthGuard } from "@features/auth/components/AuthGuard";
 import { OnboardingGate } from "@features/auth/components/OnboardingGate";
 import { AppShell } from "@shared/components/AppShell";
 import { FullScreenLoader } from "@shared/components/ui/FullScreenLoader";
+import { AnimatePresence, motion } from "framer-motion";
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider, useLocation } from "react-router-dom";
 
 const lazy_ = (factory: () => Promise<{ default: React.ComponentType }>) => {
   const C = lazy(factory);
@@ -27,11 +28,29 @@ const OfflinePage = lazy(() => import("@app/pages/OfflinePage"));
 
 // Protected pages are inlined via lazy_() in route definitions below
 
+const AnimatedOutlet = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+        className="flex-1 flex flex-col min-h-0"
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const ProtectedLayout = () => (
   <AuthGuard>
     <OnboardingGate>
       <AppShell>
-        <Outlet />
+        <AnimatedOutlet />
       </AppShell>
     </OnboardingGate>
   </AuthGuard>

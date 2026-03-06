@@ -1,4 +1,4 @@
-import { AvatarCanvas } from "@components/3d/AvatarCanvas";
+import { AvatarCanvas } from "@/components/3d/AvatarCanvas";
 import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineSelector";
 import { DynamicIcon } from "@features/shared/components/ui/DynamicIcon";
 import { usePersonalization } from "@hooks/usePersonalization";

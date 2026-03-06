@@ -98,18 +98,24 @@ export default function DiscoverPage() {
         {/* ── Segmented Tabs ── */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
           {[
-            "All",
-            "Live Events",
-            "Top Athletes",
-            "Training",
-            "Past Matches",
-          ].map((tab) => (
+            { label: "All", path: null },
+            { label: "Live Events", path: "/battle/live/lobby" },
+            { label: "Top Athletes", path: "/discover/league" },
+            { label: "Training", path: "/arena/drills" },
+            { label: "Past Matches", path: "/battle/pve/select" },
+          ].map(({ label, path }) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={label}
+              onClick={() => {
+                if (path) {
+                  navigate(path);
+                } else {
+                  setActiveTab(label);
+                }
+              }}
               className={`px-5 py-2.5 rounded-full text-[13px] font-bold tracking-wide transition-all whitespace-nowrap border`}
               style={
-                activeTab === tab
+                activeTab === label
                   ? {
                       background: "var(--ac)",
                       color: "var(--void)",
@@ -123,7 +129,7 @@ export default function DiscoverPage() {
                     }
               }
             >
-              {tab}
+              {label}
             </button>
           ))}
         </div>
@@ -249,7 +255,7 @@ export default function DiscoverPage() {
                 key={i}
                 className="w-full rounded-[24px] p-4 flex items-center justify-between border shadow-inner transition-all cursor-pointer group relative overflow-hidden"
                 style={{ background: "var(--s1)", borderColor: "var(--b1)" }}
-                onClick={() => navigate("/pve/matches")}
+                onClick={() => navigate("/battle/pve/select")}
               >
                 <div
                   className="absolute top-0 left-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity"

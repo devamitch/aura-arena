@@ -57,9 +57,9 @@ export const useAuth = () => {
             addSavedAccount({
               sub: session.user.id,
               email: session.user.email ?? '',
-              name: profile.displayName ?? '',
-              picture: profile.avatar ?? '',
-              accessToken: tokenResponse.access_token,
+              displayName: profile.displayName ?? '',
+              avatarUrl: profile.avatar ?? null,
+              lastUsed: Date.now(),
             });
           }
         }

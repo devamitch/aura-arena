@@ -1,10 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — Training Selection Page
+// AURA ARENA — Training Selection Page (MusicX-inspired premium)
 // Lists all available drills for the active discipline
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { usePersonalization } from "@hooks/usePersonalization";
-import { ArrowLeft, Play } from "lucide-react";
+import { PREMIUM_ASSETS } from "@utils/assets";
+import { ArrowLeft, Play, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function TrainingSelectionPage() {
@@ -12,187 +13,193 @@ export default function TrainingSelectionPage() {
   const { discipline, subDiscipline } = usePersonalization();
 
   const drills = subDiscipline?.drills || discipline.drills || [];
+  const name = subDiscipline?.name || discipline.name;
 
   return (
     <div className="page pb-safe" style={{ background: "var(--background)" }}>
-      {/* ── Header ── */}
-      <div
-        className="relative px-5 pt-12 pb-6"
-        style={{
-          borderBottom: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.2)",
-          background: "var(--s1)",
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(var(--ac-rgb,0,240,255),0.1)] to-transparent pointer-events-none" />
+      {/* ── Hero Banner ── */}
+      <div className="relative h-52 overflow-hidden">
+        <img
+          src={PREMIUM_ASSETS.ATMOSPHERE.TRAINING_HUB_HERO}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-screen"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(1,6,8,0.2) 0%, rgba(1,6,8,0.7) 60%, rgba(1,6,8,1) 100%)",
+          }}
+        />
+        {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute left-5 top-12 w-10 h-10 flex items-center justify-center rounded-full z-10 hover:scale-110 transition-transform"
+          className="absolute top-10 left-5 w-10 h-10 rounded-2xl flex items-center justify-center z-10"
           style={{
-            background: "var(--s2)",
-            border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.3)",
-            boxShadow: "0 0 15px rgba(var(--ac-rgb, 0,240,255), 0.15)",
+            background: "rgba(1,6,8,0.6)",
+            border: "1px solid rgba(255,255,255,0.10)",
+            backdropFilter: "blur(12px)",
           }}
         >
-          <ArrowLeft className="w-5 h-5" style={{ color: "var(--ac)" }} />
+          <ArrowLeft className="w-5 h-5 text-white/70" />
         </button>
 
-        <div className="pl-14 relative z-10 mt-1">
+        {/* Hero title */}
+        <div className="absolute bottom-4 left-5 right-5 z-10">
           <p
-            className="text-[10px] font-bold uppercase tracking-widest mb-1.5 shadow-sm"
-            style={{ color: "var(--ac)", opacity: 0.8 }}
+            className="text-[9px] font-mono uppercase tracking-[0.3em] mb-1"
+            style={{ color: "var(--ac)" }}
           >
-            {subDiscipline?.name || discipline.name}
+            Select Drill
           </p>
-          <h1 className="text-2xl font-black text-white tracking-wide drop-shadow-lg">
-            Select Training
-          </h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">{name}</h1>
         </div>
       </div>
 
       {/* ── Drills List ── */}
-      <div
-        className="p-5 flex flex-col pt-4"
-        style={{
-          background:
-            "linear-gradient(180deg, var(--s1) 0%, var(--background) 100%)",
-          minHeight: "calc(100vh - 120px)",
-        }}
-      >
+      <div className="px-5 pt-4 pb-6 flex flex-col gap-3">
         {/* Freestyle Option */}
-        <div
-          onClick={() => navigate(`/arena/train`)}
-          className="w-full rounded-[24px] p-5 mb-4 cursor-pointer group transition-all overflow-hidden relative"
+        <button
+          onClick={() => navigate("/arena/train")}
+          className="w-full rounded-[22px] p-5 text-left relative overflow-hidden group"
           style={{
-            border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.4)",
-            background: "rgba(var(--ac-rgb, 0,240,255), 0.04)",
-            boxShadow:
-              "0 15px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(var(--ac-rgb, 0,240,255), 0.1)",
+            background: "rgba(0,240,255,0.04)",
+            border: "1px solid rgba(0,240,255,0.2)",
+            boxShadow: "0 0 30px rgba(0,240,255,0.06) inset",
           }}
         >
           <div
             className="absolute top-0 inset-x-8 h-[1px]"
             style={{
               background:
-                "linear-gradient(to right, transparent, rgba(var(--ac-rgb, 0,240,255), 0.8), transparent)",
+                "linear-gradient(to right, transparent, rgba(0,240,255,0.6), transparent)",
             }}
           />
-          <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-gradient-to-b from-[var(--ac)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-          <div className="flex items-center justify-between mb-3 relative z-10">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-white group-hover:text-[var(--ac)] transition-colors drop-shadow-md">
-                Freestyle Session
-              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4" style={{ color: "var(--ac)" }} />
+                <h3 className="text-base font-black text-white group-hover:text-[var(--ac)] transition-colors">
+                  Freestyle Session
+                </h3>
+              </div>
               <p
-                className="text-[12px] tracking-widest font-bold uppercase mt-1"
-                style={{ color: "var(--ac)" }}
+                className="text-[10px] font-mono uppercase tracking-[0.15em]"
+                style={{ color: "var(--ac)", opacity: 0.7 }}
               >
-                Open Flow • ∞
+                Open Flow · No Time Limit
+              </p>
+              <p className="text-xs text-white/40 mt-2">
+                Open-ended motion tracking with no specific drill targets.
               </p>
             </div>
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-all"
+              className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ml-3 group-hover:scale-110 transition-transform"
               style={{
-                border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.5)",
-                background: "var(--s2)",
-                boxShadow: "0 0 20px rgba(var(--ac-rgb, 0,240,255), 0.3)",
+                background: "rgba(0,240,255,0.08)",
+                border: "1px solid rgba(0,240,255,0.3)",
+                boxShadow: "0 0 20px rgba(0,240,255,0.2)",
               }}
             >
-              <Play
-                className="w-5 h-5"
-                style={{ color: "var(--ac)" }}
-                fill="currentColor"
-              />
+              <Play className="w-5 h-5 fill-current" style={{ color: "var(--ac)" }} />
             </div>
           </div>
-          <p className="text-sm text-white/60 relative z-10 font-medium">
-            Open-ended motion tracking. No specific time limit.
-          </p>
-        </div>
+        </button>
 
-        <div className="w-full flex items-center gap-4 my-3 opacity-60">
-          <div
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, rgba(var(--ac-rgb, 0,240,255), 0.5))",
-            }}
-          />
-          <span
-            className="text-[10px] font-bold uppercase tracking-[0.2em]"
-            style={{ color: "var(--ac)" }}
-          >
-            Targeted Drills
-          </span>
-          <div
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(to left, transparent, rgba(var(--ac-rgb, 0,240,255), 0.5))",
-            }}
-          />
-        </div>
+        {/* Divider */}
+        {drills.length > 0 && (
+          <div className="flex items-center gap-4 my-1 opacity-50">
+            <div
+              className="h-px flex-1"
+              style={{
+                background: "linear-gradient(to right, transparent, rgba(0,240,255,0.4))",
+              }}
+            />
+            <span
+              className="text-[9px] font-bold uppercase tracking-[0.25em] font-mono"
+              style={{ color: "var(--ac)" }}
+            >
+              Targeted Drills
+            </span>
+            <div
+              className="h-px flex-1"
+              style={{
+                background: "linear-gradient(to left, transparent, rgba(0,240,255,0.4))",
+              }}
+            />
+          </div>
+        )}
 
         {drills.length === 0 && (
-          <p
-            className="text-center py-10 text-sm font-medium tracking-wide"
-            style={{ color: "rgba(var(--ac-rgb, 0,240,255), 0.4)" }}
+          <div
+            className="rounded-[22px] p-8 text-center"
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.05)",
+            }}
           >
-            No specific drills loaded for this discipline yet.
-          </p>
+            <p
+              className="text-sm font-mono"
+              style={{ color: "rgba(0,240,255,0.3)" }}
+            >
+              No specific drills for this discipline yet.
+            </p>
+            <p className="text-xs text-white/20 mt-1">
+              Use Freestyle mode to start training.
+            </p>
+          </div>
         )}
 
         {drills.map((drill) => (
-          <div
+          <button
             key={drill.id}
             onClick={() => navigate(`/arena/train/${drill.id}`)}
-            className="w-full rounded-[24px] p-5 mb-4 cursor-pointer group transition-all overflow-hidden relative"
+            className="w-full rounded-[22px] p-5 text-left relative overflow-hidden group"
             style={{
-              border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.2)",
-              background: "rgba(var(--ac-rgb, 0,240,255), 0.02)",
-              boxShadow:
-                "0 10px 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(var(--ac-rgb, 0,240,255), 0.02)",
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
             <div
               className="absolute top-0 inset-x-8 h-[1px]"
               style={{
                 background:
-                  "linear-gradient(to right, transparent, rgba(var(--ac-rgb, 0,240,255), 0.4), transparent)",
+                  "linear-gradient(to right, transparent, rgba(0,240,255,0.25), transparent)",
               }}
             />
+            {/* Hover accent line on left */}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ background: "linear-gradient(to bottom, var(--ac), transparent)" }}
+            />
 
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-lg font-bold text-white group-hover:text-[var(--ac)] transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0 pr-4">
+                <h3 className="text-[15px] font-bold text-white group-hover:text-[var(--ac)] transition-colors truncate">
                   {drill.name}
                 </h3>
                 <p
-                  className="text-[11px] tracking-wider font-bold uppercase mt-1"
-                  style={{ color: "rgba(var(--ac-rgb, 0,240,255), 0.6)" }}
+                  className="text-[9px] font-mono uppercase tracking-[0.15em] mt-0.5"
+                  style={{ color: "rgba(0,240,255,0.5)" }}
                 >
-                  {drill.difficulty * 25} Aura-X • {drill.duration}s
+                  {drill.difficulty * 25} Aura-X · {drill.duration}s
                 </p>
+                <p className="text-xs text-white/30 mt-1.5 leading-snug">{drill.description}</p>
               </div>
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-[rgba(var(--ac-rgb,0,240,255),0.1)] transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
                 style={{
-                  border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.3)",
-                  background: "var(--s2)",
-                  boxShadow: "0 0 10px rgba(var(--ac-rgb, 0,240,255), 0.15)",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
                 <Play
-                  className="w-4 h-4"
+                  className="w-4 h-4 fill-current"
                   style={{ color: "var(--ac)" }}
-                  fill="currentColor"
                 />
               </div>
             </div>
-            <p className="text-[13px] text-white/50 font-medium">
-              {drill.description}
-            </p>
-          </div>
+          </button>
         ))}
       </div>
     </div>

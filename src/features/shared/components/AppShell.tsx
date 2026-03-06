@@ -1,12 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // AURA ARENA — AppShell
-// Clean bottom nav bar + Plus sheet with drag-to-dismiss
+// Floating glassmorphism bottom nav + Plus quick-start sheet
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { TierUpCelebration } from "@features/gamification/components/TierUpCelebration";
 import { InstallBanner } from "@features/pwa/components/InstallBanner";
 import { usePersonalization } from "@hooks/usePersonalization";
-import { cn } from "@lib/utils";
 import {
   useClearTierUp,
   usePendingTierUp,
@@ -21,27 +20,22 @@ import {
 } from "framer-motion";
 import {
   Bot,
-  Calendar,
   Home,
   Plus,
   Search,
-  Settings as SettingsIcon,
   Swords,
   Video,
   X,
   Zap,
+  Shield,
 } from "lucide-react";
 import { useRef, type TouchEvent as RTE, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FULLSCREEN = [
-  "/arena/train",
-  "/battle/pve",
-  "/battle/live",
-  "/discover/reels",
-];
+// Pages that hide the bottom nav (full-screen camera/battle/feed)
+const FULLSCREEN_PREFIXES = ["/arena/train", "/battle/live", "/discover/reels"];
 
 const QUICK = [
   {
@@ -77,11 +71,32 @@ const QUICK = [
 // ─── Nav Items ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { icon: Home, label: "Home", path: "/home", match: (p: string) => p === "/home" || p === "/" },
-  { icon: Calendar, label: "Arena", path: "/arena", match: (p: string) => p.startsWith("/arena") },
+  {
+    icon: Home,
+    label: "Home",
+    path: "/home",
+    match: (p: string) => p === "/home" || p === "/",
+  },
+  {
+    icon: Shield,
+    label: "Arena",
+    path: "/arena",
+    match: (p: string) =>
+      p.startsWith("/arena") || p.startsWith("/battle"),
+  },
   { icon: Plus, label: "Quick", path: null, match: () => false },
-  { icon: Search, label: "Discover", path: "/discover", match: (p: string) => p.startsWith("/discover") },
-  { icon: SettingsIcon, label: "Profile", path: "/profile", match: (p: string) => p.startsWith("/profile") },
+  {
+    icon: Search,
+    label: "Discover",
+    path: "/discover",
+    match: (p: string) => p.startsWith("/discover"),
+  },
+  {
+    icon: Bot,
+    label: "Profile",
+    path: "/profile",
+    match: (p: string) => p.startsWith("/profile"),
+  },
 ];
 
 // ─── Plus Sheet ───────────────────────────────────────────────────────────────
@@ -113,7 +128,8 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[60] bg-black/70"
+        className="fixed inset-0 z-[60]"
+        style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
         onClick={onClose}
       />
       <motion.div
@@ -129,25 +145,38 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="rounded-t-[28px] pt-3 pb-10"
+          className="rounded-t-[32px] pt-3 pb-10"
           style={{
-            background: "#0a0d1a",
+            background: "rgba(8, 10, 22, 0.98)",
+            backdropFilter: "blur(40px)",
+            WebkitBackdropFilter: "blur(40px)",
             borderTop: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "0 -16px 60px rgba(0,0,0,0.8)",
+            boxShadow: "0 -20px 60px rgba(0,0,0,0.9)",
           }}
         >
-          <div className="w-8 h-1 bg-white/15 rounded-full mx-auto mb-5" />
+          <div className="w-9 h-1 bg-white/15 rounded-full mx-auto mb-5" />
 
           <div className="flex items-center justify-between px-5 mb-5">
-            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/40">
-              Quick Start
-            </p>
+            <div>
+              <p
+                className="text-[9px] font-mono uppercase tracking-[0.3em] mb-0.5"
+                style={{ color: "var(--ac)" }}
+              >
+                Quick Start
+              </p>
+              <p className="text-base font-black text-white">
+                What are you doing?
+              </p>
+            </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
             >
-              <X className="w-3.5 h-3.5 text-white/50" />
+              <X className="w-4 h-4 text-white/50" />
             </button>
           </div>
 
@@ -157,33 +186,47 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
               return (
                 <motion.button
                   key={q.label}
-                  initial={{ opacity: 0, scale: 0.88, y: 12 }}
+                  initial={{ opacity: 0, scale: 0.88, y: 16 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{
-                    delay: i * 0.045,
+                    delay: i * 0.05,
                     type: "spring",
                     stiffness: 440,
                     damping: 26,
                   }}
-                  whileTap={{ scale: 0.92 }}
+                  whileTap={{ scale: 0.93 }}
                   onClick={() => {
                     onClose();
                     navigate(q.path);
                   }}
-                  className="relative overflow-hidden rounded-2xl p-4 text-left"
+                  className="relative overflow-hidden rounded-[22px] p-5 text-left"
                   style={{
-                    background: `${q.color}0d`,
-                    border: `1px solid ${q.color}20`,
+                    background: `${q.color}08`,
+                    border: `1px solid ${q.color}18`,
                   }}
                 >
-                  <Icon
-                    className="w-6 h-6 mb-3 relative z-10"
-                    style={{ color: q.color }}
+                  <div
+                    className="absolute top-0 left-4 right-4 h-[1px]"
+                    style={{
+                      background: `linear-gradient(90deg, transparent, ${q.color}60, transparent)`,
+                    }}
                   />
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3 relative z-10"
+                    style={{
+                      background: `${q.color}14`,
+                      border: `1px solid ${q.color}20`,
+                    }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: q.color }} />
+                  </div>
                   <p className="text-sm font-black text-white leading-none mb-1 relative z-10">
                     {q.label}
                   </p>
-                  <p className="text-[11px] text-white/40 relative z-10">
+                  <p
+                    className="text-[11px] relative z-10"
+                    style={{ color: `${q.color}90` }}
+                  >
                     {q.sub}
                   </p>
                 </motion.button>
@@ -207,40 +250,62 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const { setShowPlusSheet } = useStore();
   const { accentColor } = usePersonalization();
 
-  const isFS = FULLSCREEN.some((p) => location.pathname.startsWith(p));
-  const currentPath = location.pathname;
+  const path = location.pathname;
+
+  // Hide nav only in full-screen modes
+  // /battle/pve/select is a lobby page (keep nav); /battle/pve/:id is fullscreen
+  const isFS =
+    FULLSCREEN_PREFIXES.some((p) => path.startsWith(p)) ||
+    (path.startsWith("/battle/pve/") && path !== "/battle/pve/select");
 
   return (
     <div
       className="flex flex-col h-full w-full text-white"
       style={{ background: "#040610" }}
     >
-      {/* Main scrollable area */}
       <div className="flex-1 flex flex-col min-h-0">{children}</div>
 
-      {/* ── Bottom Navigation ── */}
+      {/* ── Floating Bottom Navigation ── */}
       <AnimatePresence>
         {!isFS && (
           <motion.nav
             key="bottomnav"
-            initial={{ y: 72, opacity: 0 }}
+            initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 72, opacity: 0 }}
+            exit={{ y: 80, opacity: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
             className="fixed bottom-0 left-0 right-0 z-[50]"
-            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+              paddingLeft: 14,
+              paddingRight: 14,
+            }}
           >
             <div
-              className="flex items-stretch justify-around"
+              className="flex items-center justify-around relative"
               style={{
-                background: "rgba(4,6,16,0.97)",
-                borderTop: "1px solid rgba(255,255,255,0.07)",
-                height: 64,
+                background: "rgba(6, 8, 22, 0.94)",
+                backdropFilter: "blur(32px)",
+                WebkitBackdropFilter: "blur(32px)",
+                borderRadius: "28px",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow:
+                  "0 8px 40px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.05) inset",
+                height: 66,
+                padding: "0 6px",
               }}
             >
+              {/* Subtle top glow line */}
+              <div
+                className="absolute top-0 left-[20%] right-[20%] h-[1px] rounded-full pointer-events-none"
+                style={{
+                  background: `linear-gradient(90deg, transparent, ${accentColor}30, transparent)`,
+                }}
+              />
+
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.match(currentPath);
+                const isActive = item.match(path);
                 const isPlus = item.path === null;
 
                 if (isPlus) {
@@ -248,21 +313,31 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                     <button
                       key="plus"
                       onClick={() => setShowPlusSheet(!showSheet)}
-                      className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+                      className="flex-1 flex flex-col items-center justify-center relative"
                     >
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                      <motion.div
+                        whileTap={{ scale: 0.88 }}
+                        className="w-12 h-12 rounded-full flex items-center justify-center"
                         style={{
-                          background: "var(--ac)",
-                          boxShadow: "0 0 20px rgba(0,240,255,0.35)",
+                          background: `linear-gradient(145deg, ${accentColor}, ${accentColor}bb)`,
+                          boxShadow: `0 0 22px ${accentColor}55, 0 4px 14px rgba(0,0,0,0.5)`,
                         }}
                       >
-                        <Plus
-                          className="w-5 h-5"
-                          style={{ color: "#040914" }}
-                          strokeWidth={2.5}
-                        />
-                      </div>
+                        <motion.div
+                          animate={showSheet ? { rotate: 45 } : { rotate: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25,
+                          }}
+                        >
+                          <Plus
+                            className="w-5 h-5"
+                            style={{ color: "#040914" }}
+                            strokeWidth={2.8}
+                          />
+                        </motion.div>
+                      </motion.div>
                     </button>
                   );
                 }
@@ -271,34 +346,45 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                   <button
                     key={item.label}
                     onClick={() => item.path && navigate(item.path)}
-                    className={cn(
-                      "flex-1 flex flex-col items-center justify-center gap-1 relative transition-opacity",
-                      isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
-                    )}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 relative py-2 select-none"
                   >
-                    {/* Active indicator line */}
                     {isActive && (
                       <motion.div
-                        layoutId="nav-indicator"
-                        className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full"
-                        style={{
-                          background: "var(--ac)",
-                          boxShadow: "0 0 8px var(--ac)",
+                        layoutId="nav-pill"
+                        className="absolute inset-x-0.5 inset-y-1 rounded-[18px]"
+                        style={{ background: `${accentColor}14` }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
                         }}
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
                       />
                     )}
-                    <Icon
-                      className="w-[22px] h-[22px]"
-                      style={{ color: isActive ? "var(--ac)" : "white" }}
-                      strokeWidth={isActive ? 2.5 : 1.8}
-                    />
-                    <span
-                      className="text-[10px] font-medium tracking-wide"
-                      style={{ color: isActive ? "var(--ac)" : "rgba(255,255,255,0.5)" }}
-                    >
-                      {item.label}
-                    </span>
+
+                    <div className="relative z-10 flex flex-col items-center gap-[3px]">
+                      <Icon
+                        className="w-[21px] h-[21px] transition-colors duration-200"
+                        style={{
+                          color: isActive
+                            ? accentColor
+                            : "rgba(255,255,255,0.32)",
+                          filter: isActive
+                            ? `drop-shadow(0 0 5px ${accentColor}90)`
+                            : "none",
+                        }}
+                        strokeWidth={isActive ? 2.3 : 1.8}
+                      />
+                      <span
+                        className="text-[9.5px] font-semibold tracking-wide transition-colors duration-200"
+                        style={{
+                          color: isActive
+                            ? accentColor
+                            : "rgba(255,255,255,0.28)",
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                    </div>
                   </button>
                 );
               })}

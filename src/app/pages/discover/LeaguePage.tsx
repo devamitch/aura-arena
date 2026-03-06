@@ -1,12 +1,13 @@
 import { usePersonalization } from "@hooks/usePersonalization";
 import { cn } from "@lib/utils";
+import { fetchLeaderboard } from "@services/gameService";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { useUser, useXP } from "@store";
 import { getTier } from "@utils/constants";
 import { getDiscipline } from "@utils/constants/disciplines";
 import { motion } from "framer-motion";
 import { ArrowLeft, Crown, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ─── Mock leaderboard data ────────────────────────────────────────────────────
@@ -109,8 +110,26 @@ export default function LeaguePage() {
   const { accentColor, currentTier } = usePersonalization();
   const [filter, setFilter] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [liveBoard, setLiveBoard] = useState<typeof MOCK_BOARD>([]);
 
-  const filtered = MOCK_BOARD.filter((e) => {
+  // Try to load real leaderboard from Supabase; fall back to mock
+  useEffect(() => {
+    fetchLeaderboard(filter, 50).then((rows) => {
+      if (rows.length > 0) {
+        setLiveBoard(rows.map((r) => ({
+          rank: r.rank,
+          name: r.arenaName,
+          discipline: r.discipline,
+          tier: r.tier,
+          pts: r.xp,
+          country: "🌍",
+        })));
+      }
+    });
+  }, [filter]);
+
+  const board = liveBoard.length > 0 ? liveBoard : MOCK_BOARD;
+  const filtered = board.filter((e) => {
     if (filter && e.discipline !== filter) return false;
     if (search && !e.name.toLowerCase().includes(search.toLowerCase()))
       return false;
@@ -150,7 +169,11 @@ export default function LeaguePage() {
             className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
             style={{ background: `${accentColor}20` }}
           >
-            {currentTier.icon}
+            {currentTier.icon.startsWith("http") ? (
+              <img src={currentTier.icon} alt="" className="w-7 h-7 rounded-full object-cover" />
+            ) : (
+              currentTier.icon
+            )}
           </div>
           <div className="flex-1">
             <p className="font-black text-t1">{user?.arenaName ?? "You"}</p>

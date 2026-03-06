@@ -190,7 +190,6 @@ export const useAchievements = () => {
         title: `🏆 ${a.name}`,
         body: a.secret ? 'Secret achievement unlocked!' : a.description,
         data: { achievementId: a.id, rarity: a.rarity },
-        isRead: false,
       });
       playAchievement(a.rarity);
     }

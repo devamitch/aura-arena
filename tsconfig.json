@@ -41,5 +41,28 @@
     }
   },
   "include": ["src"],
+  "exclude": [
+    "src/components/ui",
+    "src/features/shared/components/ui/aspect-ratio.tsx",
+    "src/features/shared/components/ui/calendar.tsx",
+    "src/features/shared/components/ui/carousel.tsx",
+    "src/features/shared/components/ui/collapsible.tsx",
+    "src/features/shared/components/ui/command.tsx",
+    "src/features/shared/components/ui/context-menu.tsx",
+    "src/features/shared/components/ui/drawer.tsx",
+    "src/features/shared/components/ui/hover-card.tsx",
+    "src/features/shared/components/ui/input-otp.tsx",
+    "src/features/shared/components/ui/menubar.tsx",
+    "src/features/shared/components/ui/navigation-menu.tsx",
+    "src/features/shared/components/ui/resizable.tsx",
+    "src/features/shared/components/ui/sidebar.tsx",
+    "src/features/shared/components/ui/skeleton.tsx",
+    "src/features/shared/components/ui/sonner.tsx",
+    "src/features/shared/components/ui/toaster.tsx",
+    "src/features/shared/components/ui/toggle.tsx",
+    "src/features/shared/components/ui/toggle-group.tsx",
+    "src/constants/index.ts",
+    "src/components/3d"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

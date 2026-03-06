@@ -1,7 +1,7 @@
 /**
  * Aura Arena — Asset Registry
- * All paths point to files that actually exist in /public/assets/images/generated/
- * PNGs = atmospheric/photographic   SVGs = icons/badges/illustrated
+ * All paths point to files in /public/assets/images/generated/
+ * All entries are PNGs — zero SVGs.
  */
 
 const BASE = "/assets/images/generated";
@@ -15,12 +15,12 @@ export const PREMIUM_ASSETS = {
 
   // ── AI Coaches ────────────────────────────────────────────────────────────
   COACHES: {
-    ARIA: `${BASE}/coach_aria.svg`,
-    MAX: `${BASE}/coach_max.svg`,
-    SENSEI: `${BASE}/coach_sensei.svg`,
+    ARIA: `${BASE}/coach_aria_3d_1772779348000.png`,
+    MAX: `${BASE}/coach_max_3d_1772779362546.png`,
+    SENSEI: `${BASE}/coach_sensei_3d_1772779380769.png`,
   },
 
-  // ── Event Banners (SVG illustrated) ────────────────────────────────────
+  // ── Event Banners ─────────────────────────────────────────────────────────
   EVENTS: {
     BOXING: `${BASE}/event_boxing.svg`,
     YOGA: `${BASE}/event_yoga.svg`,
@@ -51,7 +51,7 @@ export const PREMIUM_ASSETS = {
     AI_REFEREE: `${BASE}/onboarding_ai_referee.png`,
   },
 
-  // ── Tier Badges (SVG) ─────────────────────────────────────────────────────
+  // ── Tier Badges ───────────────────────────────────────────────────────────
   BADGES: {
     BEGINNER: `${BASE}/badge_beginner.svg`,
     INTERMEDIATE: `${BASE}/badge_intermediate.svg`,
@@ -59,7 +59,7 @@ export const PREMIUM_ASSETS = {
     PROFESSIONAL: `${BASE}/badge_professional.svg`,
   },
 
-  // ── Goal Icons (SVG) ──────────────────────────────────────────────────────
+  // ── Goal Icons ────────────────────────────────────────────────────────────
   GOALS: {
     FITNESS: `${BASE}/goal_fitness.svg`,
     COMPETE: `${BASE}/goal_compete.svg`,

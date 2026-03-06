@@ -6,10 +6,7 @@
 
 import { getDiscipline, getSubDiscipline } from "@utils/constants/disciplines";
 import type { DisciplineId, SubDisciplineId } from "@types";
-import {
-  GoogleGenAI as GoogleGenerativeAI,
-  type GenerateContentResponse as GenerateContentResult,
-} from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 
@@ -25,17 +22,17 @@ type GeminiModel = (typeof MODELS)[number];
 
 // ─── MODULE STATE ─────────────────────────────────────────────────────────────
 
-const _clients: Map<GeminiModel, GoogleGenerativeAI> = new Map();
+let _client: GoogleGenAI | null = null;
 const _cache: Map<string, { value: string; ts: number }> = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 min
 
 // ─── CLIENT ACCESS ────────────────────────────────────────────────────────────
 
-const getClient = (model: GeminiModel): GoogleGenerativeAI => {
-  if (!_clients.has(model)) {
-    _clients.set(model, new GoogleGenerativeAI(API_KEY));
+const getClient = (): GoogleGenAI => {
+  if (!_client) {
+    _client = new GoogleGenAI({ apiKey: API_KEY });
   }
-  return _clients.get(model)!;
+  return _client;
 };
 
 // ─── CORE GENERATE (waterfall with retry) ────────────────────────────────────
@@ -66,19 +63,17 @@ export const generateText = async (
 
   for (const model of MODELS) {
     try {
-      const client = getClient(model);
-      const genModel = client.getGenerativeModel({
+      const client = getClient();
+      const result = await client.models.generateContent({
         model,
-        generationConfig: {
+        contents: prompt,
+        config: {
           maxOutputTokens: maxTokens,
           temperature,
+          ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
         },
-        ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
       });
-
-      const result: GenerateContentResult =
-        await genModel.generateContent(prompt);
-      const text = result.response.text().trim();
+      const text = (result.text ?? "").trim();
 
       if (text) {
         _cache.set(key, { value: text, ts: Date.now() });
@@ -115,18 +110,20 @@ export const generateTextStream = async (
 
   for (const model of MODELS) {
     try {
-      const client = getClient(model);
-      const genModel = client.getGenerativeModel({
+      const client = getClient();
+      const stream = client.models.generateContentStream({
         model,
-        generationConfig: { maxOutputTokens: maxTokens, temperature },
-        ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
+        contents: prompt,
+        config: {
+          maxOutputTokens: maxTokens,
+          temperature,
+          ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
+        },
       });
-
-      const stream = await genModel.generateContentStream(prompt);
-      for await (const chunk of stream.stream) {
-        const text = chunk.text();
+      for await (const chunk of await stream) {
+        const text = chunk.text ?? "";
         full += text;
-        onChunk(text);
+        if (text) onChunk(text);
       }
       return full;
     } catch (err: any) {

@@ -1,354 +1,580 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — PvE Battle (Exact Match to MusicX "Choose Winner" VS screen)
+// AURA ARENA — PvE Battle  (Realistic AI engine + 60s countdown + XP awards)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { CameraView } from "@features/arena/components/CameraView";
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
 import { PREMIUM_ASSETS } from "@utils/assets";
 import { AI_OPPONENTS } from "@utils/constants";
-import { motion } from "framer-motion";
-import { Globe, X } from "lucide-react";
+import { AnimatePresence, motion, useMotionValue, useSpring, animate } from "framer-motion";
+import { Globe, Swords, Timer, Trophy, X, Zap } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
+// ─── AI Score Engine ─────────────────────────────────────────────────────────
+// Simulates a realistic AI athlete that trends toward targetScore with variance
+
+function nextAIScore(current: number, target: number, diff: number): number {
+  const variance = 14 - diff * 2;            // diff 1 → ±12, diff 5 → ±4
+  const pull = (target - current) * 0.12;   // gravity toward target
+  const noise = (Math.random() - 0.42) * variance;  // slight positive bias
+  const next = current + pull + noise;
+  return Math.max(0, Math.min(99, Math.round(next)));
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const BATTLE_DURATION = 60; // seconds
+
+// Animated score number using Framer Motion spring
+function AnimatedScore({ value, color = "white", size = "text-4xl" }: {
+  value: number; color?: string; size?: string;
+}) {
+  const mv = useMotionValue(value);
+  const spring = useSpring(mv, { stiffness: 80, damping: 18 });
+  const [display, setDisplay] = useState(value);
+
+  useEffect(() => {
+    const unsubscribe = spring.on("change", (v) => setDisplay(Math.round(v)));
+    return unsubscribe;
+  }, [spring]);
+
+  useEffect(() => {
+    animate(mv, value, { duration: 0.4 });
+  }, [value, mv]);
+
+  return (
+    <span className={`${size} font-black tabular-nums`} style={{ color }}>
+      {display}
+    </span>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PveBattlePage() {
   const navigate = useNavigate();
   const { opponentId } = useParams<{ opponentId?: string }>();
-  const { discipline: disc } = usePersonalization();
-  const { selectOpponent, setBattlePhase, addXP } = useStore();
+  const { discipline: disc, accentColor } = usePersonalization();
+  const { addXP, addPoints, updateUser } = useStore();
   const user = useUser();
 
   const opp = AI_OPPONENTS.find((o) => o.id === opponentId) ?? AI_OPPONENTS[0];
-  const firstName = (user?.arenaName || user?.displayName || "You").split(
-    " ",
-  )[0];
+  const firstName = (user?.arenaName || user?.displayName || "You").split(" ")[0];
 
-  // Battle state
-  const [battleActive, setBattleActive] = useState(false);
-  const [score, setScore] = useState(0);
+  // ── Battle State ────────────────────────────────────────────────────────────
+  const [phase, setPhase] = useState<"pre" | "battle" | "result">("pre");
+  const [playerScore, setPlayerScore] = useState(0);
   const [oppScore, setOppScore] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [result, setResult] = useState<"win" | "lose" | null>(null);
+  const [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
+  const [result, setResult] = useState<{ won: boolean; xpGained: number; pointsGained: number } | null>(null);
+  const [oppCombo, setOppCombo] = useState(0);
+  const [oppMomentum, setOppMomentum] = useState<"rising" | "falling" | "steady">("steady");
+  const [showComboFlash, setShowComboFlash] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const oppTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const aiRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevOppScore = useRef(0);
 
   const camera = useCamera({
     discipline: disc.id,
-    onFrame: useCallback((_res: any, s: any) => setScore(s.overall), []),
+    onFrame: useCallback((_res: any, s: any) => {
+      if (phase === "battle") setPlayerScore(s.overall);
+    }, [phase]),
   });
 
-  useEffect(() => {
-    selectOpponent(opp);
-    setBattlePhase("select");
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleStart = useCallback(() => {
-    setBattleActive(true);
-    setScore(0);
-    setOppScore(0);
-    setElapsed(0);
-    setResult(null);
-    camera.requestCamera();
-    timerRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
-
-    // Simulate opponent scoring
-    const base = opp.targetScore;
-    oppTimerRef.current = setInterval(() => {
-      setOppScore((s) =>
-        Math.min(Math.round(s + Math.random() * 5), base + 15),
-      );
-    }, 2000);
-  }, [camera, opp.targetScore]);
-
-  const handleEnd = useCallback(() => {
-    setBattleActive(false);
+  const clearTimers = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (oppTimerRef.current) clearInterval(oppTimerRef.current);
+    if (aiRef.current) clearInterval(aiRef.current);
+  };
+
+  // ── Start Battle ────────────────────────────────────────────────────────────
+  const handleStart = useCallback(() => {
+    setPhase("battle");
+    setPlayerScore(0);
+    setOppScore(0);
+    setTimeLeft(BATTLE_DURATION);
+    setResult(null);
+    prevOppScore.current = 0;
+    camera.requestCamera();
+
+    // 60-second countdown
+    timerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearTimers();
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+
+    // AI scoring every 600ms — feels smooth
+    aiRef.current = setInterval(() => {
+      setOppScore((current) => {
+        const next = nextAIScore(current, opp.targetScore, opp.difficulty);
+        // Detect momentum
+        if (next > current + 2) {
+          setOppMomentum("rising");
+          setOppCombo((c) => c + 1);
+        } else if (next < current - 2) {
+          setOppMomentum("falling");
+          setOppCombo(0);
+        } else {
+          setOppMomentum("steady");
+        }
+        prevOppScore.current = next;
+        return next;
+      });
+    }, 600);
+  }, [camera, opp.targetScore, opp.difficulty]);
+
+  // Combo flash effect
+  useEffect(() => {
+    if (oppCombo >= 3) {
+      setShowComboFlash(true);
+      const t = setTimeout(() => setShowComboFlash(false), 800);
+      return () => clearTimeout(t);
+    }
+  }, [oppCombo]);
+
+  // Auto-end when time runs out
+  useEffect(() => {
+    if (timeLeft === 0 && phase === "battle") {
+      handleEnd();
+    }
+  }, [timeLeft, phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── End Battle ──────────────────────────────────────────────────────────────
+  const handleEnd = useCallback(() => {
+    clearTimers();
     camera.stopCamera();
-    const won = score >= oppScore;
-    setResult(won ? "win" : "lose");
-    addXP(won ? score * 3 : score);
-  }, [camera, score, oppScore, addXP]);
 
-  const formatTime = (s: number) =>
-    `${Math.floor(s / 60)
-      .toString()
-      .padStart(2, "0")} : ${(s % 60).toString().padStart(2, "0")}`;
+    setPlayerScore((ps) => {
+      setOppScore((os) => {
+        const won = ps >= os;
+        const xpGained = won
+          ? Math.round(100 + ps * 2 + opp.difficulty * 25)
+          : Math.round(30 + ps);
+        const pointsGained = xpGained * 2;
+        addXP(xpGained);
+        addPoints(pointsGained);
+        if (won) {
+          updateUser({
+            pveWins: (user?.pveWins ?? 0) + 1,
+            winStreak: (user?.winStreak ?? 0) + 1,
+          });
+        } else {
+          updateUser({ winStreak: 0 });
+        }
+        // Persist to Supabase (fire-and-forget)
+        if (user?.id) {
+          saveBattle({
+            userId: user.id,
+            opponentId: null,
+            opponentName: opp.name,
+            discipline: disc.id,
+            myScore: ps,
+            oppScore: os,
+            won,
+            xpGained,
+            isRealOpponent: false,
+          });
+        }
+        setResult({ won, xpGained, pointsGained });
+        return os;
+      });
+      return ps;
+    });
+    setPhase("result");
+  }, [camera, addXP, addPoints, updateUser, opp.difficulty, user]);
 
-  // ── Battle Result ──
-  if (result) {
-    const won = result === "win";
+  const fmtTime = (s: number) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+
+  const momentumColor = oppMomentum === "rising" ? "#f97316" : oppMomentum === "falling" ? "#22d3ee" : "rgba(255,255,255,0.4)";
+
+  // ── Result Screen ────────────────────────────────────────────────────────────
+  if (phase === "result" && result) {
+    const { won, xpGained, pointsGained } = result;
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040914] text-white overflow-hidden">
-        {won && (
-          <img
-            src={PREMIUM_ASSETS.ATMOSPHERE.VICTORY_FX}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-60 animate-in fade-in zoom-in duration-1000"
-          />
-        )}
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#040914] overflow-hidden">
+        {/* Background fx */}
+        <img
+          src={won ? PREMIUM_ASSETS.ATMOSPHERE.VICTORY_FX : PREMIUM_ASSETS.ATMOSPHERE.FLOOR_GRID}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none"
+        />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at center, ${won ? accentColor : "#ef4444"}10 0%, transparent 70%)` }}
+        />
+
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-center relative z-10"
+          initial={{ scale: 0.8, opacity: 0, y: 30 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 280, damping: 26 }}
+          className="relative z-10 flex flex-col items-center px-6 w-full max-w-sm"
         >
-          <div className="mb-6 flex justify-center">
-            <div className="w-24 h-24 rounded-full bg-[var(--ac)]/10 flex items-center justify-center border border-[var(--ac)]/30 shadow-[0_0_30px_rgba(var(--ac-rgb,0,240,255),0.3)] group">
-              <motion.img
-                animate={{ rotateY: [0, 180, 360] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
-                alt=""
-                className="w-16 h-16 object-contain"
-              />
-            </div>
-          </div>
+          {/* Trophy / defeat icon */}
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 360, damping: 18, delay: 0.15 }}
+            className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+            style={{
+              background: `${won ? accentColor : "#ef4444"}12`,
+              border: `2px solid ${won ? accentColor : "#ef4444"}35`,
+              boxShadow: `0 0 60px ${won ? accentColor : "#ef4444"}25`,
+            }}
+          >
+            {won ? (
+              <Trophy className="w-12 h-12" style={{ color: accentColor }} />
+            ) : (
+              <Swords className="w-12 h-12 text-red-500/70" />
+            )}
+          </motion.div>
+
+          {/* Result heading */}
           <h1
-            className="text-5xl font-black mb-2 tracking-tighter"
-            style={{ color: won ? "var(--ac)" : "#ef4444" }}
+            className="text-6xl font-black tracking-tighter mb-1"
+            style={{
+              color: won ? accentColor : "#ef4444",
+              textShadow: `0 0 40px ${won ? accentColor : "#ef4444"}60`,
+            }}
           >
             {won ? "VICTORY" : "DEFEAT"}
           </h1>
-          <p className="text-white/40 font-mono text-sm mb-10">
-            You: {score} • {opp.name}: {oppScore}
+          <p className="font-mono text-sm text-white/30 mb-8">
+            {firstName}: {playerScore} &nbsp;·&nbsp; {opp.name}: {oppScore}
           </p>
-          <div className="flex gap-4 justify-center">
+
+          {/* XP/Points gained */}
+          <div
+            className="w-full rounded-[22px] p-5 mb-8 flex items-center gap-4"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
+          >
+            <div className="flex-1 text-center">
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">XP Gained</p>
+              <p className="text-2xl font-black" style={{ color: accentColor }}>+{xpGained}</p>
+            </div>
+            <div className="w-px h-8 bg-white/8" />
+            <div className="flex-1 text-center">
+              <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">Aura Points</p>
+              <p className="text-2xl font-black text-white">+{pointsGained}</p>
+            </div>
+            {won && (
+              <>
+                <div className="w-px h-8 bg-white/8" />
+                <div className="flex-1 text-center">
+                  <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25 mb-1">PvE Win</p>
+                  <p className="text-2xl font-black text-[#22d3ee]">+1</p>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-3 w-full">
             <button
               onClick={() => {
-                setResult(null);
-                handleStart();
+                setPhase("pre");
+                camera.resetScoring?.();
               }}
-              className="px-8 py-4 rounded-2xl border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/5 transition-colors"
+              className="flex-1 py-4 rounded-2xl font-bold text-sm"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "white",
+              }}
             >
               Rematch
             </button>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.96 }}
               onClick={() => navigate("/arena")}
-              className="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs text-[#040610]"
-              style={{ background: "var(--ac)" }}
+              className="flex-1 py-4 rounded-2xl font-black text-sm"
+              style={{ background: accentColor, color: "#040914" }}
             >
               Continue
-            </button>
+            </motion.button>
           </div>
         </motion.div>
       </div>
     );
   }
 
-  // ── In-Battle Fullscreen Camera ──
-  if (battleActive) {
+  // ── In-Battle Fullscreen ─────────────────────────────────────────────────────
+  if (phase === "battle") {
+    const timePercent = (timeLeft / BATTLE_DURATION) * 100;
+    const timeColor = timeLeft <= 10 ? "#ef4444" : timeLeft <= 20 ? "#f97316" : accentColor;
+
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-black">
-        <div className="flex-1 relative">
-          <video
-            ref={camera.videoRef}
-            className="absolute inset-0 w-full h-full object-cover z-0"
-            style={{ transform: camera.mirrored ? "scaleX(-1)" : "none" }}
-            autoPlay
-            playsInline
-            muted
-          />
-          <canvas
-            ref={camera.canvasRef}
-            className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
-            style={{ transform: camera.mirrored ? "scaleX(-1)" : "none" }}
-          />
-          {/* HUD Overlay matching MusicX cyan theme */}
-          <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-start bg-gradient-to-b from-black/80 to-transparent">
-            <button
-              onClick={handleEnd}
-              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-            <div className="text-center">
-              <p className="text-[10px] font-mono tracking-[0.2em] text-[#00f0ff] mb-1">
-                LIVE MATCH
-              </p>
-              <p className="font-mono font-bold text-white text-lg tracking-wider">
-                {formatTime(elapsed)}
-              </p>
-            </div>
-            <div className="w-10" />
+        {/* Score HUD — top */}
+        <div className="flex-shrink-0 px-4 pt-safe pt-4 pb-3">
+          {/* Timer bar */}
+          <div className="h-1 rounded-full bg-white/8 mb-3 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: timeColor, width: `${timePercent}%` }}
+              animate={{ width: `${timePercent}%` }}
+              transition={{ duration: 0.9, ease: "linear" }}
+            />
           </div>
 
-          {/* Scores Bottom */}
-          <div className="absolute bottom-10 inset-x-0 px-6 flex items-end justify-between">
-            <div className="text-center">
-              <p className="text-4xl font-black text-white drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]">
-                {score}
-              </p>
-              <p className="text-[10px] font-bold tracking-widest text-[#00f0ff]">
-                YOU
-              </p>
+          <div
+            className="rounded-[18px] px-4 py-3 flex items-center justify-between"
+            style={{
+              background: "rgba(4,6,20,0.85)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            {/* Player */}
+            <div className="flex-1 text-center">
+              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">{firstName}</p>
+              <AnimatedScore value={playerScore} color={accentColor} size="text-3xl" />
             </div>
-            <p className="text-sm font-black italic text-white/50 mb-3">VS</p>
-            <div className="text-center">
-              <p className="text-4xl font-black text-white">{oppScore}</p>
-              <p className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
-                {opp.name}
+
+            {/* Timer center */}
+            <div className="flex flex-col items-center px-3">
+              <div className="flex items-center gap-1 mb-0.5">
+                <Timer className="w-3 h-3" style={{ color: timeColor }} />
+                <span
+                  className="font-mono font-bold text-base tabular-nums"
+                  style={{ color: timeColor }}
+                >
+                  {fmtTime(timeLeft)}
+                </span>
+              </div>
+              <span className="text-[8px] font-mono text-white/20 tracking-widest">LIVE MATCH</span>
+            </div>
+
+            {/* Opponent */}
+            <div className="flex-1 text-center relative">
+              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">
+                {opp.name.split(" ")[0]}
               </p>
+              <AnimatedScore value={oppScore} color="rgba(255,255,255,0.6)" size="text-3xl" />
+              {/* Momentum indicator */}
+              <AnimatePresence>
+                {oppCombo >= 3 && showComboFlash && (
+                  <motion.span
+                    initial={{ opacity: 0, y: -8, scale: 0.7 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.3 }}
+                    className="absolute -top-3 right-0 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-lg"
+                    style={{ background: `${momentumColor}25`, color: momentumColor }}
+                  >
+                    {oppCombo}x
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
           </div>
+        </div>
+
+        {/* Camera fills remaining space */}
+        <div className="flex-1 px-3 pb-2">
+          <CameraView
+            camera={camera}
+            score={camera.currentScore}
+            accentColor={accentColor}
+            showScore
+          />
+        </div>
+
+        {/* End button */}
+        <div className="flex-shrink-0 px-4 pb-safe pb-5">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleEnd}
+            className="w-full py-3.5 rounded-[18px] font-black text-sm uppercase tracking-widest"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              color: "#ef4444",
+            }}
+          >
+            End Battle
+          </motion.button>
         </div>
       </div>
     );
   }
 
-  // ── Pre-Battle VS Screen (Exact MusicX Match) ──
+  // ── Pre-Battle VS Screen ─────────────────────────────────────────────────────
+  const DIFF_LABELS = ["", "Beginner", "Easy", "Medium", "Hard", "Elite"];
+  const DIFF_COLORS = ["", "#3b82f6", "#22d3ee", "#f97316", "#a855f7", "#ff00ff"];
+
   return (
-    <div className="page min-h-screen font-sans pb-safe pt-12 relative overflow-hidden bg-[var(--background)]">
+    <div className="page min-h-screen pb-safe pt-12 relative overflow-hidden" style={{ background: "var(--background)" }}>
+      {/* Arena bg */}
       <img
         src="/assets/images/generated/battle_arena_teal.png"
         alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-screen pointer-events-none"
+        className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-screen pointer-events-none"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-[var(--background)]/80 pointer-events-none" />
-      {/* ── Top Nav ── */}
-      <div className="px-5 mb-8 flex justify-between items-start relative z-10">
-        <h1 className="text-[22px] font-bold tracking-tight text-white leading-none">
-          <span className="text-[#00f0ff]">Aura</span> Arena
-        </h1>
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5 backdrop-blur-md">
-          <Globe className="w-3.5 h-3.5 text-[#00f0ff]" />
-          <span className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase">
-            Global PvE Battle
-          </span>
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/70 to-transparent pointer-events-none" />
+
+      {/* Grid overlay */}
+      <div
+        className="absolute inset-x-0 top-[40%] bottom-0 opacity-[0.06] pointer-events-none"
+        style={{
+          backgroundImage: "linear-gradient(#00f0ff 1px,transparent 1px),linear-gradient(90deg,#00f0ff 1px,transparent 1px)",
+          backgroundSize: "36px 36px",
+        }}
+      />
+
+      {/* Nav row */}
+      <div className="px-5 mb-6 flex justify-between items-center relative z-10">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <X className="w-4 h-4 text-white/50" />
+        </button>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5">
+          <Globe className="w-3 h-3 text-[#00f0ff]" />
+          <span className="text-[9px] font-mono tracking-[0.2em] text-[#00f0ff] uppercase">Global PvE</span>
         </div>
+        <div className="w-9" />
       </div>
 
-      <div className="text-center relative z-10 mb-10">
-        <h2 className="text-[32px] font-black uppercase tracking-[0.15em] text-[#00f0ff] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+      {/* Title */}
+      <div className="text-center relative z-10 mb-8">
+        <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/30 mb-1">Round 1</p>
+        <h2 className="text-3xl font-black uppercase tracking-[0.1em]" style={{ color: accentColor }}>
           PvE Battle
         </h2>
       </div>
 
-      {/* ── VS Split Cards ── */}
-      <div className="flex justify-center items-center gap-6 px-4 h-[42vh] relative mb-12 z-10">
-        {/* VS Badge in Middle */}
+      {/* VS cards */}
+      <div className="relative z-10 flex justify-center items-center gap-5 px-4 h-[44vh] mb-8">
+        {/* Hexagon VS badge */}
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[60%] w-[52px] h-[52px] flex items-center justify-center z-30"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[55%] w-14 h-14 flex items-center justify-center z-30"
           style={{
-            background: "linear-gradient(135deg, #0cebeb 0%, #00f0ff 100%)",
-            clipPath:
-              "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-            boxShadow: "0 0 30px rgba(0, 240, 255, 0.6)",
+            background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}88 100%)`,
+            clipPath: "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+            boxShadow: `0 0 30px ${accentColor}60`,
           }}
         >
           <div
-            className="w-[48px] h-[48px] flex items-center justify-center bg-[#040914]"
-            style={{
-              clipPath:
-                "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-            }}
+            className="w-[52px] h-[52px] flex items-center justify-center bg-[#040914]"
+            style={{ clipPath: "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)" }}
           >
-            <span className="font-black italic text-xl tracking-tighter text-[#00f0ff]">
-              VS
-            </span>
+            <span className="font-black italic text-lg" style={{ color: accentColor }}>VS</span>
           </div>
         </div>
 
-        {/* ── Left Card (Player) ── */}
-        <div className="flex-1 max-w-[160px] h-full flex flex-col items-center">
+        {/* Player card */}
+        <div className="flex-1 max-w-[152px] h-full flex flex-col">
           <div
-            className="w-full h-[75%] relative overflow-hidden flex items-center justify-center"
+            className="flex-1 relative overflow-hidden flex items-center justify-center"
             style={{
-              clipPath: "polygon(15% 0, 100% 0, 85% 100%, 0 100%)", // Angled left
-              background:
-                "linear-gradient(180deg, rgba(0, 240, 255, 0.15) 0%, rgba(0, 0, 0, 0.8) 100%)",
-              border: "1px solid rgba(0,240,255,0.3)",
+              clipPath: "polygon(15% 0,100% 0,85% 100%,0 100%)",
+              background: `linear-gradient(180deg,${accentColor}20 0%,rgba(0,0,0,0.85) 100%)`,
+              border: `1px solid ${accentColor}35`,
             }}
           >
-            <div className="absolute inset-0 bg-[#00f0ff]/5 backdrop-blur-md z-0" />
-            <span className="text-6xl z-10 text-[#00f0ff]/80 font-black">
-              {firstName[0]}
-            </span>
-            {/* Gradient glow top edge */}
-            <div className="absolute top-0 inset-x-0 h-1 bg-[#00f0ff] z-20 shadow-[0_4px_15px_#00f0ff]" />
+            <div className="absolute inset-0 backdrop-blur-sm z-0" />
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="absolute inset-0 w-full h-full object-cover z-0 opacity-60" />
+            ) : (
+              <span className="text-6xl font-black z-10" style={{ color: `${accentColor}90` }}>
+                {firstName[0]}
+              </span>
+            )}
+            <div className="absolute top-0 inset-x-0 h-1 z-20" style={{ background: accentColor, boxShadow: `0 4px 15px ${accentColor}` }} />
           </div>
-
-          <div className="mt-4 text-center w-full">
-            <h3 className="text-xl font-black text-white uppercase tracking-widest mb-3 leading-none">
-              {firstName}
-            </h3>
-            <button
+          <div className="mt-3 text-center">
+            <h3 className="text-base font-black text-white uppercase tracking-widest mb-3">{firstName}</h3>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               onClick={handleStart}
-              className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] text-[#040914] flex items-center justify-center gap-3 active:scale-95 transition-transform"
+              className="w-full py-3.5 rounded-[16px] font-black text-[11px] uppercase tracking-[0.2em] text-[#040914] flex items-center justify-center gap-2"
               style={{
-                background: "var(--ac)",
-                boxShadow: "0 0 25px rgba(var(--ac-rgb, 0,240,255),0.4)",
+                background: `linear-gradient(145deg,${accentColor},${accentColor}bb)`,
+                boxShadow: `0 0 24px ${accentColor}50`,
               }}
             >
-              <img
-                src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
-                alt=""
-                className="w-5 h-5 drop-shadow-md"
-              />
-              Stake 50 AC
-            </button>
+              <Zap className="w-4 h-4 fill-current" />
+              Start Battle
+            </motion.button>
           </div>
         </div>
 
-        {/* ── Right Card (Opponent) ── */}
-        <div className="flex-1 max-w-[160px] h-full flex flex-col items-center">
+        {/* Opponent card */}
+        <div className="flex-1 max-w-[152px] h-full flex flex-col">
           <div
-            className="w-full h-[75%] relative overflow-hidden flex items-center justify-center"
+            className="flex-1 relative overflow-hidden"
             style={{
-              clipPath: "polygon(0 0, 85% 0, 100% 100%, 15% 100%)", // Angled right
-              background:
-                "linear-gradient(180deg, rgba(8, 20, 25, 0.9) 0%, rgba(0, 0, 0, 0.8) 100%)",
-              border: "1px solid rgba(255,255,255,0.05)",
+              clipPath: "polygon(0 0,85% 0,100% 100%,15% 100%)",
+              background: "linear-gradient(180deg,rgba(8,20,25,0.9) 0%,rgba(0,0,0,0.85) 100%)",
+              border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <div className="absolute inset-0 bg-white/5 backdrop-blur-md z-0" />
-            <span className="text-[70px] z-10 grayscale brightness-150">
-              {opp.avatar}
-            </span>
-          </div>
-
-          <div className="mt-4 text-center w-full flex flex-col justify-between">
-            <h3 className="text-xl font-black text-white/50 uppercase tracking-widest mb-3 leading-none drop-shadow-md">
-              {opp.name}
-            </h3>
-            <button
-              onClick={handleStart}
-              className="w-full py-2.5 rounded-[12px] border border-white/20 font-black text-[10px] uppercase tracking-widest text-white/80 flex items-center justify-center gap-2"
+            <img
+              src={opp.avatar}
+              alt={opp.name}
+              className="w-full h-full object-cover opacity-75"
+              style={{ clipPath: "polygon(0 0,85% 0,100% 100%,15% 100%)" }}
+            />
+            {/* Difficulty badge */}
+            <div
+              className="absolute top-2 right-4 px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase z-10"
               style={{
-                background: "#061217",
-                boxShadow: "inset 0 0 10px rgba(0,0,0,0.5)",
+                background: `${DIFF_COLORS[opp.difficulty]}20`,
+                border: `1px solid ${DIFF_COLORS[opp.difficulty]}40`,
+                color: DIFF_COLORS[opp.difficulty],
               }}
             >
-              <img
-                src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
-                alt=""
-                className="w-4 h-4 opacity-70"
-              />
-              Bet 50 AC
-            </button>
+              {DIFF_LABELS[opp.difficulty]}
+            </div>
+          </div>
+          <div className="mt-3 text-center">
+            <h3 className="text-base font-black text-white/50 uppercase tracking-widest mb-1">{opp.name}</h3>
+            <p className="text-[9px] font-mono text-white/25 mb-3">{opp.discipline} · Target {opp.targetScore}</p>
+            <div
+              className="w-full py-2 rounded-[12px] text-[10px] font-bold text-white/30 uppercase tracking-widest text-center"
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              AI Opponent
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Match Details Footer ── */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-        <img
-          src={PREMIUM_ASSETS.ATMOSPHERE.FLOOR_GRID}
-          alt=""
-          className="absolute bottom-0 w-full h-[60%] object-cover scale-x-150"
-        />
+      {/* Match info strip */}
+      <div className="relative z-10 mx-5 rounded-[18px] px-5 py-4" style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.05)",
+      }}>
+        <div className="flex justify-around">
+          {[
+            { label: "Duration", value: `${BATTLE_DURATION}s` },
+            { label: "Format", value: "1v1" },
+            { label: "Discipline", value: disc.name },
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/25 mb-0.5">{s.label}</p>
+              <p className="text-xs font-bold text-white/70">{s.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
-
-      {/* Background Grid / Detail lines */}
-      <div
-        className="absolute inset-x-0 top-1/2 bottom-0 z-0 opacity-10 pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(#00f0ff 1px, transparent 1px), linear-gradient(90deg, #00f0ff 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-        }}
-      />
     </div>
   );
 }

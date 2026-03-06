@@ -1,8 +1,8 @@
 import { CameraView } from "@features/arena/components/CameraView";
 import { DrillLibrary } from "@features/arena/components/DrillLibrary";
 import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineSelector";
-import type { CameraControls } from "@hooks/useCamera";
-import type { Personalization } from "@hooks/usePersonalization";
+import type { UseCameraReturn as CameraControls } from "@hooks/useCamera";
+import type { PersonalizationConfig as Personalization } from "@hooks/usePersonalization";
 import { useSelectedDifficulty, useSelectedDrill, useStore } from "@store";
 import type { Discipline, SubDisciplineId } from "@types";
 import { AnimatePresence, motion } from "framer-motion";
@@ -86,7 +86,7 @@ export function PreSession({
                 selectedId={drill?.id}
                 onSelect={setDrill}
                 selectedDifficulty={diff}
-                onDifficultyChange={setDifficulty}
+                onDifficultyChange={(d) => setDifficulty(d as 1|2|3|4|5)}
               />
             </motion.div>
           ) : (

@@ -231,17 +231,9 @@ export function ProfileOverviewTab() {
       {/* Social counts */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          {
-            label: "Followers",
-            value: Math.floor(Math.random() * 200),
-            icon: User,
-          },
-          {
-            label: "Following",
-            value: Math.floor(Math.random() * 80),
-            icon: User,
-          },
-          { label: "Reels", value: 0, icon: Star },
+          { label: "Followers", value: 128 },
+          { label: "Following", value: 47 },
+          { label: "Reels", value: 0 },
         ].map(({ label, value }) => (
           <Card
             key={label}
@@ -314,14 +306,24 @@ function AchievementTile({
 
       {/* Icon */}
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl relative z-10"
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl relative z-10 overflow-hidden"
         style={
           earned
             ? { background: `${glow}20`, boxShadow: `0 0 12px ${glow}40` }
             : {}
         }
       >
-        {isSecret ? "🔒" : achievement.icon}
+        {isSecret ? (
+          "🔒"
+        ) : achievement.icon.startsWith("http") ? (
+          <img
+            src={achievement.icon}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover p-1.5"
+          />
+        ) : (
+          achievement.icon
+        )}
       </div>
 
       {/* Name */}

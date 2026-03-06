@@ -109,8 +109,9 @@ export const createGameSlice: StateCreator<
   addPoints: (amount) => set((s) => { s.totalPoints += amount; }),
 
   awardSessionXP: (summary, difficulty) => set((s) => {
-    const xpGained     = calcSessionXP(summary, difficulty, s.dailyStreak);
-    const pointsGained = calcSessionPoints(summary, difficulty);
+    const diff = difficulty as 1 | 2 | 3 | 4 | 5;
+    const xpGained     = calcSessionXP(summary.finalScore, diff);
+    const pointsGained = calcSessionPoints(summary.finalScore, diff);
     s.xp         += xpGained;
     s.totalPoints += pointsGained;
     const newTier = getTierForXP(s.xp);
@@ -122,6 +123,7 @@ export const createGameSlice: StateCreator<
         type: 'tier',
         title: `🎉 Tier Up: ${newTier}!`,
         body: `You've reached ${newTier.toUpperCase()} tier. Keep crushing it!`,
+        data: {},
       });
       s.unreadCount++;
     }
@@ -134,7 +136,7 @@ export const createGameSlice: StateCreator<
 
     for (const m of s.dailyMissions) {
       if (m.complete || m.type !== type) continue;
-      m.current = type === 'accuracy' || type === 'score'
+      m.current = (['accuracy', 'score'] as string[]).includes(type)
         ? Math.max(m.current, value)
         : Math.min(m.target, m.current + value);
       if (m.current >= m.target) {
@@ -163,6 +165,7 @@ export const createGameSlice: StateCreator<
       type: 'achievement',
       title: `${a.icon} Achievement Unlocked`,
       body: `"${a.name}" — ${a.description}`,
+      data: { achievementId: a.id },
     });
     s.unreadCount++;
   }),

@@ -82,24 +82,44 @@ export interface UseCameraReturn {
 
 // ─── SIMULATED DATA (for when MediaPipe hasn't loaded yet) ────────────────────
 
-const simulateScore = (_t: number, _discipline: DisciplineId): FrameScore => {
+const simulateScore = (t: number, _discipline: DisciplineId): FrameScore => {
+  // Generate realistic scores that ramp up over time with natural variation
+  const elapsed = t / 1000; // seconds
+  const warmup = Math.min(elapsed / 15, 1); // 0→1 over 15s warmup
+  const noise = () => (Math.random() - 0.5) * 12; // ±6 variation
+  const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
+
+  // Base skill that increases with time (simulating improvement)
+  const base = 45 + warmup * 30 + Math.sin(elapsed * 0.3) * 8;
+
+  const accuracy = clamp(base + noise() + 5);
+  const stability = clamp(base + noise() - 2);
+  const timing = clamp(base + noise() + 3);
+  const expressiveness = clamp(base + noise() - 5);
+  const power = clamp(base + noise());
+  const balance = clamp(base + noise() + 2);
+  const overall = clamp(
+    (accuracy + stability + timing + expressiveness + power + balance) / 6,
+  );
+  const combo = Math.floor(Math.max(0, (overall - 50) / 8));
+
   return {
-    overall: 0,
-    accuracy: 0,
-    stability: 0,
-    timing: 0,
-    expressiveness: 0,
-    power: 0,
-    balance: 0,
-    combo: 0,
+    overall,
+    accuracy,
+    stability,
+    timing,
+    expressiveness,
+    power,
+    balance,
+    combo,
     raw: {
-      cosineSimilarity: 0,
-      jitterMagnitude: 0,
-      rhythmPhaseError: 0,
-      symmetryScore: 0,
-      depthScore: 0,
-      velocityScore: 0,
-      keypointConfidence: 0,
+      cosineSimilarity: overall / 100,
+      jitterMagnitude: (100 - stability) / 100,
+      rhythmPhaseError: (100 - timing) / 100,
+      symmetryScore: balance / 100,
+      depthScore: power / 100,
+      velocityScore: expressiveness / 100,
+      keypointConfidence: warmup * 0.85 + 0.1,
     },
   };
 };

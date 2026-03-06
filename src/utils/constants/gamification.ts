@@ -19,7 +19,7 @@ export const TIERS: Tier[] = [
     name: "Scout",
     color: "#64748b",
     glowColor: "rgba(100,116,139,0.4)",
-    icon: "🔮",
+    icon: "https://images.unsplash.com/photo-1596700869632-4e0da1112423?auto=format&fit=crop&q=80&w=100&h=100", // Dark rocky abstract
     xpMin: 0,
     xpMax: 999,
   },
@@ -28,7 +28,7 @@ export const TIERS: Tier[] = [
     name: "Cyber",
     color: "#0ea5e9",
     glowColor: "rgba(14,165,233,0.4)",
-    icon: "💠",
+    icon: "https://images.unsplash.com/photo-1628126235478-f7b8849646b5?auto=format&fit=crop&q=80&w=100&h=100", // Bright core abstract
     xpMin: 1000,
     xpMax: 4999,
   },
@@ -37,7 +37,7 @@ export const TIERS: Tier[] = [
     name: "Neon",
     color: "#818cf8",
     glowColor: "rgba(129,140,248,0.5)",
-    icon: "✨",
+    icon: "https://images.unsplash.com/photo-1623227866986-1d1297e64177?auto=format&fit=crop&q=80&w=100&h=100", // Golden abstract
     xpMin: 5000,
     xpMax: 14999,
   },
@@ -46,7 +46,7 @@ export const TIERS: Tier[] = [
     name: "Plasma",
     color: "#d8b4fe",
     glowColor: "rgba(216,180,254,0.5)",
-    icon: "💎",
+    icon: "https://images.unsplash.com/photo-1618172193622-ae2d025f4032?auto=format&fit=crop&q=80&w=100&h=100", // Purple crystal
     xpMin: 15000,
     xpMax: 39999,
   },
@@ -55,7 +55,7 @@ export const TIERS: Tier[] = [
     name: "Void",
     color: "var(--ac)",
     glowColor: "rgba(0,240,255,0.5)",
-    icon: "🏆",
+    icon: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&q=80&w=100&h=100", // Teal neon
     xpMin: 40000,
     xpMax: 99999,
   },
@@ -64,7 +64,7 @@ export const TIERS: Tier[] = [
     name: "Elite",
     color: "#ff00ff",
     glowColor: "rgba(255,0,255,0.5)",
-    icon: "⚡",
+    icon: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&q=80&w=100&h=100", // Pink electric
     xpMin: 100000,
     xpMax: Infinity,
   },
@@ -101,7 +101,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "first_step",
     name: "First Step",
-    icon: "👟",
+    icon: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=100&h=100",
     description: "Complete your first training session.",
     condition: "Complete 1 session",
     rarity: "Common",
@@ -112,7 +112,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "perfect_form",
     name: "Perfect Form",
-    icon: "✨",
+    icon: "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&q=80&w=100&h=100",
     description: "Score 90+ in any session.",
     condition: "Score ≥ 90",
     rarity: "Rare",
@@ -123,7 +123,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "accuracy_master",
     name: "Accuracy Master",
-    icon: "🎯",
+    icon: "https://images.unsplash.com/photo-1551608753-1596f2db10cc?auto=format&fit=crop&q=80&w=100&h=100",
     description: "Achieve 95%+ accuracy in a session.",
     condition: "Accuracy ≥ 95%",
     rarity: "Rare",
@@ -134,7 +134,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "fast_learner",
     name: "Fast Learner",
-    icon: "🧠",
+    icon: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=100&h=100",
     description: "Score 75+ within your first 5 sessions.",
     condition: "Score ≥ 75 in first 5 sessions",
     rarity: "Rare",
@@ -415,7 +415,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_cross_discipline",
     name: "Cross-Discipline Icon",
-    icon: "✡️",
+    icon: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=100&h=100",
     description: "Receive likes from athletes in different disciplines.",
     condition: "Liked by 10 different discipline groups",
     rarity: "Epic",
@@ -426,7 +426,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_hard_mode",
     name: "No Mercy",
-    icon: "💀",
+    icon: "https://images.unsplash.com/photo-1633519106037-f13883a8e348?auto=format&fit=crop&q=80&w=100&h=100",
     description: "Score 85+ on a Level 5 difficulty drill.",
     condition: "Score ≥ 85 at difficulty 5",
     rarity: "Epic",
@@ -446,7 +446,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 45,
     color: "#6b7280",
     difficulty: 1,
-    avatar: "👤",
+    avatar:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Inconsistent form, slow combos",
     description: "A beginner still learning the basics.",
     usersBeaten: 12480,
@@ -458,7 +459,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 55,
     color: "#3b82f6",
     difficulty: 2,
-    avatar: "🥊",
+    avatar:
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Basic combos, weak guard",
     description: "Getting comfortable with fundamentals.",
     usersBeaten: 8920,
@@ -470,7 +472,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 65,
     color: "#0ea5e9",
     difficulty: 3,
-    avatar: "💃",
+    avatar:
+      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Solid timing, limited expression",
     description: "Club-level dancer with real rhythm.",
     usersBeaten: 5670,
@@ -483,7 +486,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 73,
     color: "#ef4444",
     difficulty: 3,
-    avatar: "🥋",
+    avatar:
+      "https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Clean stances, powerful kihon",
     description: "Black belt-level kata specialist.",
     usersBeaten: 3240,
@@ -496,7 +500,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 78,
     color: "#38bdf8",
     difficulty: 4,
-    avatar: "🧘",
+    avatar:
+      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Exceptional balance, deep flexibility",
     description: "Ashtanga practitioner with 5 years experience.",
     usersBeaten: 1890,
@@ -509,7 +514,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 82,
     color: "#8b5cf6",
     difficulty: 4,
-    avatar: "🪔",
+    avatar:
+      "https://images.unsplash.com/photo-1566351582236-40742d45a7d3?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Precise mudras, classical Adavus",
     description: "Bharatnatyam Arangetram graduate.",
     usersBeaten: 1120,
@@ -522,7 +528,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 88,
     color: "var(--ac)",
     difficulty: 5,
-    avatar: "🏯",
+    avatar:
+      "https://images.unsplash.com/photo-1551000673-51368962fa7a?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Competition Wushu routines",
     description: "National Wushu champion. Almost unbeatable.",
     usersBeaten: 340,
@@ -534,7 +541,8 @@ export const AI_OPPONENTS: AiOpponent[] = [
     targetScore: 94,
     color: "#f472b6",
     difficulty: 5,
-    avatar: "🤸",
+    avatar:
+      "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=150&h=150",
     styleNote: "Olympic-level floor routine",
     description: "Former Olympic gymnast. The ultimate test.",
     usersBeaten: 89,
@@ -548,7 +556,7 @@ export const MISSION_TEMPLATES: Omit<
   "id" | "current" | "complete" | "missionDate"
 >[] = [
   {
-    icon: "🎯",
+    icon: "https://images.unsplash.com/photo-1551608753-1596f2db10cc?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Hit the Mark",
     description: "Complete 2 training sessions today",
     type: "sessions",
@@ -556,7 +564,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 50,
   },
   {
-    icon: "⭐",
+    icon: "https://images.unsplash.com/photo-1623227866986-1d1297e64177?auto=format&fit=crop&q=80&w=100&h=100",
     name: "High Scorer",
     description: "Score 80+ in a session",
     type: "accuracy",
@@ -564,7 +572,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 60,
   },
   {
-    icon: "🥊",
+    icon: "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Battle Ready",
     description: "Win a PvE battle",
     type: "pve_win",
@@ -572,7 +580,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 80,
   },
   {
-    icon: "📱",
+    icon: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Content Creator",
     description: "Post a training reel",
     type: "reel",
@@ -580,7 +588,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 40,
   },
   {
-    icon: "❤️",
+    icon: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Social Butterfly",
     description: "Receive 5 likes on your reels",
     type: "likes",
@@ -588,7 +596,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 30,
   },
   {
-    icon: "🔥",
+    icon: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Combo Starter",
     description: "Hit a 7x combo in a session",
     type: "combo",
@@ -596,7 +604,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 70,
   },
   {
-    icon: "⚡",
+    icon: "https://images.unsplash.com/photo-1618172193622-ae2d025f4032?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Hard Mode",
     description: "Complete a difficulty 3+ drill",
     type: "difficulty",
@@ -604,7 +612,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 90,
   },
   {
-    icon: "⏱️",
+    icon: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Endurance Run",
     description: "Train for 20+ minutes total",
     type: "duration",
@@ -612,7 +620,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 65,
   },
   {
-    icon: "💪",
+    icon: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Push Harder",
     description: "Complete 3 training sessions",
     type: "sessions",
@@ -620,7 +628,7 @@ export const MISSION_TEMPLATES: Omit<
     reward: 75,
   },
   {
-    icon: "🎪",
+    icon: "https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Showtime",
     description: "Score 85+ in a session",
     type: "accuracy",
@@ -636,7 +644,7 @@ export const WEEKLY_TEMPLATES: Omit<
   "id" | "current" | "complete" | "weekStart"
 >[] = [
   {
-    icon: "🗓️",
+    icon: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=100&h=100",
     name: "5-Day Warrior",
     description: "Train 5 days this week",
     type: "sessions",
@@ -644,7 +652,7 @@ export const WEEKLY_TEMPLATES: Omit<
     reward: 200,
   },
   {
-    icon: "🏆",
+    icon: "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Win Streak",
     description: "Win 3 PvE battles this week",
     type: "pve_win",
@@ -652,7 +660,7 @@ export const WEEKLY_TEMPLATES: Omit<
     reward: 250,
   },
   {
-    icon: "📈",
+    icon: "https://images.unsplash.com/photo-1551608753-1596f2db10cc?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Score Climber",
     description: "Average 75+ score this week",
     type: "accuracy",
@@ -660,7 +668,7 @@ export const WEEKLY_TEMPLATES: Omit<
     reward: 180,
   },
   {
-    icon: "🎬",
+    icon: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Reel Week",
     description: "Post 5 reels this week",
     type: "reel",
@@ -668,7 +676,7 @@ export const WEEKLY_TEMPLATES: Omit<
     reward: 150,
   },
   {
-    icon: "🔥",
+    icon: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Combo Week",
     description: "Hit 10x combo 3 times this week",
     type: "combo",
@@ -676,7 +684,7 @@ export const WEEKLY_TEMPLATES: Omit<
     reward: 220,
   },
   {
-    icon: "💎",
+    icon: "https://images.unsplash.com/photo-1618172193622-ae2d025f4032?auto=format&fit=crop&q=80&w=100&h=100",
     name: "Elite Training",
     description: "Complete 2 difficulty-5 drills",
     type: "difficulty",

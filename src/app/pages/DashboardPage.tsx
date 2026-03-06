@@ -413,6 +413,7 @@ export default function DashboardPage() {
             Upcoming Events
           </h2>
           <button
+            onClick={() => navigate("/discover")}
             className="text-[11px] font-semibold"
             style={{ color: "var(--ac)" }}
           >
@@ -447,6 +448,7 @@ export default function DashboardPage() {
               key={i}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => navigate("/discover")}
               className="w-full overflow-hidden rounded-2xl text-left relative h-24 group"
               style={{
                 background: ev.color,

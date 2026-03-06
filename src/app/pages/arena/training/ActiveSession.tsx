@@ -1,7 +1,8 @@
 import { CameraView } from "@features/arena/components/CameraView";
 import { MetricsPanel } from "@features/arena/components/MetricsPanel";
-import type { CameraControls, Score } from "@hooks/useCamera";
-import type { Personalization } from "@hooks/usePersonalization";
+import type { UseCameraReturn as CameraControls } from "@hooks/useCamera";
+import type { FrameScore as Score } from "@types";
+import type { PersonalizationConfig as Personalization } from "@hooks/usePersonalization";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 

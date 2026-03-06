@@ -2,7 +2,6 @@
 // AURA ARENA — Onboarding (premium multi-step flow)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { AvatarCanvas } from "@components/3d/AvatarCanvas";
 import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineSelector";
 import { generateWelcomeMessage } from "@lib/gemini";
 import { cn } from "@lib/utils";
@@ -27,6 +26,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AvatarCanvas } from "../../../components/3d/AvatarCanvas";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { VRM, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";

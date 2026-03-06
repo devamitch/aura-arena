@@ -48,7 +48,7 @@ export const useDeviceAIStatus = (): DeviceAIStatus => {
       }));
     });
 
-    onDeviceLLM.onProgress((progress, _msg) => {
+    onDeviceLLM.onLLMProgress((progress, _msg) => {
       setStatus((prev) => ({
         ...prev,
         onDeviceLoading: progress < 1,

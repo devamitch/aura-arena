@@ -1,7 +1,7 @@
 import { MetricsPanel } from "@features/arena/components/MetricsPanel";
-import type { CoachFeedback } from "@hooks/useAI";
-import type { Score } from "@hooks/useCamera";
-import type { Personalization } from "@hooks/usePersonalization";
+import type { AICallState as CoachFeedback } from "@hooks/useAI";
+import type { FrameScore as Score } from "@types";
+import type { PersonalizationConfig as Personalization } from "@hooks/usePersonalization";
 import { ArcGauge } from "@shared/components/ui/ArcGauge";
 import { useSelectedDifficulty, useSelectedDrill, useStore } from "@store";
 import { motion } from "framer-motion";

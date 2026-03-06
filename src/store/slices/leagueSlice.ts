@@ -109,7 +109,7 @@ export const createLeagueSlice: StateCreator<
   startSession: () => set((s) => {
     s.sessionPhase = 'active';
     s.metrics      = zeroMetrics();
-    s.currentSession = { startedAt: new Date().toISOString() };
+    s.currentSession = {};
   }),
 
   endSession: (summary) => set((s) => {
@@ -134,6 +134,7 @@ export const createLeagueSlice: StateCreator<
       xpEarned:     0,
       pointsEarned: 0,
       coachingText: '',
+      frameHistory: summary.frameHistory ?? [],
       createdAt:    new Date().toISOString(),
     };
     s.sessionHistory.unshift(sessionData);

@@ -5,7 +5,8 @@
 import { MetricsPanel } from "@features/arena/components/MetricsPanel";
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
-import { useStore } from "@store";
+import { saveSession } from "@services/gameService";
+import { useStore, useUser } from "@store";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -25,6 +26,7 @@ export default function TrainingPage() {
   const { drillId } = useParams<{ drillId?: string }>();
   const { discipline: disc } = usePersonalization();
   const { endSession, addXP } = useStore();
+  const user = useUser();
 
   const [elapsed, setElapsed] = useState(0);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -56,8 +58,23 @@ export default function TrainingPage() {
 
     const summary = camera.getSessionSummary();
     if (summary && elapsed > 5) {
+      const xpGained = Math.round(summary.finalScore * 2);
       endSession(summary);
-      addXP(Math.round(summary.finalScore * 2));
+      addXP(xpGained);
+      // Persist to Supabase (fire-and-forget)
+      if (user?.id) {
+        saveSession({
+          userId: user.id,
+          discipline: disc.id,
+          difficulty: 3,
+          score: summary.finalScore,
+          accuracy: summary.accuracy ?? 0,
+          combo: summary.maxCombo ?? 0,
+          duration: elapsed,
+          xpGained,
+          drillName: drillId ?? undefined,
+        });
+      }
     }
 
     navigate(-1);

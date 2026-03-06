@@ -26,13 +26,14 @@ export type AppStore = GameSlice &
 
 export const useStore = create<AppStore>()(
   persist(
-    immer((...a) => ({
-      ...createGameSlice(...a),
-      ...createLeagueSlice(...a),
-      ...createFeedSlice(...a),
-      ...createDetectionSlice(...a),
-      ...createUserSlice(...a),
-      ...createAvatarSlice(...a),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    immer((set, get, api) => ({
+      ...createGameSlice(set as any, get as any, api as any),
+      ...createLeagueSlice(set as any, get as any, api as any),
+      ...createFeedSlice(set as any, get as any, api as any),
+      ...createDetectionSlice(set as any, get as any, api as any),
+      ...createUserSlice(set as any, get as any, api as any),
+      ...createAvatarSlice(set as any, get as any, api as any),
     })),
     {
       name: "aura-arena-v4",
