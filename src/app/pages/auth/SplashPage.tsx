@@ -16,14 +16,17 @@ export default function SplashPage() {
           replace: true,
         });
       } else {
-        navigate("/login", { replace: true });
+        navigate("/intro", { replace: true });
       }
     }, 1800);
     return () => clearTimeout(timer);
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-void flex flex-col items-center justify-center gap-4">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center gap-4"
+      style={{ background: "var(--background)" }}
+    >
       {/* Logo animation */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
@@ -45,11 +48,19 @@ export default function SplashPage() {
             }}
             className="absolute inset-0 rounded-3xl"
             style={{
-              background: "radial-gradient(circle, #00f0ff30, transparent)",
+              background:
+                "radial-gradient(circle, rgba(var(--ac-rgb, 0,240,255), 0.2), transparent)",
             }}
           />
         ))}
-        <div className="w-40 h-40 rounded-[3rem] glass overflow-hidden relative z-10 shadow-[0_0_60px_rgba(0,240,255,0.2)] border-white/20">
+        <div
+          className="w-40 h-40 rounded-[3rem] overflow-hidden relative z-10"
+          style={{
+            background: "rgba(var(--ac-rgb, 0,240,255), 0.04)",
+            border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.15)",
+            boxShadow: "0 0 60px rgba(var(--ac-rgb, 0,240,255), 0.15)",
+          }}
+        >
           <img
             src="/logo.png"
             alt="AURA ARENA Logo"
@@ -64,10 +75,10 @@ export default function SplashPage() {
         transition={{ delay: 0.6 }}
         className="text-center"
       >
-        <h1 className="text-5xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+        <h1 className="text-5xl font-black text-white tracking-tighter text-gradient">
           AURA ARENA
         </h1>
-        <p className="text-[10px] text-t2 font-mono tracking-[0.4em] uppercase mt-2 opacity-80">
+        <p className="text-[10px] text-white/40 font-mono tracking-[0.4em] uppercase mt-2">
           Premium Esports · AI Powered
         </p>
       </motion.div>
@@ -83,7 +94,8 @@ export default function SplashPage() {
             key={i}
             animate={{ opacity: [0.3, 1, 0.3] }}
             transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full bg-cyan-400"
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: "var(--ac)" }}
           />
         ))}
       </motion.div>

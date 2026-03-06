@@ -1,592 +1,270 @@
-import { CameraView } from "@features/arena/components/CameraView";
-import { DrillLibrary } from "@features/arena/components/DrillLibrary";
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — Training Page (Full-Screen Camera HUD Edition)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 import { MetricsPanel } from "@features/arena/components/MetricsPanel";
-import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineSelector";
-import { useCoachFeedback } from "@hooks/useAI";
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
-import { ArcGauge } from "@shared/components/ui/ArcGauge";
-import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
+import { useStore } from "@store";
+import { motion } from "framer-motion";
 import {
-  useSelectedDifficulty,
-  useSelectedDrill,
-  useSessionPhase,
-  useStore,
-} from "@store";
-import type { SubDisciplineId } from "@types";
-import { AnimatePresence, motion } from "framer-motion";
-import {
+  Activity,
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
-  Play,
-  RotateCcw,
-  Sparkles,
-  X,
+  Clock,
+  Shield,
+  Target,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-const DIFF = ["", "Beginner", "Easy", "Medium", "Hard", "Elite"] as const;
-const DIFF_C = [
-  "",
-  "#3b82f6", // Blue
-  "#22d3ee", // Cyan
-  "#00f0ff", // Neon Cyan
-  "#a855f7", // Purple
-  "#ff00ff", // Magenta
-] as const;
-
-type Tab = "drill" | "style";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function TrainingPage() {
   const navigate = useNavigate();
-  const phase = useSessionPhase();
-  const drill = useSelectedDrill();
-  const diff = useSelectedDifficulty();
-  const {
-    startSession,
-    endSession,
-    resetSession,
-    setDrill,
-    setDifficulty,
-    updateMissionProgress,
-    addXP,
-  } = useStore();
-  const {
-    discipline: disc,
-    accentColor,
-    statLabels,
-    subDisciplineId: defSub,
-  } = usePersonalization();
-  const coachAI = useCoachFeedback();
-  const [countdown, setCountdown] = useState(0);
-  const [sessionTimer, setSessionTimer] = useState(0);
+  const { drillId } = useParams<{ drillId?: string }>();
+  const { discipline: disc } = usePersonalization();
+  const { endSession, addXP } = useStore();
 
-  const [subId, setSubId] = useState<SubDisciplineId | undefined>(defSub);
-  const [tab, setTab] = useState<Tab>("drill");
-  const [metricsOpen, setMetricsOpen] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [showAnalysis, setShowAnalysis] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const [lastGesture, setLastGesture] = useState<{
-    label: string;
-    time: number;
-  } | null>(null);
 
   const camera = useCamera({
     discipline: disc.id,
-    autoStart: true,
-    onGesture: (label, bonus) => {
-      setLastGesture({ label, time: Date.now() });
-      if (phase === "active") {
-        addXP(bonus);
-      }
-    },
   });
 
-  // ── Destructure stable callbacks to avoid re-render loops ─────────────────
-  const { stopCamera, getSessionSummary } = camera;
-  const { currentScore } = camera;
-
-  // Clear gesture after 2s
+  // Auto-start camera on mount
   useEffect(() => {
-    if (lastGesture) {
-      const t = setTimeout(() => setLastGesture(null), 2000);
-      return () => clearTimeout(t);
-    }
-  }, [lastGesture]);
+    camera.requestCamera();
+    timerRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
 
-  /* start flow: countdown → live */
-  const handleStart = () => {
-    setCountdown(3);
-  };
-
-  /* countdown */
-  useEffect(() => {
-    if (countdown <= 0) return;
-    if (countdown === 1) {
-      setTimeout(() => {
-        setCountdown(0);
-        startSession();
-      }, 900);
-      return;
-    }
-    const t = setTimeout(() => setCountdown((c) => c - 1), 900);
-    return () => clearTimeout(t);
-  }, [countdown, startSession, setCountdown]);
-
-  /* session timer */
-  useEffect(() => {
-    if (phase !== "active") {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-    timerRef.current = setInterval(() => setSessionTimer((t) => t + 1), 1000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      camera.stopCamera();
     };
-  }, [phase, setSessionTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  /* end session — uses destructured stable refs, not the whole camera object */
-  const handleEnd = useCallback(async () => {
-    stopCamera();
-    const summary = getSessionSummary();
-    endSession({
-      ...summary,
-      framesScored: summary.totalFrames,
-    } as any);
-    addXP(Math.round(currentScore.overall * diff * 0.5 + 20));
-    updateMissionProgress("sessions", 1);
-    updateMissionProgress("accuracy", currentScore.accuracy);
-    await coachAI.generate(
-      disc.id,
-      subId as any,
-      summary.finalScore,
-      summary.accuracy,
-      summary.stability,
-      summary.timing,
-      summary.expressiveness,
-      summary.maxCombo,
-    );
-  }, [
-    stopCamera,
-    getSessionSummary,
-    currentScore,
-    diff,
-    disc.id,
-    subId,
-    endSession,
-    addXP,
-    updateMissionProgress,
-    coachAI,
-  ]);
+  const handleEndSession = useCallback(() => {
+    setSessionActive(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    camera.stopCamera();
 
-  /* cleanup on unmount — stable refs only, no camera object in deps */
-  useEffect(
-    () => () => {
-      stopCamera();
-      resetSession();
-    },
-    [stopCamera, resetSession],
-  );
+    const summary = camera.getSessionSummary();
+    if (summary && elapsed > 5) {
+      endSession(summary);
+      addXP(Math.round(summary.finalScore * 2));
+    }
 
-  const mm = String(Math.floor(sessionTimer / 60)).padStart(2, "0");
-  const ss = String(sessionTimer % 60).padStart(2, "0");
+    navigate(-1);
+  }, [camera, elapsed, endSession, addXP, navigate]);
+
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)
+      .toString()
+      .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: "var(--void)" }}
-    >
-      {/* top bar */}
-      <div className="flex items-center gap-3 px-4 pt-safe pt-3 pb-3 flex-shrink-0 z-20">
-        <motion.button
-          whileTap={{ scale: 0.88 }}
-          onClick={() => {
-            stopCamera();
-            resetSession();
-            navigate(-1);
+    <div className="fixed inset-0 z-50 flex flex-col bg-black overflow-hidden font-sans">
+      {/* ── 1. The Full-Screen Mirror (Camera Layer) ── */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <video
+          ref={camera.videoRef}
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          style={{ transform: "scaleX(-1)" }}
+          autoPlay
+          playsInline
+          muted
+        />
+        <canvas
+          ref={camera.canvasRef}
+          className="absolute inset-0 w-full h-full z-10 pointer-events-none"
+          style={{ transform: "scaleX(-1)" }}
+        />
+
+        {/* Vignette & Scanlines for HUD effect */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle, transparent 40%, rgba(4,9,20,0.8) 100%)",
           }}
-          className="btn-icon"
-        >
-          <X className="w-4 h-4" />
-        </motion.button>
-        <div className="flex-1">
-          <p className="font-display font-bold text-[15px] text-[var(--t1)] leading-tight">
-            {drill?.name ?? "Freestyle"}
-          </p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <DynamicIcon
-              name={disc.icon}
-              className="w-3 h-3 text-[var(--t3)]"
-            />
-            <p className="label-hud uppercase tracking-widest opacity-70">
-              {subId?.replace(/_/g, " ") ?? disc.name}
-            </p>
-          </div>
-        </div>
-        {phase === "active" && (
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-            style={{ background: "var(--s2)", border: "1px solid var(--b1)" }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500 anim-live" />
-            <p className="font-mono text-sm font-bold text-[var(--t1)] tabular">
-              {mm}:{ss}
-            </p>
-          </div>
-        )}
+        />
+        <div className="absolute inset-0 pointer-events-none opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmIi8+Cjwvc3ZnPg==')]" />
       </div>
 
-      {/* ── PRE-SESSION ── */}
-      {phase === "pre" && countdown === 0 && (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* tab selector */}
-          <div className="flex items-center gap-1 px-4 mb-3 flex-shrink-0">
-            {(["drill", "style"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="flex-1 py-2.5 rounded-2xl font-display font-bold text-sm transition-all"
-                style={{
-                  background: tab === t ? accentColor : "var(--s2)",
-                  color: tab === t ? "#030510" : "var(--t3)",
-                  boxShadow: tab === t ? `0 0 24px ${accentColor}40` : "none",
-                  border: `1px solid ${tab === t ? "transparent" : "var(--b1)"}`,
-                }}
-              >
-                {t === "drill" ? "Drill" : "Style"}
-              </button>
-            ))}
-          </div>
+      {/* ── 2. Top HUD Bar ── */}
+      <div className="relative z-10 p-5 flex items-start justify-between">
+        <button
+          onClick={handleEndSession}
+          className="w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl transition-all active:scale-90"
+          style={{
+            background: "rgba(4,9,20,0.5)",
+            border: "1px solid rgba(0,240,255,0.3)",
+            boxShadow: "0 0 20px rgba(0,240,255,0.15)",
+          }}
+        >
+          <ArrowLeft className="w-5 h-5 text-[#00f0ff]" strokeWidth={2.5} />
+        </button>
 
-          {/* tab content */}
-          <div className="flex-1 overflow-y-auto px-4 scroll-none pb-4">
-            <AnimatePresence mode="wait">
-              {tab === "drill" ? (
-                <motion.div
-                  key="drill"
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 12 }}
-                >
-                  <DrillLibrary
-                    discipline={disc}
-                    subDisciplineId={subId}
-                    selectedId={drill?.id}
-                    onSelect={setDrill}
-                    selectedDifficulty={diff as any}
-                    onDifficultyChange={setDifficulty as any}
-                  />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="style"
-                  initial={{ opacity: 0, x: 12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -12 }}
-                >
-                  <SubDisciplineSelector
-                    disciplineId={disc.id}
-                    selected={subId}
-                    onSelect={setSubId}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Camera Preview in Pre-phase */}
-          <div className="px-4 mb-4 h-48 flex-shrink-0 relative">
-            <CameraView
-              camera={camera}
-              accentColor={accentColor}
-              showScore={false}
-            />
-
-            {/* Gesture Feedback Overlay */}
-            <AnimatePresence>
-              {lastGesture && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 1.2, y: -20 }}
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
-                >
-                  <div className="glass-heavy border-white/20 rounded-[2rem] px-8 py-4 flex flex-col items-center gap-2 shadow-[0_0_50px_rgba(0,0,240,0.3)]">
-                    <Sparkles
-                      className="w-10 h-10 animate-pulse"
-                      style={{ color: accentColor }}
-                    />
-                    <p className="font-display font-black text-2xl text-white uppercase tracking-tighter">
-                      {lastGesture.label.replace("_", " ")}!
-                    </p>
-                    <p className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-60">
-                      Aura Boost Activated
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* difficulty + start */}
+        {/* Center Top: Match/Drill Title */}
+        <div className="flex flex-col items-center">
           <div
-            className="px-4 pb-safe pb-6 pt-3 flex-shrink-0"
-            style={{ borderTop: "1px solid var(--b1)" }}
-          >
-            <div className="flex items-center gap-2 mb-3 overflow-x-auto scroll-none">
-              {([1, 2, 3, 4, 5] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDifficulty(d as any)}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all"
-                  style={{
-                    background: diff === d ? DIFF_C[d] + "28" : "var(--s2)",
-                    border: `1px solid ${diff === d ? DIFF_C[d] + "55" : "var(--b1)"}`,
-                    color: diff === d ? DIFF_C[d] : "var(--t3)",
-                  }}
-                >
-                  {DIFF[d]}
-                </button>
-              ))}
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={handleStart}
-              className="w-full py-4 rounded-[20px] font-display font-extrabold text-[17px] text-[#040610] flex items-center justify-center gap-2.5"
-              style={{
-                background: `linear-gradient(145deg,${accentColor},${accentColor}bb)`,
-                boxShadow: `0 0 32px ${accentColor}55`,
-              }}
-            >
-              <Play className="w-5 h-5 fill-current" />
-              Start Session
-            </motion.button>
-          </div>
-        </div>
-      )}
-
-      {/* ── COUNTDOWN ── */}
-      <AnimatePresence>
-        {countdown > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center z-40"
+            className="px-5 py-1.5 rounded-full backdrop-blur-md mb-2"
             style={{
-              background: "rgba(4,6,16,.85)",
-              backdropFilter: "blur(8px)",
+              background: "rgba(0,240,255,0.1)",
+              border: "1px solid rgba(0,240,255,0.4)",
             }}
           >
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={countdown}
-                initial={{ scale: 0.2, opacity: 0, rotate: -15 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                exit={{ scale: 2, opacity: 0, rotate: 15 }}
-                transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                className="font-display font-black leading-none italic"
-                style={{
-                  fontSize: "clamp(100px,30vw,160px)",
-                  color: accentColor,
-                  textShadow: `0 0 80px ${accentColor}aa`,
-                }}
-              >
-                {countdown}
-              </motion.p>
-            </AnimatePresence>
-            <p className="absolute bottom-16 label-section tracking-widest text-[var(--t3)]">
-              GET READY
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── ACTIVE SESSION ── */}
-      {phase === "active" && (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* camera fills most of the screen */}
-          <div className="flex-1 px-3 pb-2">
-            <CameraView
-              camera={camera}
-              score={currentScore}
-              accentColor={accentColor}
-              showScore
-            />
+            <span className="text-[10px] font-mono text-[#0cebeb] uppercase tracking-[0.3em] font-bold">
+              Live Telemetry
+            </span>
           </div>
-
-          {/* live score row */}
-          <div className="flex items-center px-4 gap-3 py-2 flex-shrink-0">
-            <div className="flex-1 flex items-center gap-2">
-              <div className="relative">
-                <p
-                  className="font-display font-extrabold text-4xl leading-none tabular"
-                  style={{ color: accentColor }}
-                >
-                  {currentScore.overall}
-                </p>
-                {currentScore.combo >= 3 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-2 -right-6 font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-lg anim-combo"
-                    style={{
-                      background: `${accentColor}30`,
-                      color: accentColor,
-                    }}
-                  >
-                    {currentScore.combo}x
-                  </motion.span>
-                )}
-              </div>
-              <div>
-                <p className="label-hud">SCORE</p>
-                <p className="label-hud mt-0.5" style={{ color: DIFF_C[diff] }}>
-                  {DIFF[diff]}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setMetricsOpen((o) => !o)}
-              className="btn-icon w-9 h-9"
-            >
-              {metricsOpen ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronUp className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-
-          {/* collapsible metrics */}
-          <AnimatePresence>
-            {metricsOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                className="px-4 overflow-hidden flex-shrink-0"
-              >
-                <div className="pb-3">
-                  <MetricsPanel
-                    score={currentScore}
-                    statLabels={Object.values(statLabels)}
-                    compact
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* end btn */}
-          <div className="px-4 pb-safe pb-5 pt-2 flex-shrink-0">
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={handleEnd}
-              className="w-full py-3.5 rounded-[18px] font-display font-bold text-sm"
-              style={{
-                background: "rgba(239,68,68,.12)",
-                border: "1px solid rgba(239,68,68,.3)",
-                color: "#ef4444",
-              }}
-            >
-              End Session
-            </motion.button>
-          </div>
+          <p className="text-white text-base font-black tracking-wide drop-shadow-md">
+            {drillId
+              ? `Drill: ${drillId.replace("-", " ")}`
+              : "Free Training Mode"}
+          </p>
         </div>
-      )}
 
-      {/* ── POST SESSION ── */}
-      {phase === "post" && (
-        <div className="flex-1 overflow-y-auto scroll-none pb-safe pb-8 px-5">
+        {/* Timer Capsule */}
+        <div
+          className="px-4 py-2.5 rounded-[14px] flex items-center gap-2 backdrop-blur-xl"
+          style={{
+            background: "rgba(4,9,20,0.6)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <Clock className="w-4 h-4 text-white/50" />
+          <span className="text-sm font-mono text-white font-bold tabular-nums tracking-widest">
+            {formatTime(elapsed)}
+          </span>
+        </div>
+      </div>
+
+      {/* ── 3. Floating Side Metrics (Left) ── */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-10 pointer-events-none">
+        {[
+          { icon: Activity, label: "Form", val: "94%" },
+          { icon: Zap, label: "Speed", val: "88%" },
+          { icon: Shield, label: "Def", val: "72%" },
+        ].map((m, i) => (
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 280, damping: 24 }}
-            className="space-y-4 pt-4"
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 + 0.5 }}
+            className="flex items-center gap-3 backdrop-blur-md p-2 rounded-2xl"
+            style={{
+              background: "rgba(0,0,0,0.4)",
+              borderLeft: "3px solid #00f0ff",
+            }}
           >
-            {/* score card */}
-            <div
-              className="rounded-[24px] p-6 text-center"
-              style={{
-                background: `${accentColor}0d`,
-                border: `1px solid ${accentColor}28`,
-              }}
-            >
-              <p className="label-section mb-3">Session Complete</p>
-              <ArcGauge
-                value={currentScore.overall}
-                size={120}
-                strokeWidth={10}
-                color={accentColor}
-              />
-              <p className="label-hud mt-3 text-[var(--t2)]">
-                {mm}:{ss} · {DIFF[diff]} · {drill?.name ?? "Freestyle"}
+            <div className="w-8 h-8 rounded-full bg-[#00f0ff]/20 flex items-center justify-center">
+              <m.icon className="w-4 h-4 text-[#0cebeb]" />
+            </div>
+            <div>
+              <p className="text-[#00f0ff] font-black text-sm tabular-nums">
+                {m.val}
+              </p>
+              <p className="text-[8px] font-mono text-white/50 uppercase tracking-widest">
+                {m.label}
               </p>
             </div>
-
-            {/* metrics */}
-            <div
-              className="rounded-[20px] p-4"
-              style={{ background: "var(--s1)", border: "1px solid var(--b1)" }}
-            >
-              <p className="label-section mb-3">Breakdown</p>
-              <MetricsPanel
-                score={currentScore}
-                statLabels={Object.values(statLabels)}
-              />
-            </div>
-
-            {/* AI coach */}
-            <div
-              className="rounded-[20px] overflow-hidden"
-              style={{ background: "var(--s1)", border: "1px solid var(--b1)" }}
-            >
-              <div
-                className="px-4 py-3 flex items-center gap-2"
-                style={{
-                  background: `${accentColor}0d`,
-                  borderBottom: "1px solid var(--b1)",
-                }}
-              >
-                <Sparkles
-                  className="w-3.5 h-3.5 flex-shrink-0"
-                  style={{ color: accentColor }}
-                />
-                <p className="label-section">AI Coach</p>
-              </div>
-              <div className="p-4">
-                {coachAI.loading ? (
-                  <div className="space-y-2">
-                    <div className="h-3 rounded anim-shimmer" />
-                    <div className="h-3 w-3/4 rounded anim-shimmer" />
-                  </div>
-                ) : (
-                  <p className="text-sm text-[var(--t2)] leading-relaxed">
-                    {coachAI.text ||
-                      "Complete another session to get personalised feedback."}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* actions */}
-            <div className="grid grid-cols-3 gap-2.5">
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={() => {
-                  resetSession();
-                }}
-                className="py-3.5 rounded-2xl font-display font-bold text-sm flex flex-col items-center gap-1"
-                style={{
-                  background: "var(--s2)",
-                  border: "1px solid var(--b1)",
-                  color: "var(--t2)",
-                }}
-              >
-                <RotateCcw className="w-4 h-4" />
-                Again
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.94 }}
-                onClick={() => {
-                  resetSession();
-                  navigate("/arena");
-                }}
-                className="py-3.5 rounded-2xl font-display font-bold text-sm col-span-2"
-                style={{
-                  background: `linear-gradient(145deg,${accentColor},${accentColor}aa)`,
-                  color: "#040610",
-                }}
-              >
-                Done
-              </motion.button>
-            </div>
           </motion.div>
+        ))}
+      </div>
+
+      {/* ── 4. Main Score Ring (Center Right) ── */}
+      <div className="absolute right-6 top-1/3 z-10 pointer-events-none flex flex-col items-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 w-[120px] h-[120px] -ml-[10px] -mt-[10px] rounded-full border-t-2 border-r-2 border-[#00f0ff] opacity-40"
+        />
+        <div
+          className="w-[100px] h-[100px] rounded-full backdrop-blur-md flex flex-col items-center justify-center relative shadow-[0_0_30px_rgba(0,240,255,0.2)]"
+          style={{
+            background: "rgba(4,9,20,0.7)",
+            border: "2px solid rgba(0,240,255,0.4)",
+          }}
+        >
+          <span className="text-[10px] font-mono text-[#0cebeb] font-bold mb-[-4px]">
+            SCORE
+          </span>
+          <span className="text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-lg">
+            {camera.currentScore.overall}
+          </span>
         </div>
-      )}
+      </div>
+
+      {/* ── 5. Bottom AI Analysis Panel ── */}
+      <motion.div
+        className="absolute bottom-0 inset-x-0 z-20 flex flex-col rounded-t-[32px] overflow-hidden"
+        initial={{ y: "100%" }}
+        animate={{ y: showAnalysis ? 0 : "75%" }} // Peek mode vs Full mode
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        {/* Glass heavy background for the whole panel */}
+        <div className="absolute inset-0 backdrop-blur-[40px] bg-black/60 border-t border-[#00f0ff]/30" />
+
+        <div className="relative z-10 flex flex-col w-full h-full">
+          {/* Grab Handle & Toggle */}
+          <button
+            onClick={() => setShowAnalysis(!showAnalysis)}
+            className="w-full h-16 flex items-center justify-center relative cursor-ns-resize"
+          >
+            <div className="absolute top-3 w-12 h-1.5 bg-white/20 rounded-full" />
+            <div className="flex items-center gap-2 mt-4">
+              <Target className="w-4 h-4 text-[#00f0ff]" />
+              <span className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em]">
+                AI Engine Analysis
+              </span>
+              {showAnalysis ? (
+                <ChevronDown className="w-4 h-4 text-white/50" />
+              ) : (
+                <ChevronUp className="w-4 h-4 text-[#00f0ff]" />
+              )}
+            </div>
+          </button>
+
+          {/* Expanded Content */}
+          <div className="px-6 pb-8 pt-2">
+            {/* 6-Dimension Radar/Metrics visual placeholder */}
+            <div className="h-48 w-full rounded-2xl bg-[#040914]/80 border border-white/10 mb-6 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#00f0ff] via-transparent to-transparent" />
+              <MetricsPanel score={camera.currentScore} />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setShowAnalysis(false)}
+                className="py-4 rounded-[20px] font-bold text-sm text-white/70"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                Hide Panel
+              </button>
+              <button
+                onClick={handleEndSession}
+                className="py-4 rounded-[20px] font-black text-sm uppercase tracking-wider"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+                  color: "white",
+                  boxShadow: "0 0 20px rgba(239,68,68,0.3)",
+                }}
+              >
+                End & Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

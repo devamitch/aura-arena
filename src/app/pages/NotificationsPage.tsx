@@ -1,111 +1,124 @@
-import { cn, timeAgo } from "@lib/utils";
-import { useNotifications, useStore, useUnreadCount } from "@store";
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — Notifications Page (MusicX-inspired)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import { useNotifications, useStore } from "@store";
 import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  Bell,
-  CheckCheck,
-  Heart,
-  Star,
-  Swords,
-  Trophy,
-} from "lucide-react";
+import { Bell, CheckCheck, ChevronLeft, Trophy, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const TYPE_ICONS: Record<string, { icon: typeof Bell; color: string }> = {
-  achievement: { icon: Trophy, color: "#00f0ff" },
-  battle: { icon: Swords, color: "#a855f7" },
-  social: { icon: Heart, color: "#60a5fa" },
-  tier: { icon: Star, color: "#00f0ff" },
-  challenge: { icon: Star, color: "#34d399" },
-  system: { icon: Bell, color: "#64748b" },
+const ACCENT = "#00f0ff";
+
+const ICON_MAP: Record<string, { icon: typeof Bell; color: string }> = {
+  achievement: { icon: Trophy, color: "#a855f7" },
+  xp: { icon: Zap, color: ACCENT },
+  streak: { icon: Zap, color: "#2dd4bf" },
+  default: { icon: Bell, color: "#60a5fa" },
 };
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const notifications = useNotifications();
-  const unread = useUnreadCount();
-  const { markNotificationRead, markAllRead } = useStore();
+  const { markAllRead } = useStore();
 
   return (
-    <div className="page pb-safe bg-void">
-      <div className="flex items-center justify-between px-5 pt-6 pb-4">
+    <div className="page pb-safe" style={{ background: "#040610" }}>
+      {/* Header */}
+      <div className="px-5 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex items-center justify-center"
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-t2" />
+            <ChevronLeft className="w-4 h-4 text-white/50" />
           </button>
           <div>
-            <h1 className="font-black text-t1 text-xl">Notifications</h1>
-            {unread > 0 && (
-              <p className="text-[11px] text-t3">{unread} unread</p>
-            )}
+            <p
+              className="text-[9px] font-mono uppercase tracking-[0.3em] mb-0.5"
+              style={{ color: ACCENT }}
+            >
+              Inbox
+            </p>
+            <h1 className="text-xl font-black text-white">Notifications</h1>
           </div>
         </div>
-        {unread > 0 && (
+        {notifications.length > 0 && (
           <button
             onClick={markAllRead}
-            className="flex items-center gap-1.5 text-xs text-t3 hover:text-t1 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{
+              background: "rgba(0,240,255,0.06)",
+              border: "1px solid rgba(0,240,255,0.15)",
+              color: ACCENT,
+            }}
           >
-            <CheckCheck className="w-3.5 h-3.5" /> Mark all read
+            <CheckCheck className="w-3.5 h-3.5" />
+            Read all
           </button>
         )}
       </div>
 
-      {notifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <Bell className="w-12 h-12 text-t3 opacity-30" />
-          <p className="text-sm text-t3">No notifications yet</p>
-        </div>
-      ) : (
-        <div className="px-5 space-y-2">
-          {notifications.map((n, i) => {
-            const config = TYPE_ICONS[n.type] ?? TYPE_ICONS.system;
-            const Icon = config.icon;
+      {/* Notifications list */}
+      <div className="px-5 space-y-2">
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center py-16 gap-4 text-center">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{
+                background: "rgba(0,240,255,0.06)",
+                border: "1px solid rgba(0,240,255,0.12)",
+              }}
+            >
+              <Bell className="w-7 h-7" style={{ color: ACCENT }} />
+            </div>
+            <p className="text-white/40 text-sm">No notifications yet</p>
+          </div>
+        ) : (
+          notifications.map((n: any, i: number) => {
+            const cfg = ICON_MAP[n.type] || ICON_MAP.default;
+            const Icon = cfg.icon;
             return (
               <motion.div
                 key={n.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => markNotificationRead(n.id)}
-                className={cn(
-                  "flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
-                  n.isRead ? "bg-s0 border-b1 opacity-60" : "bg-s1 border-b1",
-                )}
+                className="flex items-start gap-3 p-3.5 rounded-2xl"
+                style={{
+                  background: n.read
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(0,240,255,0.03)",
+                  border: `1px solid ${n.read ? "rgba(255,255,255,0.04)" : "rgba(0,240,255,0.08)"}`,
+                }}
               >
-                {/* Icon */}
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${config.color}20` }}
+                  style={{ background: `${cfg.color}12` }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: config.color }} />
+                  <Icon className="w-5 h-5" style={{ color: cfg.color }} />
                 </div>
-
-                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-t1 leading-tight">
-                    {n.title}
-                  </p>
-                  <p className="text-xs text-t3 mt-0.5 leading-snug">
-                    {n.body}
-                  </p>
-                  <p className="text-[10px] text-t3 mt-1 font-mono">
-                    {timeAgo(n.createdAt)}
+                  <p className="text-sm font-semibold text-white">{n.title}</p>
+                  <p className="text-xs text-white/30 mt-0.5">{n.body}</p>
+                  <p className="text-[10px] text-white/15 font-mono mt-1">
+                    {n.time || "Just now"}
                   </p>
                 </div>
-
-                {/* Unread dot */}
-                {!n.isRead && (
-                  <div className="w-2 h-2 rounded-full bg-accent flex-shrink-0 mt-1" />
+                {!n.read && (
+                  <div
+                    className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                    style={{ background: ACCENT }}
+                  />
                 )}
               </motion.div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 }

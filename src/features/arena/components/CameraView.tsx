@@ -42,13 +42,20 @@ export function CameraView({
 
   return (
     <Card className="relative w-full aspect-[4/3] bg-black overflow-hidden border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-3xl group">
-      {/* Video stream (hidden, used as source) */}
-      <video ref={videoRef} className="hidden" playsInline muted />
+      {/* Video stream (visible, filling container) */}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        style={{ transform: mirrored ? "scaleX(-1)" : "none" }}
+        autoPlay
+        playsInline
+        muted
+      />
 
-      {/* Drawing Canvas */}
+      {/* Drawing Canvas for Landmarks */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full z-10 pointer-events-none"
         style={{ transform: mirrored ? "scaleX(-1)" : "none" }}
       />
 

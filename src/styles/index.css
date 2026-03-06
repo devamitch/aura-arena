@@ -65,50 +65,61 @@
 
 /* ─── tokens ─────────────────────────────────────────────────────────────── */
 :root {
-  /* Shadcn UI primitive mappings - Elite Esports Theme */
-  --background: #020611;
-  --foreground: #f8fafc;
-  --card: #060e24;
-  --card-foreground: #f8fafc;
-  --popover: #020611;
-  --popover-foreground: #f8fafc;
-  --primary: #00f0ff;
-  --primary-foreground: #020611;
-  --secondary: #7000ff;
-  --secondary-foreground: #f8fafc;
-  --muted: #15244b;
-  --muted-foreground: #94a3b8;
-  --accent: #00f0ff;
-  --accent-foreground: #020611;
+  /* Shadcn UI primitive mappings - Deep Teal & Ocean Blue Theme */
+  --background: #01080a; /* Extreme deep ocean */
+  --foreground: #e0f2fe;
+  --card: #021217;
+  --card-foreground: #e0f2fe;
+  --popover: #01080a;
+  --popover-foreground: #e0f2fe;
+  --primary: #00b4d8; /* Ocean Blue */
+  --primary-foreground: #01080a;
+  --secondary: #032029;
+  --secondary-foreground: #f0f9ff;
+  --muted: #021a22;
+  --muted-foreground: #7dd3fc;
+  --accent: #00b4d8;
+  --accent-foreground: #01080a;
   --destructive: #ef4444;
   --destructive-foreground: #f8fafc;
-  --border: #15244b;
-  --input: #15244b;
-  --ring: #00f0ff;
-  --radius: 0.75rem;
+  --border: #043645;
+  --input: #043645;
+  --ring: #00b4d8;
+  --radius: 1.25rem;
 
-  /* Custom App Tokens */
-  --void: #020611;
-  --s0: #04091a;
-  --s1: #060e24;
-  --s2: #0a1433;
-  --s3: #101c42;
-  --s4: #152451;
+  /* Custom App Tokens - Deep Teal & Ocean Blue (Thunder UI) */
+  --void: #010608;
+  --s0: #010a0d;
+  --s1: #02141a;
+  --s2: #031f29;
+  --s3: #042e3d;
+  --s4: #053b4f;
 
-  --b0: #0e1a38;
-  --b1: #15244b;
-  --b2: #1e336b;
-  --b3: #2a468d;
+  --b0: #032a38;
+  --b1: #053b4f;
+  --b2: #07526e;
+  --b3: #096b8f;
 
-  --t1: #e0f2fe;
+  --t1: #ffffff;
   --t2: #bae6fd;
   --t3: #7dd3fc;
   --t4: #38bdf8;
 
-  --ac: #00f0ff;
-  --ac2: #7000ff; /* Electric purple as secondary accent */
-  --ac-glow: rgba(0, 240, 255, 0.4);
+  --ac: #00d4ff; /* Crisp Ocean Blue Accent */
+  --ac2: #0077b6; /* Deeper Ocean Blue */
+  --ac-glow: rgba(0, 212, 255, 0.4);
+
+  --primary-gradient: linear-gradient(135deg, #00d4ff 0%, #0077b6 100%);
+  --surface-gradient: linear-gradient(
+    180deg,
+    rgba(2, 20, 26, 0.8) 0%,
+    rgba(1, 10, 13, 0.95) 100%
+  );
+
+  --glass-bg: rgba(2, 20, 26, 0.4);
+  --glass-border: rgba(0, 212, 255, 0.15);
   --ac-bg: rgba(0, 240, 255, 0.08);
+  --ac3: #2dd4bf; /* deep sea green */
 
   --primary-gradient: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
   --accent-gradient: linear-gradient(90deg, #00f0ff, #7000ff, #00f0ff);
@@ -315,6 +326,196 @@ h6 {
 }
 .card-press:active {
   transform: scale(0.972);
+}
+
+/* ─── MusicX gradient text ───────────────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #00f0ff, #00c8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-purple {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-mixed {
+  background: linear-gradient(135deg, #00f0ff, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── MusicX gradient borders ────────────────────────────────────────────── */
+.border-gradient {
+  position: relative;
+  border: none !important;
+}
+.border-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.3),
+    rgba(168, 85, 247, 0.15)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.border-glow-cyan {
+  border: 1px solid rgba(0, 240, 255, 0.2) !important;
+  box-shadow:
+    0 0 15px rgba(0, 240, 255, 0.08),
+    inset 0 0 15px rgba(0, 240, 255, 0.03);
+}
+.border-glow-purple {
+  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+  box-shadow:
+    0 0 15px rgba(168, 85, 247, 0.08),
+    inset 0 0 15px rgba(168, 85, 247, 0.03);
+}
+
+/* ─── MusicX button variants ─────────────────────────────────────────────── */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #040610;
+  background: linear-gradient(135deg, #00f0ff, #00c8ff);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    box-shadow 0.15s;
+}
+.btn-primary:active {
+  transform: scale(0.96);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    background 0.15s;
+}
+.btn-secondary:active {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.1);
+}
+.btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: rgba(0, 240, 255, 0.7);
+  background: transparent;
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    border-color 0.15s;
+}
+.btn-ghost:active {
+  transform: scale(0.96);
+  border-color: rgba(0, 240, 255, 0.3);
+}
+.btn-outline-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(0, 240, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.1s;
+  position: relative;
+}
+.btn-outline-gradient:active {
+  transform: scale(0.96);
+}
+
+/* ─── MusicX badges ──────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: "Space Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.badge-cyan {
+  background: rgba(0, 240, 255, 0.1);
+  color: #00f0ff;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+.badge-purple {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.badge-green {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+/* ─── MusicX dark cards ──────────────────────────────────────────────────── */
+.card-dark {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.card-dark-glow {
+  background: rgba(0, 240, 255, 0.04);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0, 240, 255, 0.06);
+  position: relative;
+  overflow: hidden;
 }
 
 /* ─── buttons ────────────────────────────────────────────────────────────── */

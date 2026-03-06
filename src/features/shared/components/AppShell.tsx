@@ -21,11 +21,12 @@ import {
 } from "framer-motion";
 import {
   Bot,
-  Compass,
+  Calendar,
   Home,
   Plus,
+  Search,
+  Settings as SettingsIcon,
   Swords,
-  User,
   Video,
   X,
   Zap,
@@ -33,8 +34,7 @@ import {
 import { useRef, type TouchEvent as RTE, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// ─── Always-cyan accent for bottom nav (never discipline-dependent) ──────────
-const NAV_ACCENT = "#00f0ff";
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const FULLSCREEN = [
   "/arena/train",
@@ -43,19 +43,12 @@ const FULLSCREEN = [
   "/discover/reels",
 ];
 
-const TABS = [
-  { id: "home", label: "Home", icon: Home, path: "/home" },
-  { id: "arena", label: "Arena", icon: Swords, path: "/arena" },
-  { id: "discover", label: "Explore", icon: Compass, path: "/discover" },
-  { id: "profile", label: "Profile", icon: User, path: "/profile" },
-] as const;
-
 const QUICK = [
   {
     icon: Zap,
     label: "Quick Train",
-    sub: "Start session",
-    path: "/arena/train",
+    sub: "Select a drill",
+    path: "/arena/drills",
     color: "#00f0ff",
   },
   {
@@ -74,8 +67,8 @@ const QUICK = [
   },
   {
     icon: Video,
-    label: "Post Reel",
-    sub: "Share a clip",
+    label: "Player Reels",
+    sub: "Watch athletes",
     path: "/discover/reels",
     color: "#34d399",
   },
@@ -207,15 +200,13 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const { accentColor } = usePersonalization();
 
   const isFS = FULLSCREEN.some((p) => location.pathname.startsWith(p));
-  const activeId =
-    TABS.find(
-      (t) =>
-        location.pathname === t.path ||
-        location.pathname.startsWith(t.path + "/"),
-    )?.id ?? "home";
+  const currentPath = location.pathname;
 
   return (
-    <div className="flex flex-col h-full w-full bg-void text-t1">
+    <div
+      className="flex flex-col h-full w-full text-white"
+      style={{ background: "#040610" }}
+    >
       {/* Main scrollable area — each page uses .page class for its own scroll */}
       <div className="flex-1 flex flex-col min-h-0">{children}</div>
 
@@ -228,96 +219,210 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 72, opacity: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className="fixed bottom-0 left-0 right-0 z-[60]"
+            className="fixed bottom-6 left-6 right-6 z-[60] flex justify-center"
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           >
-            <div className="flex items-center pt-2.5 pb-4 px-2 rounded-t-[28px] glass-heavy">
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                const active = tab.id === activeId;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => navigate(tab.path)}
-                    className="flex-1 flex flex-col items-center gap-1 py-1 relative"
-                  >
-                    {active && (
-                      <motion.div
-                        layoutId="nav-indicator"
-                        className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
-                        style={{
-                          background: `linear-gradient(90deg, transparent, ${NAV_ACCENT}, transparent)`,
-                          boxShadow: `0 0 12px ${NAV_ACCENT}`,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 35,
-                        }}
-                      />
-                    )}
-                    <motion.div
-                      animate={{ scale: active ? 1.15 : 1, y: active ? -2 : 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                      }}
-                    >
-                      <Icon
-                        className={cn(
-                          "w-[22px] h-[22px] transition-colors duration-200",
-                          active ? "" : "opacity-30",
-                        )}
-                        style={{
-                          color: active ? NAV_ACCENT : "rgba(255,255,255,0.5)",
-                        }}
-                        strokeWidth={active ? 2.4 : 1.6}
-                      />
-                    </motion.div>
-                    <span
-                      className={cn(
-                        "text-[9px] font-mono uppercase tracking-[0.12em] transition-colors duration-200",
-                        active ? "font-bold" : "opacity-30",
-                      )}
-                      style={{
-                        color: active ? NAV_ACCENT : "rgba(255,255,255,0.5)",
-                      }}
-                    >
-                      {tab.label}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* ── Outer Floating Track ── */}
+            <div
+              className="relative w-full max-w-md rounded-full p-2 flex items-center justify-between shadow-2xl"
+              style={{
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                backdropFilter: "blur(20px)",
+              }}
+            >
+              {/* Outer Glow Highlight */}
+              <div
+                className="absolute top-0 inset-x-12 h-[1px] opacity-80"
+                style={{ background: "var(--primary-gradient)" }}
+              />
 
-              {/* Center Plus button */}
-              <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={() => setShowPlusSheet(!showSheet)}
-                  className="w-[54px] h-[54px] rounded-[18px] flex items-center justify-center shadow-2xl"
-                  style={{
-                    background: showSheet
-                      ? "#0a0e1f"
-                      : `linear-gradient(145deg, ${NAV_ACCENT}, ${NAV_ACCENT}bb)`,
-                    border: showSheet ? `1.5px solid ${NAV_ACCENT}44` : "none",
-                    boxShadow: showSheet
-                      ? `0 0 20px ${NAV_ACCENT}20`
-                      : `0 8px 32px ${NAV_ACCENT}55`,
-                    transition: "background 0.2s, box-shadow 0.2s",
-                  }}
+              {/* Navigation Items overlaying the Pill */}
+              <div className="relative w-full h-16 flex justify-between items-center pointer-events-auto z-20 px-2">
+                {/* 1. Home */}
+                <button
+                  onClick={() => navigate("/home")}
+                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
                 >
-                  <motion.div
-                    animate={{ rotate: showSheet ? 45 : 0 }}
-                    transition={{ type: "spring", stiffness: 420, damping: 25 }}
-                  >
-                    <Plus
-                      className="w-6 h-6"
-                      style={{ color: showSheet ? NAV_ACCENT : "#030510" }}
-                      strokeWidth={showSheet ? 2 : 2.8}
+                  {/* Active Background Box */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-[20px] transition-all duration-300",
+                      currentPath === "/home" || currentPath === "/"
+                        ? "opacity-100 shadow-md"
+                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
+                    )}
+                    style={
+                      currentPath === "/home" || currentPath === "/"
+                        ? {
+                            background: "var(--s2)",
+                            borderColor: "var(--b2)",
+                            borderWidth: "1px",
+                          }
+                        : {}
+                    }
+                  />
+                  <Home
+                    className={cn(
+                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
+                      currentPath === "/home" || currentPath === "/"
+                        ? ""
+                        : "text-white/40 group-hover:text-white/80",
+                    )}
+                    style={
+                      currentPath === "/home" || currentPath === "/"
+                        ? { color: "var(--ac)" }
+                        : {}
+                    }
+                    strokeWidth={
+                      currentPath === "/home" || currentPath === "/" ? 2.5 : 2
+                    }
+                  />
+                </button>
+
+                {/* 2. Calendar / Events */}
+                <button
+                  onClick={() => navigate("/arena")}
+                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
+                >
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-[20px] transition-all duration-300",
+                      currentPath.startsWith("/arena")
+                        ? "opacity-100 shadow-md"
+                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
+                    )}
+                    style={
+                      currentPath.startsWith("/arena")
+                        ? {
+                            background: "var(--s2)",
+                            borderColor: "var(--b2)",
+                            borderWidth: "1px",
+                          }
+                        : {}
+                    }
+                  />
+                  <Calendar
+                    className={cn(
+                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
+                      currentPath.startsWith("/arena")
+                        ? ""
+                        : "text-white/40 group-hover:text-white/80",
+                    )}
+                    style={
+                      currentPath.startsWith("/arena")
+                        ? { color: "var(--ac)" }
+                        : {}
+                    }
+                    strokeWidth={currentPath.startsWith("/arena") ? 2.5 : 2}
+                  />
+                </button>
+
+                {/* 3. Central Add Button */}
+                <button
+                  onClick={() => setShowPlusSheet(!showSheet)}
+                  className="relative group w-14 h-14 flex justify-center items-center rounded-full border shadow-md"
+                  style={{ background: "var(--s1)", borderColor: "var(--b2)" }}
+                >
+                  {/* Swirling glow inside central button */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden">
+                    <div
+                      className="absolute -inset-4 opacity-30 animate-[spin_4s_linear_infinite]"
+                      style={{
+                        background:
+                          "conic-gradient(from 0deg, transparent 0%, var(--ac) 30%, transparent 60%)",
+                      }}
                     />
-                  </motion.div>
-                </motion.button>
+                  </div>
+                  <div
+                    className="absolute inset-1 rounded-full border"
+                    style={{
+                      background: "var(--s2)",
+                      borderColor: "var(--b1)",
+                    }}
+                  />
+                  <Plus
+                    className="w-5 h-5 relative z-10 hover:scale-110 transition-transform"
+                    style={{ color: "var(--ac)" }}
+                    strokeWidth={3}
+                  />
+                </button>
+
+                {/* 4. Global Search / Explore */}
+                <button
+                  onClick={() => navigate("/discover")}
+                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
+                >
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-[20px] transition-all duration-300",
+                      currentPath.startsWith("/discover")
+                        ? "opacity-100 shadow-md"
+                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
+                    )}
+                    style={
+                      currentPath.startsWith("/discover")
+                        ? {
+                            background: "var(--s2)",
+                            borderColor: "var(--b2)",
+                            borderWidth: "1px",
+                          }
+                        : {}
+                    }
+                  />
+                  <Search
+                    className={cn(
+                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
+                      currentPath.startsWith("/discover")
+                        ? ""
+                        : "text-white/40 group-hover:text-white/80",
+                    )}
+                    style={
+                      currentPath.startsWith("/discover")
+                        ? { color: "var(--ac)" }
+                        : {}
+                    }
+                    strokeWidth={currentPath.startsWith("/discover") ? 2.5 : 2}
+                  />
+                </button>
+
+                {/* 5. Settings / Profile */}
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
+                >
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-[20px] transition-all duration-300",
+                      currentPath.startsWith("/profile")
+                        ? "opacity-100 shadow-md"
+                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
+                    )}
+                    style={
+                      currentPath.startsWith("/profile")
+                        ? {
+                            background: "var(--s2)",
+                            borderColor: "var(--b2)",
+                            borderWidth: "1px",
+                          }
+                        : {}
+                    }
+                  />
+                  <SettingsIcon
+                    className={cn(
+                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
+                      currentPath.startsWith("/profile")
+                        ? ""
+                        : "text-white/40 group-hover:text-white/80",
+                    )}
+                    style={
+                      currentPath.startsWith("/profile")
+                        ? { color: "var(--ac)" }
+                        : {}
+                    }
+                    strokeWidth={currentPath.startsWith("/profile") ? 2.5 : 2}
+                  />
+                </button>
               </div>
             </div>
           </motion.nav>

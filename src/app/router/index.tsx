@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — Router
+// Dynamic routes for training drills, PvE battles, and live battles
+// ═══════════════════════════════════════════════════════════════════════════════
+
 import { AuthGuard } from "@features/auth/components/AuthGuard";
 import { OnboardingGate } from "@features/auth/components/OnboardingGate";
 import { AppShell } from "@shared/components/AppShell";
@@ -14,30 +19,13 @@ const lazy_ = (factory: () => Promise<{ default: React.ComponentType }>) => {
   );
 };
 
-// Auth
+// Auth & standalone pages (outside ProtectedLayout, use raw Suspense)
 const SplashPage = lazy(() => import("@app/pages/auth/SplashPage"));
 const LoginPage = lazy(() => import("@app/pages/auth/LoginPage"));
 const OnboardingPage = lazy(() => import("@app/pages/auth/OnboardingPage"));
-
-// App
-const DashboardPage = lazy(() => import("@app/pages/DashboardPage"));
-const ArenaHubPage = lazy(() => import("@app/pages/arena/ArenaHubPage"));
-const TrainingPage = lazy(() => import("@app/pages/arena/TrainingPage"));
-const PvePrePage = lazy(() => import("@app/pages/battle/PvePrePage"));
-const PveBattlePage = lazy(() => import("@app/pages/battle/PveBattlePage"));
-const LivePrePage = lazy(() => import("@app/pages/battle/LivePrePage"));
-const LiveBattlePage = lazy(() => import("@app/pages/battle/LiveBattlePage"));
-const DiscoverPage = lazy(() => import("@app/pages/discover/DiscoverPage"));
-const ReelsFeedPage = lazy(() => import("@app/pages/discover/ReelsFeedPage"));
-const LeaguePage = lazy(() => import("@app/pages/discover/LeaguePage"));
-const ProfilePage = lazy(() => import("@app/pages/profile/ProfilePage"));
-const AvatarPage = lazy(() => import("@app/pages/profile/AvatarPage"));
-const DataImportPage = lazy(() => import("@app/pages/profile/DataImportPage"));
-const NotificationsPage = lazy(() => import("@app/pages/NotificationsPage"));
-const DetectionLabPage = lazy(
-  () => import("@app/pages/arena/DetectionLabPage"),
-);
 const OfflinePage = lazy(() => import("@app/pages/OfflinePage"));
+
+// Protected pages are inlined via lazy_() in route definitions below
 
 const ProtectedLayout = () => (
   <AuthGuard>
@@ -57,6 +45,10 @@ const router = createBrowserRouter([
         <SplashPage />
       </Suspense>
     ),
+  },
+  {
+    path: "/intro",
+    element: lazy_(() => import("@app/pages/auth/IntroPage")),
   },
   {
     path: "/login",
@@ -89,123 +81,85 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/home",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <DashboardPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/DashboardPage")),
       },
       {
         path: "/arena",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <ArenaHubPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/arena/ArenaHubPage")),
+      },
+      // ── Training: list and details ────────────────────────────
+      {
+        path: "/arena/drills",
+        element: lazy_(() => import("@app/pages/arena/TrainingSelectionPage")),
       },
       {
         path: "/arena/train",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <TrainingPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/arena/TrainingPage")),
       },
       {
+        path: "/arena/train/:drillId",
+        element: lazy_(() => import("@app/pages/arena/TrainingPage")),
+      },
+      // ── PvE Battle: opponent selection + battle with ID ───────
+      {
         path: "/battle/pve/select",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <PvePrePage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/battle/PvePrePage")),
+      },
+      {
+        path: "/battle/pve/:opponentId",
+        element: lazy_(() => import("@app/pages/battle/PveBattlePage")),
       },
       {
         path: "/battle/pve",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <PveBattlePage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/battle/PveBattlePage")),
       },
+      // ── Live Battle ────────────────────────────────────────────
       {
         path: "/battle/live/lobby",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <LivePrePage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/battle/LivePrePage")),
       },
       {
         path: "/battle/live",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <LiveBattlePage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/battle/LiveBattlePage")),
       },
       {
+        path: "/battle/live/:matchId",
+        element: lazy_(() => import("@app/pages/battle/LiveBattlePage")),
+      },
+      // ── Discover ───────────────────────────────────────────────
+      {
         path: "/discover",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <DiscoverPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/discover/DiscoverPage")),
       },
       {
         path: "/discover/reels",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <ReelsFeedPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/discover/ReelsFeedPage")),
       },
       {
         path: "/discover/league",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <LeaguePage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/discover/LeaguePage")),
       },
+      // ── Profile ────────────────────────────────────────────────
       {
         path: "/profile",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <ProfilePage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/profile/ProfilePage")),
       },
       {
         path: "/profile/avatar",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <AvatarPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/profile/AvatarPage")),
       },
       {
         path: "/profile/import",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <DataImportPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/profile/DataImportPage")),
       },
+      // ── Other ──────────────────────────────────────────────────
       {
         path: "/notifications",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <NotificationsPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/NotificationsPage")),
       },
       {
         path: "/arena/lab",
-        element: (
-          <Suspense fallback={<FullScreenLoader />}>
-            <DetectionLabPage />
-          </Suspense>
-        ),
+        element: lazy_(() => import("@app/pages/arena/DetectionLabPage")),
       },
     ],
   },

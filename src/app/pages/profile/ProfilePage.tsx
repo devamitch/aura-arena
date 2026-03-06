@@ -1,5 +1,6 @@
 import { useDailyTip, useTrainingPlan } from "@hooks/useAI";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { Skeleton } from "@shared/components/ui/Skeleton";
 import { TierBadge } from "@shared/components/ui/TierBadge";
 import { Slider } from "@shared/components/ui/slider";
@@ -71,7 +72,7 @@ export default function ProfilePage() {
   } = usePersonalization();
 
   return (
-    <div className="page pb-safe" style={{ background: "var(--void)" }}>
+    <div className="page pb-safe" style={{ background: "#040610" }}>
       {/* header */}
       <div className="px-5 pt-6 pb-3 flex-shrink-0 relative overflow-hidden">
         <div
@@ -80,14 +81,17 @@ export default function ProfilePage() {
         />
         <div className="flex items-center justify-between mb-4 relative z-10">
           <div>
-            <p className="label-hud mb-1" style={{ color: accentColor }}>
+            <p
+              className="text-[9px] font-mono uppercase tracking-[0.3em] mb-1"
+              style={{ color: accentColor }}
+            >
               Your Profile
             </p>
-            <h1 className="font-display font-extrabold text-2xl leading-none text-[var(--t1)]">
+            <h1 className="text-2xl font-black text-white leading-none">
               {user?.arenaName || user?.displayName || "Athlete"}
             </h1>
-            <p className="text-xs text-[var(--t3)] mt-1">
-              {disc.emoji} {subDiscipline?.name ?? disc.name}
+            <p className="text-xs text-white/30 mt-1">
+              {subDiscipline?.name ?? disc.name}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -117,9 +121,9 @@ export default function ProfilePage() {
                       boxShadow: `0 0 16px ${accentColor}50`,
                     }
                   : {
-                      background: "var(--s2)",
-                      border: "1px solid var(--b1)",
-                      color: "var(--t3)",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      color: "rgba(255,255,255,0.35)",
                     }
               }
             >
@@ -300,7 +304,6 @@ const StatsTab = ({ accentColor }: { accentColor: string }) => {
                 transition={{
                   delay: 0.05,
                   duration: 0.5,
-                  transformOrigin: "bottom",
                 }}
               />
               <p className="label-hud">{d.day}</p>
@@ -330,10 +333,14 @@ const CoachTab = () => {
       <div className="card rounded-[20px] p-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
             style={{ background: `${accentColor}18` }}
           >
-            {disc.emoji}
+            <DynamicIcon
+              name={disc.icon}
+              className="w-7 h-7"
+              style={{ color: accentColor }}
+            />
           </div>
           <div>
             <p className="font-display font-bold text-base text-[var(--t1)]">
@@ -498,7 +505,7 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
   const soundEnabled = useSoundEnabled();
   const reduceMotion = useReduceMotion();
   const masterVolume = useMasterVolume();
-  const { accentColor: _accentColor } = usePersonalization();
+
   return (
     <div className="space-y-3.5 pt-3 pb-4">
       <div className="card rounded-[20px] p-4 space-y-4">

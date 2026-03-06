@@ -1,416 +1,510 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — Dashboard
-// Personalized home with AI tips, missions, streak, recent sessions
+// AURA ARENA — Dashboard (Exact MusicX Match)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { MissionCard } from "@features/gamification/components/MissionCard";
-import { useDailyTip } from "@hooks/useAI";
-import { usePersonalization } from "@hooks/usePersonalization";
-import { formatNumber, timeAgo } from "@lib/utils";
-import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
-import { Skeleton } from "@shared/components/ui/Skeleton";
-import { TierBadge } from "@shared/components/ui/TierBadge";
-import { Card, CardContent } from "@shared/components/ui/card";
+import { useAuth } from "@hooks/useAuth";
+import { formatNumber } from "@lib/utils";
+import { useUnreadCount, useUser, useXP } from "@store";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  useDailyMissions,
-  useDailyStreak,
-  useSessionHistory,
-  useTier,
-  useUnreadCount,
-  useUser,
-  useXP,
-} from "@store";
-import { motion } from "framer-motion";
-import { Bell, ChevronRight, Swords, Zap } from "lucide-react";
+  ArrowDownLeft,
+  ArrowUpRight,
+  Bell,
+  ChevronRight,
+  LogOut,
+  Settings,
+  Shield,
+  User as UserIcon,
+  X,
+} from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
+// ── Settings Bottom Sheet Component ── //
+const SettingsSheet = ({ onClose }: { onClose: () => void }) => {
+  const { signOut } = useAuth();
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        className="relative bg-[#040610] rounded-t-[32px] p-6 pb-safe border-t border-[#00f0ff]/20 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]"
+      >
+        <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6" />
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-xl font-bold text-white tracking-widest uppercase">
+            Settings
+          </h2>
+          <button onClick={onClose} className="p-2 bg-white/5 rounded-full">
+            <X className="w-5 h-5 text-white/70" />
+          </button>
+        </div>
 
-const StatPill = ({
-  label,
-  value,
-  suffix,
-  color,
-}: {
-  label: string;
-  value: string | number;
-  suffix?: string;
-  color: string;
-}) => (
-  <Card className="px-4 py-3 flex flex-col gap-0.5 transition-transform active:scale-95 bg-card/60 backdrop-blur-xl border-white/10 shadow-lg">
-    <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground opacity-80">
-      {label}
-    </p>
-    <p
-      className="text-xl font-black tabular-nums leading-none tracking-tight"
-      style={{ color, textShadow: `0 0 10px ${color}30` }}
-    >
-      {value}
-      {suffix && <span className="text-sm ml-0.5 opacity-80">{suffix}</span>}
-    </p>
-  </Card>
-);
-
-// ─── Orb background ────────────────────────────────────────────────────────────
-
-const OrbBg = ({ color }: { color: string }) => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    <motion.div
-      animate={{ x: [0, 20, -10, 0], y: [0, -15, 20, 0] }}
-      transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-[-20%] right-[-10%] w-64 h-64 rounded-full opacity-[0.12] blur-3xl"
-      style={{ background: color }}
-    />
-    <motion.div
-      animate={{ x: [0, -15, 10, 0], y: [0, 20, -10, 0] }}
-      transition={{
-        duration: 18,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: 2,
-      }}
-      className="absolute bottom-[10%] left-[-10%] w-48 h-48 rounded-full opacity-[0.07] blur-3xl"
-      style={{ background: color }}
-    />
-  </div>
-);
-
-// ─── Main page ─────────────────────────────────────────────────────────────────
+        <div className="space-y-3">
+          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+            <div className="flex items-center gap-3">
+              <UserIcon className="w-5 h-5 text-[#00f0ff]" />
+              <span className="font-semibold text-white">Edit Profile</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40" />
+          </button>
+          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-[#00f0ff]" />
+              <span className="font-semibold text-white">
+                Privacy & Security
+              </span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/40" />
+          </button>
+          <button
+            onClick={() => {
+              signOut();
+              onClose();
+            }}
+            className="w-full flex items-center justify-between p-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors mt-4 border border-red-500/20"
+          >
+            <div className="flex items-center gap-3">
+              <LogOut className="w-5 h-5 text-red-500" />
+              <span className="font-semibold text-red-500">Log Out</span>
+            </div>
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const user = useUser();
   const xp = useXP();
-  const tier = useTier();
-  const streak = useDailyStreak();
-  const missions = useDailyMissions();
   const unread = useUnreadCount();
-  const sessions = useSessionHistory();
+  const [showSettings, setShowSettings] = useState(false);
 
-  const {
-    discipline: disc,
-    subDiscipline,
-    accentColor,
-    currentTier,
-    nextTier,
-    tierProgress,
-  } = usePersonalization();
-  const { text: tip, loading: tipLoading } = useDailyTip(
-    disc.id,
-    subDiscipline?.id,
-  );
-
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const firstName = (user?.arenaName || user?.displayName || "Athlete").split(
     " ",
   )[0];
-  const recentSess = sessions.slice(0, 3);
-  const doneMissions = missions.filter((m) => m.complete).length;
 
-  // Added greeting to the UI
   return (
-    <div className="page relative pb-safe bg-void">
-      <OrbBg color={accentColor} />
+    <div
+      className="page min-h-screen text-foreground font-sans pb-safe relative overflow-hidden flex flex-col pt-10"
+      style={{
+        background: "#02040a",
+      }}
+    >
+      {/* ── Extreme Cinematic Background ── */}
+      <div className="absolute inset-x-0 inset-y-0 z-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(2, 6, 16, 0.9) 0%, rgba(2, 6, 16, 0.4) 50%, rgba(2, 6, 16, 0.95) 100%)",
+          }}
+        />
+        {/* Tactical UI Grid Lines Overlay */}
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, #00f0ff 1px, transparent 1px),
+              linear-gradient(to bottom, #00f0ff 1px, transparent 1px)
+            `,
+            backgroundSize: "40px 40px",
+            maskImage:
+              "radial-gradient(circle at top, transparent 10%, black 100%)",
+            WebkitMaskImage:
+              "radial-gradient(circle at top, transparent 10%, black 100%)",
+          }}
+        />
+      </div>
 
-      {/* ── Header ── */}
-      <div className="px-5 pt-14 pb-4 relative">
-        <div className="flex items-start justify-between mb-8">
-          <div className="flex flex-col">
-            <p className="text-[10px] font-mono text-t3 uppercase tracking-[0.3em] mb-1 opacity-70">
-              {greeting}
-            </p>
-            <h1 className="text-3xl font-black text-t1 leading-none">
-              {firstName}
-            </h1>
-            <div className="flex items-center gap-2 mt-3">
-              <TierBadge tier={currentTier} size="sm" />
-              <div className="h-3 w-px bg-white/10 mx-1" />
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/5">
-                <DynamicIcon
-                  name={disc.icon}
-                  className="w-3 h-3 text-t3"
-                  style={{ color: accentColor }}
-                />
-                <span className="text-[9px] text-t2 font-mono uppercase tracking-widest">
-                  {disc.name}
-                </span>
-              </div>
-              {subDiscipline && (
-                <span className="text-[9px] text-t3 font-mono opacity-60">
-                  {subDiscipline.name}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl glass p-1 border-white/10 shadow-[0_0_20px_rgba(0,240,255,0.1)] overflow-hidden hidden sm:block">
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <button
-              onClick={() => navigate("/notifications")}
-              className="btn-icon relative"
+      {/* ── Decorative Sci-Fi Top Bar ── */}
+      <div className="relative flex items-center justify-between px-6 mb-8 mt-2 z-20">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span
+              className="font-black text-2xl tracking-tighter"
+              style={{
+                color: "white",
+                textShadow: "0 0 10px rgba(0,240,255,0.4)",
+              }}
             >
-              <Bell className="w-4.5 h-4.5 text-t2" />
-              {unread > 0 && (
-                <span
-                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-void"
-                  style={{ background: accentColor }}
-                >
-                  {unread > 9 ? "9+" : unread}
-                </span>
-              )}
-            </button>
+              AURA<span className="text-[#00f0ff]">ARENA</span>
+            </span>
           </div>
+          <div className="h-[2px] w-24 bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]" />
         </div>
 
-        {/* XP bar */}
-        {nextTier && (
-          <div className="mb-5">
-            <div className="flex justify-between text-[10px] font-mono text-t3 mb-1.5">
-              <span>{formatNumber(xp)} XP</span>
-              <span className="flex items-center gap-1">
-                <DynamicIcon name={nextTier.icon} className="w-2.5 h-2.5" />
-                {nextTier.name} (Tier {tier}) at {formatNumber(nextTier.xpMin)}
-              </span>
-            </div>
-            <div className="h-1.5 bg-s2 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${tierProgress}%` }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  background: `linear-gradient(90deg, ${accentColor}cc, ${accentColor})`,
-                  boxShadow: `0 0 8px ${accentColor}60`,
-                }}
-              />
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[#00f0ff] font-mono text-[9px] tracking-[0.2em] uppercase opacity-70">
+              SYS.SYNC // ACTIVE
+            </span>
+            <div className="flex gap-1">
+              <div className="w-1 h-3 bg-[#00f0ff] animate-pulse" />
+              <div className="w-1 h-3 bg-[#00f0ff] opacity-40" />
+              <div className="w-1 h-3 bg-[#00f0ff] opacity-20" />
             </div>
           </div>
-        )}
-      </div>
-
-      {/* ── Stats strip ── */}
-      <div className="px-5 grid grid-cols-3 gap-2 mb-5">
-        {[
-          { label: "Total XP", value: formatNumber(xp), color: accentColor },
-          { label: "Streak", value: streak, suffix: "x", color: accentColor },
-          {
-            label: "Avg Score",
-            value: user?.averageScore ?? 0,
-            color: accentColor,
-          },
-        ].map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.06 }}
-          >
-            <StatPill {...s} />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ── Quick start CTAs ── */}
-      <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-        <Card
-          onClick={() => navigate("/arena/train")}
-          className="relative overflow-hidden p-6 text-left border-white/10 bg-card/60 backdrop-blur-xl group cursor-pointer mb-3 shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:border-accent/40 transition-colors"
-        >
-          <div
-            className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 transition-opacity group-hover:opacity-40"
-            style={{ background: accentColor }}
-          />
-          <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
-            <Zap className="w-6 h-6" style={{ color: accentColor }} />
-          </div>
-          <p className="font-black text-foreground text-base leading-none mb-1 tracking-tight">
-            Train
-          </p>
-          <p className="text-[11px] text-muted-foreground font-mono uppercase tracking-widest opacity-80">
-            Start session
-          </p>
-        </Card>
-      </motion.div>
-
-      <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-        <Card
-          onClick={() => navigate("/battle/pve/select")}
-          className="relative overflow-hidden p-6 text-left border-white/10 bg-card/60 backdrop-blur-xl group cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:border-secondary/40 transition-colors"
-        >
-          <div
-            className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 transition-opacity group-hover:opacity-40"
-            style={{ background: accentColor }}
-          />
-          <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
-            <Swords className="w-6 h-6" style={{ color: accentColor }} />
-          </div>
-          <p className="font-black text-foreground text-base leading-none mb-1 tracking-tight">
-            Battle
-          </p>
-          <p className="text-[11px] text-muted-foreground font-mono uppercase tracking-widest opacity-80">
-            vs AI opponent
-          </p>
-        </Card>
-      </motion.div>
-
-      {/* ── Daily tip ── */}
-      <div className="px-5 mb-6 pt-3">
-        <Card className="overflow-hidden border-white/10 shadow-2xl bg-card/80 backdrop-blur-xl">
-          <div
-            className="px-5 py-3 flex items-center gap-2 border-b border-border/50"
+          <button
+            onClick={() => navigate("/notifications")}
+            className="w-10 h-10 rounded-full flex items-center justify-center border relative transition-colors shadow-[0_0_15px_rgba(0,240,255,0.15)]"
             style={{
-              background: `linear-gradient(90deg, ${accentColor}15, transparent)`,
+              background: "rgba(0,240,255,0.05)",
+              borderColor: "rgba(0,240,255,0.3)",
             }}
           >
-            <DynamicIcon
-              name={disc.icon}
-              className="w-3.5 h-3.5"
-              style={{ color: accentColor }}
-            />
-            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-              {user?.aiCoachName ?? "Coach"} insights
-            </p>
-          </div>
-          <CardContent className="px-5 py-4">
-            {tipLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-full rounded" />
-                <Skeleton className="h-3 w-3/4 rounded" />
-              </div>
-            ) : (
-              <p className="text-sm font-medium text-foreground leading-relaxed italic opacity-90">
-                "{tip}"
-              </p>
+            <Bell className="w-4 h-4 text-[#00f0ff]" />
+            {unread > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] border border-[#02040a]" />
             )}
-          </CardContent>
-        </Card>
+          </button>
+        </div>
       </div>
 
-      {/* ── Daily missions ── */}
-      {missions.length > 0 && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <p className="text-xs font-mono uppercase tracking-widest text-t3">
-                Daily Missions
-              </p>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-s2 text-t3">
-                {doneMissions}/{missions.length}
-              </span>
-            </div>
-            <div className="w-16 h-1.5 bg-s2 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                style={{ background: accentColor }}
-                animate={{
-                  width: `${(doneMissions / missions.length) * 100}%`,
-                }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            {missions.slice(0, 3).map((m) => (
-              <MissionCard key={m.id} mission={m} accentColor={accentColor} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Recent sessions ── */}
-      {recentSess.length > 0 && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-mono uppercase tracking-widest text-t3">
-              Recent Sessions
-            </p>
-            <button
-              onClick={() => navigate("/profile")}
-              className="text-[11px] text-t3 flex items-center gap-1"
+      {/* ── Active Operatives (Global Roster) ── */}
+      <div className="mb-8 pl-6 relative z-10">
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pr-6 pb-4">
+          {[
+            {
+              name: "Mankirt",
+              image: "https://i.pravatar.cc/150?img=11",
+              status: "ONLINE",
+            },
+            {
+              name: "Dilpreet",
+              image: "https://i.pravatar.cc/150?img=12",
+              status: "IN BATTLE",
+            },
+            {
+              name: "Babbu",
+              image: "https://i.pravatar.cc/150?img=33",
+              status: "READY",
+            },
+            {
+              name: "Roman",
+              image: "https://i.pravatar.cc/150?img=47",
+              status: "OFFLINE",
+            },
+            {
+              name: "Zen",
+              image: "https://i.pravatar.cc/150?img=59",
+              status: "ONLINE",
+            },
+          ].map((athlete, i) => (
+            <motion.button
+              key={athlete.name}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              whileTap={{ scale: 0.9 }}
+              className="flex flex-col items-center gap-2 flex-shrink-0 relative group"
+              onClick={() => navigate("/discover")}
             >
-              All <ChevronRight className="w-3 h-3" />
+              {/* Refined MusicX Portrait */}
+              <div className="relative w-20 h-20 rounded-full bg-transparent overflow-hidden border-2 border-transparent group-hover:border-[var(--ac)] transition-colors duration-300 shadow-xl">
+                <div className="absolute inset-0 bg-[var(--s2)] p-0.5 rounded-full">
+                  <div className="w-full h-full rounded-full relative overflow-hidden bg-[var(--s1)]">
+                    <img
+                      src={athlete.image}
+                      alt={athlete.name}
+                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)]/80 via-transparent to-transparent" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status and Name */}
+              <div className="flex flex-col items-center mt-1">
+                <span
+                  className={`text-[8px] font-mono tracking-[0.2em] mb-0.5 ${athlete.status === "IN BATTLE" ? "text-red-500 animate-pulse" : athlete.status === "OFFLINE" ? "text-white/30" : "text-[#00f0ff]"}`}
+                >
+                  {athlete.status}
+                </span>
+                <span className="text-xs font-bold text-white tracking-widest uppercase shadow-[0_0_5px_rgba(0,0,0,0.8)]">
+                  {athlete.name}
+                </span>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── HUD Dashboard Body ── */}
+      <div className="flex-1 flex flex-col gap-4 pb-20 z-10 px-5 relative">
+        {/* ── Main Profile & Data Block ── */}
+        <div
+          className="p-6 relative overflow-hidden group border border-[#00f0ff]/30 shadow-[0_0_20px_rgba(0,240,255,0.05),inset_0_0_30px_rgba(0,240,255,0.05)] bg-[#030b14]/80 backdrop-blur-md"
+          style={{
+            clipPath:
+              "polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)",
+          }}
+        >
+          {/* Animated Tech Lines Vector */}
+          <div className="absolute inset-0 pointer-events-none opacity-20">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-[#00f0ff] to-transparent" />
+            <div className="absolute bottom-0 right-0 w-full h-[1px] bg-gradient-to-l from-[#00f0ff] to-transparent" />
+          </div>
+
+          {/* Profile Header */}
+          <div className="flex items-center justify-between mb-8 relative z-10">
+            <div className="flex items-center gap-4">
+              {/* Smooth Rounded Profile Pic */}
+              <div className="w-16 h-16 relative overflow-hidden flex justify-center items-center rounded-2xl border border-[var(--glass-border)] bg-[var(--s2)] shadow-lg">
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    className="w-full h-full object-cover opacity-90"
+                  />
+                ) : (
+                  <div className="font-bold text-2xl text-[var(--ac)] tracking-tighter">
+                    {firstName[0]}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <p
+                  className="text-xl font-black text-white tracking-widest uppercase"
+                  style={{ textShadow: "2px 2px 0px rgba(0,240,255,0.5)" }}
+                >
+                  {firstName}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="w-2 h-2 rounded-sm bg-[#00f0ff] animate-pulse" />
+                  <p className="text-[10px] font-mono tracking-[0.2em] text-[#00f0ff]/80 uppercase">
+                    IDENT_VERIFIED
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 -mr-2 text-[#00f0ff]/60 hover:text-[#00f0ff] transition-colors"
+            >
+              <Settings className="w-6 h-6" />
             </button>
           </div>
-          <div className="space-y-2">
-            {recentSess.map((s, i) => (
-              <motion.div
-                key={s.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm"
-              >
-                <DynamicIcon
-                  name={disc.icon}
-                  className="w-5 h-5"
-                  style={{ color: accentColor }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-t1 truncate">
-                    {s.drillId || "Free Training"}
-                  </p>
-                  <p className="text-[10px] text-t3 font-mono">
-                    {timeAgo(s.createdAt)}
-                  </p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p
-                    className="font-black tabular-nums text-base"
-                    style={{ color: accentColor }}
-                  >
-                    {s.score}
-                  </p>
-                  <p className="text-[9px] text-t3 font-mono">
-                    +{s.xpEarned} XP
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+
+          {/* Balance Section (MusicX Premium Block) */}
+          <div className="p-5 flex items-center justify-between relative overflow-hidden transition-colors mt-4 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)]">
+            {/* Soft background glow */}
+            <div className="absolute right-0 top-0 bottom-0 w-32 bg-[var(--ac)]/10 blur-xl rounded-full" />
+
+            <div className="relative z-10 flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-mono font-bold text-[#00f0ff] tracking-[0.3em] uppercase opacity-80">
+                  CREDITS // AURA
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-[#00f0ff] mr-1">$</span>
+                <span
+                  className="text-[44px] font-black font-mono tabular-nums tracking-tighter leading-none text-white"
+                  style={{ textShadow: "0 0 20px rgba(0,240,255,0.4)" }}
+                >
+                  {formatNumber(xp)}
+                </span>
+                <span className="text-sm font-bold text-[#00f0ff]/50 ml-1">
+                  .00
+                </span>
+              </div>
+            </div>
+
+            <div className="relative z-10 w-14 h-14 rounded-full border border-[var(--ac)]/40 flex items-center justify-center flex-shrink-0 bg-[var(--s2)] shadow-inner">
+              <span className="text-[var(--ac)] font-bold text-xs uppercase text-shadow-sm">
+                AURA
+              </span>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Empty state */}
-      {sessions.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="px-5 flex flex-col items-center py-8 gap-3 text-center"
-        >
-          <div
-            className="w-16 h-16 rounded-3xl flex items-center justify-center mb-2"
-            style={{ background: `${accentColor}15` }}
-          >
-            <DynamicIcon
-              name={disc.icon}
-              className="w-8 h-8"
-              style={{ color: accentColor }}
-            />
-          </div>
-          <p className="font-black text-t1">Ready to begin?</p>
-          <p className="text-sm text-t3">Your first session is one tap away</p>
+        <div className="grid grid-cols-2 gap-4 mt-2">
+          {/* Deposit Button (Clean MusicX style) */}
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/arena/train")}
-            className="mt-2 px-7 py-3.5 rounded-2xl font-bold text-void text-sm"
+            onClick={() => navigate("/arena/drills")}
+            className="h-[68px] px-5 flex items-center justify-between relative overflow-hidden group rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-gradient)] shadow-xl transition-all"
+          >
+            {/* Gentle Hover Fill */}
+            <div className="absolute inset-0 bg-[#00d4ff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out z-0" />
+
+            <div className="flex items-center gap-3 relative z-10 w-full group-hover:text-[var(--ac)] transition-colors">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--ac)]/40 bg-[var(--s2)] group-hover:bg-[var(--s4)] transition-colors">
+                <ArrowDownLeft className="w-5 h-5 text-[var(--foreground)] group-hover:text-[var(--ac)]" />
+              </div>
+              <span className="font-bold text-[14px] text-[var(--foreground)] tracking-wide">
+                Deposit
+              </span>
+            </div>
+          </motion.button>
+
+          {/* Withdraw Button */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/battle/live/lobby")}
+            className="h-[68px] px-5 flex items-center justify-between relative overflow-hidden group rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-gradient)] shadow-xl transition-all"
+          >
+            <div className="absolute inset-0 bg-[var(--ac)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out z-0" />
+            <div className="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--ac)]/50 to-transparent" />
+
+            <div className="flex items-center gap-3 relative z-10 w-full justify-between pr-1">
+              <span className="font-bold text-[14px] text-[var(--foreground)] tracking-wide ml-1">
+                Withdraw
+              </span>
+              <div className="w-10 h-10 rounded-full border border-[var(--ac)]/40 bg-[var(--s2)] flex items-center justify-center group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform">
+                <ArrowUpRight className="w-5 h-5 text-[var(--foreground)] group-hover:text-[var(--ac)]" />
+              </div>
+            </div>
+          </motion.button>
+        </div>
+
+        {/* ── Extreme HUD Stats Grid ── */}
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          {/* Main Target List HUD Block */}
+          <motion.div
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate("/discover/reels")}
+            className="p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden border border-[#00f0ff]/40 bg-[rgba(0,240,255,0.03)]"
             style={{
-              background: accentColor,
-              boxShadow: `0 0 24px ${accentColor}50`,
+              minHeight: "180px",
+              clipPath:
+                "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)",
             }}
           >
-            Start First Session
+            {/* Grid Background */}
+            <div
+              className="absolute inset-0 opacity-10 pointer-events-none mix-blend-screen"
+              style={{
+                backgroundImage: `linear-gradient(to right, #00f0ff 1px, transparent 1px), linear-gradient(to bottom, #00f0ff 1px, transparent 1px)`,
+                backgroundSize: "15px 15px",
+              }}
+            />
+
+            <div className="flex justify-between items-start group-hover:opacity-80 transition-opacity relative z-10">
+              <span className="text-[10px] font-black font-mono tracking-widest text-[#00f0ff] uppercase shadow-[0_0_10px_#00f0ff]">
+                GLOBAL_ROSTER
+              </span>
+              <div className="w-6 h-6 border-[1px] border-[#00f0ff]/60 flex items-center justify-center bg-transparent group-hover:translate-x-1 group-hover:-translate-y-1 transition-all">
+                <ChevronRight className="w-4 h-4 text-[#00f0ff]" />
+              </div>
+            </div>
+
+            <div className="relative z-10 mt-auto">
+              <span className="text-[54px] font-black font-mono leading-none text-transparent bg-clip-text bg-gradient-to-b from-white to-[#00f0ff]/50 tracking-tighter drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                24
+              </span>
+              <div
+                className="w-full h-0.5 bg-[#00f0ff] mt-2 shadow-[0_0_10px_#00f0ff]"
+                style={{ width: "40%" }}
+              />
+            </div>
+          </motion.div>
+
+          {/* Secondary Stats HUD Blocks */}
+          <div className="flex flex-col gap-4">
+            {/* Stat Block 1 */}
+            <div
+              className="p-4 flex flex-col justify-center relative overflow-hidden group border border-[#00f0ff]/20 bg-[rgba(0,240,255,0.02)] flex-1 shadow-[inset_0_0_15px_rgba(0,240,255,0.05)]"
+              style={{
+                clipPath: "polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px)",
+              }}
+            >
+              <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#00f0ff]/80 uppercase relative z-10">
+                LOBBIES_LIVE
+              </span>
+              <span className="text-[36px] font-black font-mono leading-none text-white tracking-tighter relative z-10 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">
+                3
+              </span>
+              <div className="absolute right-3 bottom-0 w-[2px] h-1/2 bg-[#00f0ff] opacity-40 group-hover:opacity-100 transition-opacity" />
+            </div>
+
+            {/* Stat Block 2 */}
+            <div
+              className="p-4 flex flex-col justify-center relative overflow-hidden group border border-[#00f0ff]/20 bg-[rgba(0,240,255,0.02)] flex-1 shadow-[inset_0_0_15px_rgba(0,240,255,0.05)]"
+              style={{
+                clipPath:
+                  "polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)",
+              }}
+            >
+              <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#00f0ff]/80 uppercase relative z-10">
+                WINS_SECURED
+              </span>
+              <span className="text-[36px] font-black font-mono leading-none text-white tracking-tighter relative z-10 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">
+                12
+              </span>
+              <div className="absolute left-3 bottom-0 w-[2px] h-1/2 bg-[#00f0ff] opacity-40 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Large Horizontal Action Button ── */}
+        <div className="px-5 relative z-10">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            className="w-full rounded-[24px] p-6 flex items-center justify-between mt-6 relative overflow-hidden group border transition-colors shadow-xl"
+            style={{
+              background: "var(--s1)",
+              borderColor: "var(--glass-border)",
+            }}
+          >
+            {/* Swirling glow inside button */}
+            <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
+              <div
+                className="w-full h-full rounded-full blur-[30px]"
+                style={{ background: "var(--hover-gradient)" }}
+              />
+            </div>
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div
+                className="w-12 h-12 rounded-full border flex items-center justify-center shadow-md transition-colors"
+                style={{ background: "var(--s2)", borderColor: "var(--ac)" }}
+              >
+                <span
+                  className="font-black text-2xl mb-1"
+                  style={{ color: "var(--ac)" }}
+                >
+                  +
+                </span>
+              </div>
+              <div className="text-left">
+                <span className="block text-[16px] font-black text-white tracking-wide">
+                  Add Funds
+                </span>
+                <span className="block text-[12px] font-medium text-[var(--t2)] tracking-wider">
+                  Deposit Aura-X tokens
+                </span>
+              </div>
+            </div>
+
+            <div className="w-10 h-10 rounded-full border border-[var(--ac)] flex items-center justify-center bg-[var(--s2)] group-hover:scale-110 transition-transform relative z-10 shadow-sm">
+              <ChevronRight
+                className="w-5 h-5 text-[var(--ac)] transition-colors ml-0.5"
+                strokeWidth={3}
+              />
+            </div>
           </motion.button>
-        </motion.div>
-      )}
+        </div>
+      </div>
+
+      {/* Settings Bottom Sheet */}
+      <AnimatePresence>
+        {showSettings && (
+          <SettingsSheet onClose={() => setShowSettings(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

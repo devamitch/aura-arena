@@ -1,438 +1,337 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — PvE Battle (Exact Match to MusicX "Choose Winner" VS screen)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
-import { cn } from "@lib/utils";
-import {
-  useBattleResult,
-  useBattleTime,
-  useOpponentScore,
-  usePlayerScore,
-  useSelectedOpponent,
-  useStore,
-} from "@store";
-import { CameraView } from "@features/arena/components/CameraView";
-import { useBattleCoach } from "@hooks/useAI";
-import { AnimatedNumber } from "@shared/components/ui/AnimatedNumber";
-import { ArcGauge } from "@shared/components/ui/ArcGauge";
-import { AnimatePresence, motion } from "framer-motion";
-import { RotateCcw, Trophy, X } from "lucide-react";
+import { useStore, useUser } from "@store";
+import { AI_OPPONENTS } from "@utils/constants";
+import { motion } from "framer-motion";
+import { Globe, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function PveBattlePage() {
   const navigate = useNavigate();
-  const opponent = useSelectedOpponent();
-  const pScore = usePlayerScore();
-  const oScore = useOpponentScore();
-  const timeLeft = useBattleTime();
-  const result = useBattleResult();
-  const {
-    updateBattleScores,
-    setBattleTime,
-    setBattleResult,
-    resetBattle,
-    unlockAchievement,
-    updateMissionProgress,
-    addXP,
-    updateUser,
-  } = useStore();
-  const { discipline: disc, accentColor } = usePersonalization();
-  const camera = useCamera({ discipline: disc.id, autoStart: false });
-  const coachAI = useBattleCoach();
+  const { opponentId } = useParams<{ opponentId?: string }>();
+  const { discipline: disc } = usePersonalization();
+  const { selectOpponent, setBattlePhase, addXP } = useStore();
+  const user = useUser();
 
-  const [phase, setPhase] = useState<"countdown" | "battle" | "result">(
-    "countdown",
-  );
-  const [cd, setCd] = useState(3);
-  const oppRef = useRef(oScore);
-  oppRef.current = oScore;
+  const opp = AI_OPPONENTS.find((o) => o.id === opponentId) ?? AI_OPPONENTS[0];
+  const firstName = (user?.arenaName || user?.displayName || "You").split(
+    " ",
+  )[0];
 
-  /* countdown */
+  // Battle state
+  const [battleActive, setBattleActive] = useState(false);
+  const [score, setScore] = useState(0);
+  const [oppScore, setOppScore] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [result, setResult] = useState<"win" | "lose" | null>(null);
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const oppTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const camera = useCamera({
+    discipline: disc.id,
+    onFrame: useCallback((_res: any, s: any) => setScore(s.overall), []),
+  });
+
   useEffect(() => {
-    if (cd <= 0) {
-      camera.requestCamera();
-      setPhase("battle");
-      return;
-    }
-    const t = setTimeout(() => setCd((c) => c - 1), 900);
-    return () => clearTimeout(t);
-  }, [cd, camera]);
+    selectOpponent(opp);
+    setBattlePhase("select");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* battle timer + opponent drift */
-  useEffect(() => {
-    if (phase !== "battle") return;
-    const interval = setInterval(() => {
-      /* tick timer */
-      setBattleTime((t: number) => {
-        if (t <= 1) {
-          clearInterval(interval);
-          finishBattle();
-          return 0;
-        }
-        return t - 1;
-      });
-      /* drift opponent score toward target */
-      const target = opponent?.targetScore ?? 75;
-      const noise = (Math.random() - 0.48) * 4;
-      const next = Math.min(
-        100,
-        Math.max(0, oppRef.current + (target - oppRef.current) * 0.06 + noise),
+  const handleStart = useCallback(() => {
+    setBattleActive(true);
+    setScore(0);
+    setOppScore(0);
+    setElapsed(0);
+    setResult(null);
+    camera.requestCamera();
+    timerRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
+
+    // Simulate opponent scoring
+    const base = opp.targetScore;
+    oppTimerRef.current = setInterval(() => {
+      setOppScore((s) =>
+        Math.min(Math.round(s + Math.random() * 5), base + 15),
       );
-      updateBattleScores(camera.currentScore.overall, Math.round(next));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [
-    phase,
-    setBattleTime,
-    finishBattle,
-    opponent?.targetScore,
-    camera.currentScore.overall,
-    updateBattleScores,
-  ]);
+    }, 2000);
+  }, [camera, opp.targetScore]);
 
-  const finishBattle = useCallback(() => {
+  const handleEnd = useCallback(() => {
+    setBattleActive(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (oppTimerRef.current) clearInterval(oppTimerRef.current);
     camera.stopCamera();
-    const won = pScore >= oScore;
-    const summary = camera.getSessionSummary();
-    const resultObj = {
-      won,
-      playerScore: pScore,
-      opponentScore: oScore,
-      accuracy: summary.accuracy,
-      stability: summary.stability,
-      timing: summary.timing,
-      expressiveness: summary.expressiveness,
-      power: summary.power,
-      balance: summary.balance,
-      maxCombo: summary.maxCombo,
-      duration: 60,
-      framesScored: summary.totalFrames,
-    };
-    setBattleResult(resultObj);
-    if (won) {
-      unlockAchievement("pve_win");
-      updateMissionProgress("pve_win", 1);
-      addXP(150);
-      updateUser({ pveWins: 1 });
-    } else {
-      unlockAchievement("pve_loss");
-      addXP(40);
-    }
-    coachAI.generate(disc.id, undefined, summary, 2, won);
-    setPhase("result");
-  }, [
-    pScore,
-    oScore,
-    camera,
-    setBattleResult,
-    unlockAchievement,
-    updateMissionProgress,
-    addXP,
-    updateUser,
-    coachAI,
-    disc.id,
-  ]);
+    const won = score >= oppScore;
+    setResult(won ? "win" : "lose");
+    addXP(won ? score * 3 : score);
+  }, [camera, score, oppScore, addXP]);
 
-  const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const ss = String(timeLeft % 60).padStart(2, "0");
-  const winning = pScore >= oScore;
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)
+      .toString()
+      .padStart(2, "0")} : ${(s % 60).toString().padStart(2, "0")}`;
 
-  if (!opponent) {
-    navigate("/battle/pve/select");
-    return null;
+  // ── Battle Result ──
+  if (result) {
+    const won = result === "win";
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040914] text-white">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <h1
+            className="text-4xl font-black mb-2"
+            style={{ color: won ? "#00f0ff" : "#ef4444" }}
+          >
+            {won ? "VICTORY" : "DEFEAT"}
+          </h1>
+          <p className="text-[#8F9A9F] mb-8">
+            You: {score} • {opp.name}: {oppScore}
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => {
+                setResult(null);
+                handleStart();
+              }}
+              className="px-6 py-3 rounded-xl border border-[#00f0ff] text-[#00f0ff] font-bold"
+            >
+              Rematch
+            </button>
+            <button
+              onClick={() => navigate("/arena")}
+              className="px-6 py-3 rounded-xl bg-[#00f0ff] text-[#040610] font-bold"
+            >
+              Continue
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
   }
 
-  return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: "var(--void)" }}
-    >
-      {/* header */}
-      <div className="flex items-center gap-3 px-4 pt-safe pt-3 pb-2 flex-shrink-0 z-20">
-        <motion.button
-          whileTap={{ scale: 0.88 }}
-          onClick={() => {
-            camera.stopCamera();
-            resetBattle();
-            navigate("/arena");
-          }}
-          className="btn-icon"
-        >
-          <X className="w-4 h-4" />
-        </motion.button>
-        <div className="flex-1" />
-        {phase === "battle" && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500 anim-live" />
-            <p className="font-mono text-sm font-bold tabular text-[var(--t1)]">
-              {mm}:{ss}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* countdown */}
-      <AnimatePresence>
-        {phase === "countdown" && cd > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col items-center justify-center z-40"
-            style={{
-              background: "rgba(4,6,16,.9)",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <p className="label-section mb-6 text-[var(--t3)]">
-              vs {opponent.name} — {opponent.targetScore} target
-            </p>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={cd}
-                initial={{ scale: 0.4, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.7, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 380, damping: 18 }}
-                className="font-display font-extrabold"
-                style={{
-                  fontSize: "clamp(90px,24vw,130px)",
-                  color: accentColor,
-                  textShadow: `0 0 70px ${accentColor}99`,
-                }}
-              >
-                {cd}
-              </motion.p>
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* battle view */}
-      {phase === "battle" && (
-        <div className="flex-1 flex flex-col gap-2 px-3 overflow-hidden">
-          {/* score comparison */}
-          <div className="flex items-center gap-2 py-2 flex-shrink-0">
-            <ScoreBar
-              label="You"
-              score={pScore}
-              color={accentColor}
-              align="left"
-              winning={winning}
-            />
-            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-              <p className="font-display font-extrabold text-lg text-[var(--t3)] leading-none">
-                VS
+  // ── In-Battle Fullscreen Camera ──
+  if (battleActive) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-black">
+        <div className="flex-1 relative">
+          <video
+            ref={camera.videoRef}
+            className="absolute inset-0 w-full h-full object-cover z-0"
+            style={{ transform: camera.mirrored ? "scaleX(-1)" : "none" }}
+            autoPlay
+            playsInline
+            muted
+          />
+          <canvas
+            ref={camera.canvasRef}
+            className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
+            style={{ transform: camera.mirrored ? "scaleX(-1)" : "none" }}
+          />
+          {/* HUD Overlay matching MusicX cyan theme */}
+          <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-start bg-gradient-to-b from-black/80 to-transparent">
+            <button
+              onClick={handleEnd}
+              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            <div className="text-center">
+              <p className="text-[10px] font-mono tracking-[0.2em] text-[#00f0ff] mb-1">
+                LIVE MATCH
+              </p>
+              <p className="font-mono font-bold text-white text-lg tracking-wider">
+                {formatTime(elapsed)}
               </p>
             </div>
-            <ScoreBar
-              label={opponent.name}
-              score={oScore}
-              color={`${opponent.color || "#ef4444"}`}
-              align="right"
-              winning={!winning}
-            />
+            <div className="w-10" />
           </div>
 
-          {/* camera */}
-          <div className="flex-1">
-            <CameraView
-              camera={camera}
-              score={camera.currentScore}
-              accentColor={accentColor}
-              showScore
-            />
-          </div>
-
-          {/* end btn */}
-          <div className="pb-safe pb-4 flex-shrink-0">
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={finishBattle}
-              className="w-full py-3.5 rounded-[18px] font-display font-bold text-sm"
-              style={{
-                background: "rgba(239,68,68,.1)",
-                border: "1px solid rgba(239,68,68,.3)",
-                color: "#ef4444",
-              }}
-            >
-              End Battle
-            </motion.button>
+          {/* Scores Bottom */}
+          <div className="absolute bottom-10 inset-x-0 px-6 flex items-end justify-between">
+            <div className="text-center">
+              <p className="text-4xl font-black text-white drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]">
+                {score}
+              </p>
+              <p className="text-[10px] font-bold tracking-widest text-[#00f0ff]">
+                YOU
+              </p>
+            </div>
+            <p className="text-sm font-black italic text-white/50 mb-3">VS</p>
+            <div className="text-center">
+              <p className="text-4xl font-black text-white">{oppScore}</p>
+              <p className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
+                {opp.name}
+              </p>
+            </div>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* result overlay */}
-      <AnimatePresence>
-        {phase === "result" && result && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 flex flex-col items-center justify-center px-6 z-50"
+  // ── Pre-Battle VS Screen (Exact MusicX Match) ──
+  return (
+    <div
+      className="page min-h-screen font-sans pb-safe pt-12 relative overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at top right, #0a252f 0%, #03080e 50%, #010305 100%)",
+      }}
+    >
+      {/* ── Top Nav ── */}
+      <div className="px-5 mb-8 flex justify-between items-start relative z-10">
+        <h1 className="text-[22px] font-bold tracking-tight text-white leading-none">
+          <span className="text-[#00f0ff]">Music</span>X
+        </h1>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5 backdrop-blur-md">
+          <Globe className="w-3.5 h-3.5 text-[#00f0ff]" />
+          <span className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase">
+            MusicX World Cup
+          </span>
+        </div>
+      </div>
+
+      <div className="text-center relative z-10 mb-10">
+        <h2 className="text-[32px] font-black uppercase tracking-[0.15em] text-[#00f0ff] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+          Choose Winner
+        </h2>
+      </div>
+
+      {/* ── VS Split Cards ── */}
+      <div className="flex justify-center items-center gap-6 px-4 h-[42vh] relative mb-12 z-10">
+        {/* VS Badge in Middle */}
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[60%] w-[52px] h-[52px] flex items-center justify-center z-30"
+          style={{
+            background: "linear-gradient(135deg, #0cebeb 0%, #00f0ff 100%)",
+            clipPath:
+              "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+            boxShadow: "0 0 30px rgba(0, 240, 255, 0.6)",
+          }}
+        >
+          <div
+            className="w-[48px] h-[48px] flex items-center justify-center bg-[#040914]"
             style={{
-              background: "rgba(4,6,16,.96)",
-              backdropFilter: "blur(16px)",
+              clipPath:
+                "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
             }}
           >
-            <motion.div
-              initial={{ scale: 0.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 280,
-                damping: 18,
-                delay: 0.1,
+            <span className="font-black italic text-xl tracking-tighter text-[#00f0ff]">
+              VS
+            </span>
+          </div>
+        </div>
+
+        {/* ── Left Card (Player) ── */}
+        <div className="flex-1 max-w-[160px] h-full flex flex-col items-center">
+          <div
+            className="w-full h-[75%] relative overflow-hidden flex items-center justify-center"
+            style={{
+              clipPath: "polygon(15% 0, 100% 0, 85% 100%, 0 100%)", // Angled left
+              background:
+                "linear-gradient(180deg, rgba(0, 240, 255, 0.15) 0%, rgba(0, 0, 0, 0.8) 100%)",
+              border: "1px solid rgba(0,240,255,0.3)",
+            }}
+          >
+            <div className="absolute inset-0 bg-[#00f0ff]/5 backdrop-blur-md z-0" />
+            <span className="text-6xl z-10 text-[#00f0ff]/80 font-black">
+              {firstName[0]}
+            </span>
+            {/* Gradient glow top edge */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-[#00f0ff] z-20 shadow-[0_4px_15px_#00f0ff]" />
+          </div>
+
+          <div className="mt-4 text-center w-full">
+            <h3 className="text-xl font-black text-white uppercase tracking-widest mb-3 leading-none">
+              {firstName}
+            </h3>
+            <button
+              onClick={handleStart}
+              className="w-full py-2.5 rounded-[8px] font-bold text-[11px] uppercase tracking-widest text-[#040914]"
+              style={{
+                background: "#00f0ff",
+                boxShadow: "0 4px 15px rgba(0,240,255,0.3)",
               }}
-              className="text-center"
             >
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 border border-primary/20">
-                {result.won ? (
-                  <Trophy className="w-10 h-10 text-primary" />
-                ) : (
-                  <X className="w-10 h-10 text-destructive" />
-                )}
-              </div>
-              <p className="font-display font-extrabold text-4xl text-[var(--t1)] leading-none mb-1">
-                {result.won ? "Victory!" : "Defeated"}
-              </p>
-              <p
-                className="label-hud mb-6"
-                style={{ color: result.won ? "#10b981" : "#ef4444" }}
-              >
-                {result.won
-                  ? "Outstanding performance"
-                  : "+40 XP for the effort"}
-              </p>
-            </motion.div>
+              Bet 50 Tokens
+            </button>
+          </div>
+        </div>
 
-            {/* scores */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, type: "spring", stiffness: 280 }}
-              className="w-full rounded-[22px] p-4 mb-6"
-              style={{ background: "var(--s1)", border: "1px solid var(--b1)" }}
+        {/* ── Right Card (Opponent) ── */}
+        <div className="flex-1 max-w-[160px] h-full flex flex-col items-center">
+          <div
+            className="w-full h-[75%] relative overflow-hidden flex items-center justify-center"
+            style={{
+              clipPath: "polygon(0 0, 85% 0, 100% 100%, 15% 100%)", // Angled right
+              background:
+                "linear-gradient(180deg, rgba(8, 20, 25, 0.9) 0%, rgba(0, 0, 0, 0.8) 100%)",
+              border: "1px solid rgba(255,255,255,0.05)",
+            }}
+          >
+            <div className="absolute inset-0 bg-white/5 backdrop-blur-md z-0" />
+            <span className="text-[70px] z-10 grayscale brightness-150">
+              {opp.avatar}
+            </span>
+          </div>
+
+          <div className="mt-4 text-center w-full flex flex-col justify-between">
+            <h3 className="text-xl font-black text-white/50 uppercase tracking-widest mb-3 leading-none drop-shadow-md">
+              {opp.name}
+            </h3>
+            <button
+              onClick={handleStart}
+              className="w-full py-2.5 rounded-[8px] border border-white/20 font-bold text-[11px] uppercase tracking-widest text-white/80"
+              style={{
+                background: "#061217",
+                boxShadow: "inset 0 0 10px rgba(0,0,0,0.5)",
+              }}
             >
-              <div className="flex items-center justify-around">
-                <div className="text-center">
-                  <ArcGauge
-                    value={result.playerScore}
-                    size={80}
-                    strokeWidth={7}
-                    color={accentColor}
-                  />
-                  <p className="label-hud mt-2">You</p>
-                </div>
-                <p className="font-display font-extrabold text-2xl text-[var(--t4)]">
-                  VS
-                </p>
-                <div className="text-center">
-                  <ArcGauge
-                    value={result.opponentScore}
-                    size={80}
-                    strokeWidth={7}
-                    color="#6b7280"
-                  />
-                  <p className="label-hud mt-2">{opponent.name}</p>
-                </div>
-              </div>
-            </motion.div>
+              Bet 50 Tokens
+            </button>
+          </div>
+        </div>
+      </div>
 
-            {/* coach */}
-            {coachAI.text && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="w-full rounded-[18px] p-3.5 mb-6"
-                style={{
-                  background: "var(--s2)",
-                  border: "1px solid var(--b1)",
-                }}
-              >
-                <p className="text-sm text-[var(--t2)] italic leading-relaxed">
-                  "{coachAI.text}"
-                </p>
-              </motion.div>
-            )}
+      {/* ── Match Details Footer ── */}
+      <div className="absolute bottom-safe w-full px-6 pb-6 text-center z-20">
+        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#00f0ff] opacity-70 mb-2 cursor-pointer flex items-center justify-center gap-2">
+          Match Details
+          <svg
+            width="10"
+            height="6"
+            viewBox="0 0 10 6"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M1 1L5 5L9 1"
+              stroke="#00f0ff"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </p>
+      </div>
 
-            {/* actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="w-full grid grid-cols-2 gap-3"
-            >
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  resetBattle();
-                  navigate("/battle/pve/select");
-                }}
-                className="py-3.5 rounded-[18px] font-display font-bold text-sm flex items-center justify-center gap-2"
-                style={{
-                  background: "var(--s2)",
-                  border: "1px solid var(--b1)",
-                  color: "var(--t2)",
-                }}
-              >
-                <RotateCcw className="w-4 h-4" />
-                Again
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  resetBattle();
-                  navigate("/arena");
-                }}
-                className="py-3.5 rounded-[18px] font-display font-bold text-sm"
-                style={{
-                  background: `linear-gradient(145deg,${accentColor},${accentColor}bb)`,
-                  color: "#040610",
-                }}
-              >
-                Done
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Background Grid / Detail lines */}
+      <div
+        className="absolute inset-x-0 top-1/2 bottom-0 z-0 opacity-10 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(#00f0ff 1px, transparent 1px), linear-gradient(90deg, #00f0ff 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
     </div>
   );
 }
-
-const ScoreBar = ({
-  label,
-  score,
-  color,
-  align,
-  winning,
-}: {
-  label: string;
-  score: number;
-  color: string;
-  align: "left" | "right";
-  winning: boolean;
-}) => (
-  <div className={cn("flex-1 flex flex-col", align === "right" && "items-end")}>
-    <p className="label-hud mb-1">{label}</p>
-    <motion.p
-      animate={{ scale: winning ? [1, 1.06, 1] : 1 }}
-      transition={{ duration: 0.3 }}
-      className="font-display font-extrabold text-3xl leading-none tabular"
-      style={{ color: winning ? color : "var(--t3)" }}
-    >
-      <AnimatedNumber value={score} />
-    </motion.p>
-    <div
-      className="w-full h-1.5 mt-1 rounded-full overflow-hidden"
-      style={{ background: "var(--s3)" }}
-    >
-      <motion.div
-        className="h-full rounded-full"
-        style={{ background: color }}
-        animate={{ width: `${score}%` }}
-        transition={{ type: "spring", stiffness: 80, damping: 15 }}
-      />
-    </div>
-  </div>
-);
