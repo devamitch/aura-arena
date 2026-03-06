@@ -3,6 +3,7 @@ import { cn } from "@lib/utils";
 import { fetchLeaderboard } from "@services/gameService";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { useUser, useXP } from "@store";
+import { DISCIPLINE_ATHLETE, TIER_BADGE } from "@utils/assets";
 import { getTier } from "@utils/constants";
 import { getDiscipline } from "@utils/constants/disciplines";
 import { motion } from "framer-motion";
@@ -116,14 +117,16 @@ export default function LeaguePage() {
   useEffect(() => {
     fetchLeaderboard(filter, 50).then((rows) => {
       if (rows.length > 0) {
-        setLiveBoard(rows.map((r) => ({
-          rank: r.rank,
-          name: r.arenaName,
-          discipline: r.discipline,
-          tier: r.tier,
-          pts: r.xp,
-          country: "🌍",
-        })));
+        setLiveBoard(
+          rows.map((r) => ({
+            rank: r.rank,
+            name: r.arenaName,
+            discipline: r.discipline,
+            tier: r.tier,
+            pts: r.xp,
+            country: "🌍",
+          })),
+        );
       }
     });
   }, [filter]);
@@ -166,14 +169,14 @@ export default function LeaguePage() {
           }}
         >
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-            style={{ background: `${accentColor}20` }}
+            className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+            style={{ border: `1px solid ${accentColor}30` }}
           >
-            {currentTier.icon.startsWith("http") ? (
-              <img src={currentTier.icon} alt="" className="w-7 h-7 rounded-full object-cover" />
-            ) : (
-              currentTier.icon
-            )}
+            <img
+              src={TIER_BADGE[user?.tier ?? "bronze"]}
+              alt="Tier"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div className="flex-1">
             <p className="font-black text-t1">{user?.arenaName ?? "You"}</p>
@@ -258,10 +261,17 @@ export default function LeaguePage() {
 
               {/* Avatar */}
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0"
-                style={{ background: `${disc.color}20`, color: disc.color }}
+                className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ border: `1px solid ${disc.color}30` }}
               >
-                {entry.name[0]}
+                <img
+                  src={
+                    DISCIPLINE_ATHLETE[entry.discipline] ||
+                    DISCIPLINE_ATHLETE.boxing
+                  }
+                  alt={entry.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* Info */}

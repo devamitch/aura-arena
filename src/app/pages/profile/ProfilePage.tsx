@@ -18,7 +18,7 @@ import {
   useUser,
   useXP,
 } from "@store";
-import { DISCIPLINE_ATHLETE, PREMIUM_ASSETS } from "@utils/assets";
+import { DISCIPLINE_ATHLETE, PREMIUM_ASSETS, TIER_BADGE } from "@utils/assets";
 import { ACHIEVEMENTS } from "@utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -305,10 +305,24 @@ const OverviewTab = ({
         <div className="rounded-2xl p-4" style={cardStyle}>
           <div className="flex justify-between mb-3">
             <span className="text-xs font-mono text-white/40 uppercase tracking-wider flex items-center gap-1">
-              {currentTier.icon.startsWith("http") ? <img src={currentTier.icon} alt="" className="w-3.5 h-3.5 rounded-full object-cover inline" /> : currentTier.icon} {currentTier.name}
+              <img
+                src={
+                  TIER_BADGE[currentTier.id] || PREMIUM_ASSETS.BADGES.BEGINNER
+                }
+                alt=""
+                className="w-4 h-4 rounded-full object-cover"
+              />{" "}
+              {currentTier.name}
             </span>
             <span className="text-xs font-mono text-white/40 uppercase tracking-wider flex items-center gap-1">
-              {nextTier.icon.startsWith("http") ? <img src={nextTier.icon} alt="" className="w-3.5 h-3.5 rounded-full object-cover inline" /> : nextTier.icon} {nextTier.name}
+              <img
+                src={
+                  TIER_BADGE[nextTier.id] || PREMIUM_ASSETS.BADGES.INTERMEDIATE
+                }
+                alt=""
+                className="w-4 h-4 rounded-full object-cover"
+              />{" "}
+              {nextTier.name}
             </span>
           </div>
           <div

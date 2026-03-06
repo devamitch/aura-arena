@@ -1,3 +1,4 @@
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
@@ -8,19 +9,19 @@ const SLIDES = [
     title: "Setting",
     highlight: "ATHLETES FREE",
     desc: "Experience the ultimate Global Online Olympic Arena. Train, compete, and rise through the ranks in a visually stunning virtual environment.",
-    img: "/assets/images/generated/intro_arena_1.png",
+    img: PREMIUM_ASSETS.INTRO.ARENA_1,
   },
   {
     title: "Master",
     highlight: "YOUR DISCIPLINE",
     desc: "AI-driven coaching and immersive camera mirrors give you real-time feedback. Perfect your form across dozens of sports.",
-    img: "/assets/images/generated/onboarding_ai_referee.png",
+    img: PREMIUM_ASSETS.INTRO.ONBOARDING_AI,
   },
   {
     title: "Claim",
     highlight: "THE GLORY",
     desc: "Compete in live global tournaments. Bet on matches, win rewards, and prove your dedication on the world stage.",
-    img: "/assets/images/generated/intro_arena_referee.png",
+    img: PREMIUM_ASSETS.INTRO.ARENA_REFEREE,
   },
 ];
 
@@ -29,7 +30,7 @@ const SLIDE3_STATS = [
   {
     value: "100+",
     label: "Sub-disciplines\nacross 10 sports",
-    img: "/assets/images/generated/intro_boxing_athlete.png",
+    img: PREMIUM_ASSETS.INTRO.BOXING_ATHLETE,
     top: "8%",
     left: "4%",
     width: "w-32",
@@ -37,7 +38,7 @@ const SLIDE3_STATS = [
   {
     value: "AI",
     label: "Real-time scoring\nwith MediaPipe",
-    img: "/assets/images/generated/intro_yoga_athlete.png",
+    img: PREMIUM_ASSETS.INTRO.YOGA_ATHLETE,
     top: "6%",
     right: "4%",
     width: "w-28",
@@ -45,7 +46,7 @@ const SLIDE3_STATS = [
   {
     value: "~30%",
     label: "Better form\nafter 7 sessions",
-    img: "/assets/images/generated/onboarding_ai_referee.png",
+    img: PREMIUM_ASSETS.INTRO.ONBOARDING_AI,
     top: "48%",
     right: "6%",
     width: "w-32",

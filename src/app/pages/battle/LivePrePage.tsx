@@ -5,6 +5,7 @@
 import { usePersonalization } from "@hooks/usePersonalization";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { useUser } from "@store";
+import { PREMIUM_ASSETS, TIER_BADGE } from "@utils/assets";
 import { motion } from "framer-motion";
 import { ArrowLeft, Globe, Users, Wifi, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -51,6 +52,12 @@ export default function LivePrePage() {
             boxShadow: "0 4px 30px rgba(0,240,255,0.06)",
           }}
         >
+          {/* Hero background */}
+          <img
+            src={PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
+          />
           {/* Glow */}
           <div
             className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-10"
@@ -136,10 +143,17 @@ export default function LivePrePage() {
         >
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black"
-              style={{ background: "rgba(0,240,255,0.06)", color: ACCENT }}
+              className="w-10 h-10 rounded-xl overflow-hidden relative"
+              style={{ border: "1px solid rgba(0,240,255,0.2)" }}
             >
-              {(user?.arenaName ?? "A")[0]}
+              <img
+                src={
+                  TIER_BADGE[user?.tier ?? "bronze"] ||
+                  PREMIUM_ASSETS.BADGES.BEGINNER
+                }
+                alt="Tier"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <p className="text-sm font-semibold text-white">

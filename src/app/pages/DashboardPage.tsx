@@ -2,9 +2,12 @@
 // AURA ARENA — Dashboard (MusicX-inspired clean layout)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { MissionCard } from "@features/gamification/components/MissionCard";
 import { useAuth } from "@hooks/useAuth";
+import { usePersonalization } from "@hooks/usePersonalization";
 import { formatNumber } from "@lib/utils";
 import {
+  useDailyMissions,
   useSessionHistory,
   useUnreadCount,
   useUser,
@@ -31,27 +34,42 @@ import { useNavigate } from "react-router-dom";
 const ROSTER = [
   {
     name: "Boxer",
-    image: "/assets/images/generated/intro_boxing_athlete.png",
+    image: PREMIUM_ASSETS.ATHLETES.BOXER,
     status: "IN BATTLE",
   },
   {
     name: "Yogi",
-    image: "/assets/images/generated/intro_yoga_athlete.png",
+    image: PREMIUM_ASSETS.ATHLETES.YOGI,
     status: "ONLINE",
   },
   {
     name: "Warrior",
-    image: "/assets/images/generated/intro_martial_arts.png",
+    image: PREMIUM_ASSETS.ATHLETES.WARRIOR,
     status: "READY",
   },
   {
+    name: "Fighter",
+    image: PREMIUM_ASSETS.AVATARS.FIGHTER,
+    status: "ONLINE",
+  },
+  {
+    name: "Roman",
+    image: PREMIUM_ASSETS.AVATARS.ROMAN,
+    status: "READY",
+  },
+  {
+    name: "Zen",
+    image: PREMIUM_ASSETS.AVATARS.ZEN,
+    status: "ONLINE",
+  },
+  {
     name: "Champion",
-    image: "/assets/images/generated/intro_arena_1.png",
+    image: PREMIUM_ASSETS.ATHLETES.ARENA,
     status: "OFFLINE",
   },
   {
     name: "Referee",
-    image: "/assets/images/generated/intro_arena_referee.png",
+    image: PREMIUM_ASSETS.ATHLETES.REFEREE,
     status: "ONLINE",
   },
 ];
@@ -148,6 +166,8 @@ export default function DashboardPage() {
 
   const sessionHistory = useSessionHistory();
   const viewerCount = useViewerCount();
+  const missions = useDailyMissions();
+  const { accentColor } = usePersonalization();
 
   const firstName = (user?.arenaName || user?.displayName || "Athlete").split(
     " ",
@@ -353,6 +373,28 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Daily Missions ── */}
+      {missions.length > 0 && (
+        <div className="px-5 mt-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-black text-white uppercase tracking-wider">
+              Daily Missions
+            </h2>
+            <span
+              className="text-[10px] font-mono"
+              style={{ color: accentColor }}
+            >
+              {missions.filter((m) => m.complete).length}/{missions.length} done
+            </span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {missions.slice(0, 3).map((m) => (
+              <MissionCard key={m.id} mission={m} accentColor={accentColor} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Athlete Roster ── */}
       <div className="mt-6">

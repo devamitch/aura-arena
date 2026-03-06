@@ -1,16 +1,90 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — Edit Profile & 3D Avatar Customizer
+// ═══════════════════════════════════════════════════════════════════════════════
+
 import { AvatarCanvas } from "@/components/3d/AvatarCanvas";
 import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineSelector";
 import { DynamicIcon } from "@features/shared/components/ui/DynamicIcon";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { analytics } from "@lib/analytics";
 import { cn } from "@lib/utils";
 import { useStore, useUser } from "@store";
 import type { DisciplineId, SubDisciplineId } from "@types";
-import { DISCIPLINES } from "@utils/constants";
+import { DISCIPLINES, PREMIUM_ASSETS } from "@utils/assets";
 import { getDiscipline } from "@utils/constants/disciplines";
-import { ArrowLeft, Save, SlidersHorizontal, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Check, Palette, Shuffle, User as UserIcon, Save, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DISCIPLINES as DISCIPLINES_LIST } from "@utils/constants";
 
+// ─── Customization config ────────────────────────────────────────────────────
+
+const SKIN_TONES = [
+  { hex: "#FDDBB4", label: "Light" },
+  { hex: "#F1C27D", label: "Medium" },
+  { hex: "#C68642", label: "Tan" },
+  { hex: "#8D5524", label: "Brown" },
+  { hex: "#4B2C20", label: "Dark" },
+  { hex: "#3b2f2f", label: "Deep" },
+];
+
+const HAIR_COLORS = [
+  { hex: "#1A1110", label: "Black" },
+  { hex: "#4A2912", label: "Brunette" },
+  { hex: "#9B6B3E", label: "Chestnut" },
+  { hex: "#D4A017", label: "Blonde" },
+  { hex: "#B22222", label: "Red" },
+  { hex: "#808080", label: "Gray" },
+  { hex: "#FF00FF", label: "Magenta" },
+  { hex: "#00F0FF", label: "Cyber" },
+];
+
+const CLOTHING_STYLES = [
+  { id: "default",   label: "Classic",   emoji: "👕" },
+  { id: "cyberpunk", label: "Cyberpunk",  emoji: "🟣" },
+  { id: "fighter",   label: "Fighter",   emoji: "🥊" },
+  { id: "athlete",   label: "Athlete",   emoji: "⚡" },
+  { id: "street",    label: "Street",    emoji: "🏙️" },
+] as const;
+
+const AI_COACHES = [
+  { name: "Aria",   role: "Form Expert",     emoji: "🤖", src: PREMIUM_ASSETS.COACHES.ARIA },
+  { name: "Max",    role: "Power Trainer",   emoji: "💪", src: PREMIUM_ASSETS.COACHES.MAX },
+  { name: "Sensei", role: "Zen Master",      emoji: "🧘", src: PREMIUM_ASSETS.COACHES.SENSEI },
+];
+
+const RANDOMIZE_SKINS = () => SKIN_TONES[Math.floor(Math.random() * SKIN_TONES.length)].hex;
+const RANDOMIZE_HAIR  = () => HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)].hex;
+const RANDOMIZE_STYLE = () => CLOTHING_STYLES[Math.floor(Math.random() * CLOTHING_STYLES.length)].id;
+
+// ─── Swatch picker ────────────────────────────────────────────────────────────
+function Swatch({ color, selected, onClick }: { color: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="relative w-8 h-8 rounded-full flex-shrink-0 transition-transform active:scale-90"
+      style={{
+        background: color,
+        boxShadow: selected ? `0 0 0 2px #040914, 0 0 0 4px ${color}` : 'none',
+        transform: selected ? 'scale(1.15)' : 'scale(1)',
+      }}
+    >
+      {selected && (
+        <Check className="absolute inset-0 m-auto w-3.5 h-3.5" style={{ color: '#040914', filter: 'brightness(0) invert(0) contrast(100)' }} />
+      )}
+    </button>
+  );
+}
+
+// ─── Section label ────────────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/30 mb-3">{children}</p>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AvatarPage() {
   const navigate = useNavigate();
   const user = useUser();
@@ -19,160 +93,226 @@ export default function AvatarPage() {
 
   const [arenaName, setArenaName] = useState(user?.arenaName ?? "");
   const [bio, setBio] = useState(user?.bio ?? "");
-  const [disciplineId, setDisciplineId] = useState<DisciplineId>(
-    user?.discipline ?? "boxing",
-  );
-  const [subDisciplineId, setSubDisciplineId] = useState<
-    SubDisciplineId | undefined
-  >(user?.subDiscipline);
+  const [disciplineId, setDisciplineId] = useState<DisciplineId>(user?.discipline ?? "boxing");
+  const [subDisciplineId, setSubDisciplineId] = useState<SubDisciplineId | undefined>(user?.subDiscipline);
+  const [aiCoach, setAiCoach] = useState(user?.aiCoachName ?? "Aria");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Avatar state (mirrors store)
+  const [skinTone, setSkinToneLocal] = useState(user?.avatarConfig?.skinTone ?? "#f1c27d");
+  const [hairColor, setHairColorLocal] = useState(user?.avatarConfig?.hairColor ?? "#333");
+  const [clothingStyle, setClothingStyleLocal] = useState<string>(user?.avatarConfig?.clothingStyle ?? "default");
 
   const selectedDisc = getDiscipline(disciplineId);
 
+  const applyAvatar = (skin: string, hair: string, style: string) => {
+    setSkinToneLocal(skin);
+    setHairColorLocal(hair);
+    setClothingStyleLocal(style);
+    setAvatarConfig({ skinTone: skin, hairColor: hair, clothingStyle: style });
+  };
+
+  const randomize = () => {
+    const s = RANDOMIZE_SKINS(), h = RANDOMIZE_HAIR(), c = RANDOMIZE_STYLE();
+    applyAvatar(s, h, c);
+  };
+
   const save = async () => {
     setSaving(true);
-    updateUser({
-      arenaName,
-      bio,
-      discipline: disciplineId,
-      subDiscipline: subDisciplineId,
-    });
-    await new Promise((r) => setTimeout(r, 600));
+    updateUser({ arenaName, bio, discipline: disciplineId, subDiscipline: subDisciplineId, aiCoachName: aiCoach });
+    setAvatarConfig({ skinTone, hairColor, clothingStyle });
+    analytics.avatarSaved(disciplineId, aiCoach);
+    await new Promise((r) => setTimeout(r, 500));
     setSaving(false);
-    navigate("/profile");
+    setSaved(true);
+    setTimeout(() => { setSaved(false); navigate("/profile"); }, 800);
   };
 
   return (
-    <div className="page pb-safe bg-void relative overflow-hidden">
-      {/* Atmospheric background */}
+    <div className="page pb-safe" style={{ background: '#040610' }}>
+      {/* Glow background */}
       <img
-        src="/assets/images/generated/profile_header_glow.svg"
+        src={PREMIUM_ASSETS.ATMOSPHERE.PROFILE_GLOW}
         alt=""
-        className="absolute top-0 inset-x-0 w-full h-[300px] object-cover opacity-60 pointer-events-none"
+        className="fixed top-0 inset-x-0 w-full h-[300px] object-cover opacity-30 pointer-events-none"
+        style={{ mixBlendMode: 'screen' }}
       />
-      <div className="absolute top-0 inset-x-0 h-[300px] bg-gradient-to-t from-void via-transparent to-transparent pointer-events-none" />
 
-      <div className="flex items-center gap-3 px-5 pt-6 pb-4">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 pt-8 pb-4 relative z-10">
         <button
           onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl bg-card/60 backdrop-blur-xl border-white/10 shadow-sm flex items-center justify-center"
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <ArrowLeft className="w-4 h-4 text-t2" />
+          <ArrowLeft className="w-4 h-4 text-white/60" />
         </button>
-        <h1 className="font-black text-t1 text-xl">Edit Profile</h1>
+        <div>
+          <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/30">Customize</p>
+          <h1 className="font-black text-white text-xl leading-none">Edit Profile</h1>
+        </div>
       </div>
 
-      <div className="px-5 space-y-6">
-        {/* 3D Interactive Avatar Canvas */}
-        <div className="flex flex-col items-center gap-2 relative z-10">
-          <div
-            className="w-full h-[400px] rounded-[32px] overflow-hidden relative shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-            style={{
-              background: "rgba(0,0,0,0.3)",
-              border: `1px solid rgba(255,255,255,0.1)`,
-            }}
-          >
-            <AvatarCanvas />
+      <div className="px-5 space-y-6 pb-10 relative z-10">
 
-            {/* Quick config overlay */}
-            <div className="absolute bottom-4 inset-x-4 flex items-center justify-between p-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10">
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    setAvatarConfig({
-                      clothingStyle: "default",
-                      hairColor: "#333",
-                      skinTone: "#f1c27d",
-                    })
-                  }
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/5 hover:bg-white/10 text-white transition-colors"
-                >
-                  Standard
-                </button>
-                <button
-                  onClick={() =>
-                    setAvatarConfig({
-                      clothingStyle: "cyberpunk",
-                      hairColor: "#ff00ff",
-                      skinTone: "#3b2f2f",
-                    })
-                  }
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-black transition-colors"
-                  style={{ background: "var(--ac)" }}
-                >
-                  Cyberpunk
-                </button>
-              </div>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-white/50 transition-colors">
-                <Sparkles className="w-4 h-4 text-purple-400" />
-              </button>
-            </div>
-          </div>
-          <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest flex items-center gap-2">
-            <SlidersHorizontal className="w-3 h-3" /> Live 3D Engine Preview
-          </p>
+        {/* ── 3D Avatar Canvas ── */}
+        <div
+          className="w-full h-72 rounded-[28px] overflow-hidden relative"
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <AvatarCanvas />
+          {/* Randomize button */}
+          <motion.button
+            whileTap={{ scale: 0.85, rotate: 180 }}
+            onClick={randomize}
+            className="absolute top-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)' }}
+          >
+            <Shuffle className="w-4 h-4" style={{ color: accentColor }} />
+          </motion.button>
+          <div
+            className="absolute bottom-0 inset-x-0 h-12"
+            style={{ background: 'linear-gradient(to top, rgba(4,6,16,0.8), transparent)' }}
+          />
         </div>
 
-        {/* Arena name */}
-        <div>
-          <label className="text-xs font-mono text-t3 uppercase tracking-widest block mb-2">
-            Arena Name
-          </label>
+        {/* ── Skin Tone ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>Skin Tone</SectionLabel>
+          <div className="flex items-center gap-3 flex-wrap">
+            {SKIN_TONES.map((s) => (
+              <Swatch
+                key={s.hex}
+                color={s.hex}
+                selected={skinTone === s.hex}
+                onClick={() => applyAvatar(s.hex, hairColor, clothingStyle)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Hair Color ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>Hair Color</SectionLabel>
+          <div className="flex items-center gap-3 flex-wrap">
+            {HAIR_COLORS.map((h) => (
+              <Swatch
+                key={h.hex}
+                color={h.hex}
+                selected={hairColor === h.hex}
+                onClick={() => applyAvatar(skinTone, h.hex, clothingStyle)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Clothing Style ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>Outfit</SectionLabel>
+          <div className="flex gap-2 flex-wrap">
+            {CLOTHING_STYLES.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => applyAvatar(skinTone, hairColor, c.id)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                style={clothingStyle === c.id
+                  ? { background: accentColor, color: '#040914' }
+                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                <span>{c.emoji}</span>
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── AI Coach ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>AI Coach</SectionLabel>
+          <div className="grid grid-cols-3 gap-2">
+            {AI_COACHES.map((c) => (
+              <button
+                key={c.name}
+                onClick={() => setAiCoach(c.name)}
+                className="rounded-2xl p-3 text-center transition-all"
+                style={aiCoach === c.name
+                  ? { background: `${accentColor}12`, border: `1.5px solid ${accentColor}40` }
+                  : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <img src={c.src} alt={c.name} className="w-10 h-10 object-contain mx-auto mb-1.5" />
+                <p className="text-[11px] font-bold" style={{ color: aiCoach === c.name ? accentColor : 'rgba(255,255,255,0.6)' }}>
+                  {c.name}
+                </p>
+                <p className="text-[9px] text-white/25 font-mono mt-0.5">{c.role}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Arena Name ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>Arena Name</SectionLabel>
           <input
             value={arenaName}
-            onChange={(e) => setArenaName(e.target.value)}
-            maxLength={20}
+            onChange={(e) => setArenaName(e.target.value.slice(0, 20))}
             placeholder={user?.displayName ?? "Your arena name…"}
-            className="w-full bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl px-4 py-3 text-t1 placeholder:text-t3 focus:outline-none focus:border-opacity-60"
+            className="w-full bg-transparent text-white text-base font-bold outline-none placeholder:text-white/20"
           />
+          <div className="h-px mt-3" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <p className="text-[9px] font-mono text-white/20 mt-1.5 text-right">{arenaName.length}/20</p>
         </div>
 
-        {/* Bio */}
-        <div>
-          <label className="text-xs font-mono text-t3 uppercase tracking-widest block mb-2">
-            Bio
-          </label>
+        {/* ── Bio ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>Bio</SectionLabel>
           <textarea
             value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            maxLength={120}
+            onChange={(e) => setBio(e.target.value.slice(0, 120))}
             placeholder="Tell the arena who you are…"
-            rows={3}
-            className="w-full bg-card/60 backdrop-blur-xl border-white/10 shadow-sm rounded-xl px-4 py-3 text-t1 placeholder:text-t3 focus:outline-none resize-none"
+            rows={2}
+            className="w-full bg-transparent text-white/70 text-sm outline-none placeholder:text-white/20 resize-none"
           />
+          <div className="h-px mt-2" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <p className="text-[9px] font-mono text-white/20 mt-1 text-right">{bio.length}/120</p>
         </div>
 
-        {/* Discipline picker */}
-        <div>
-          <label className="text-xs font-mono text-t3 uppercase tracking-widest block mb-2">
-            Discipline
-          </label>
+        {/* ── Discipline ── */}
+        <div
+          className="rounded-[20px] p-4"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <SectionLabel>Discipline</SectionLabel>
           <div className="grid grid-cols-3 gap-2">
-            {DISCIPLINES.map((d) => (
+            {DISCIPLINES_LIST.map((d) => (
               <button
                 key={d.id}
-                onClick={() => {
-                  setDisciplineId(d.id);
-                  setSubDisciplineId(undefined);
-                }}
-                className={cn(
-                  "py-3 rounded-xl border-2 text-center transition-all",
-                  disciplineId === d.id ? "" : "bg-s1 border-b1",
-                )}
-                style={
-                  disciplineId === d.id
-                    ? {
-                        borderColor: d.color,
-                        background: `${d.color}10`,
-                      }
-                    : {}
-                }
+                onClick={() => { setDisciplineId(d.id); setSubDisciplineId(undefined); }}
+                className="py-3 rounded-xl text-center transition-all"
+                style={disciplineId === d.id
+                  ? { background: `${d.color}15`, border: `1.5px solid ${d.color}40` }
+                  : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
-                <DynamicIcon
-                  name={d.icon}
-                  className="w-8 h-8 mb-2 mx-auto opacity-80"
-                />
-                <p className="text-[10px] text-t2 mt-0.5">{d.name}</p>
+                <DynamicIcon name={d.icon} className="w-7 h-7 mb-1.5 mx-auto opacity-75" />
+                <p className="text-[9px] text-white/50 font-mono">{d.name}</p>
               </button>
             ))}
           </div>
@@ -187,23 +327,30 @@ export default function AvatarPage() {
           />
         )}
 
-        {/* Save */}
-        <button
+        {/* ── Save button ── */}
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={save}
-          disabled={saving}
-          className="w-full py-4 rounded-2xl font-black text-void flex items-center justify-center gap-2"
-          style={{
-            background: `linear-gradient(135deg, ${accentColor}, ${accentColor}bb)`,
-          }}
+          disabled={saving || saved}
+          className="w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2"
+          style={{ background: saved ? '#22c55e' : accentColor, color: '#040914' }}
         >
-          {saving ? (
-            <div className="w-5 h-5 border-2 border-void/40 border-t-void rounded-full animate-spin" />
-          ) : (
-            <>
-              <Save className="w-5 h-5" /> Save Changes
-            </>
-          )}
-        </button>
+          <AnimatePresence mode="wait">
+            {saving ? (
+              <motion.div key="spin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="w-5 h-5 border-2 border-black/30 border-t-black/70 rounded-full animate-spin"
+              />
+            ) : saved ? (
+              <motion.span key="done" initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2">
+                <Check className="w-5 h-5" /> Saved!
+              </motion.span>
+            ) : (
+              <motion.span key="save" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                <Save className="w-5 h-5" /> Save Profile
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
     </div>
   );

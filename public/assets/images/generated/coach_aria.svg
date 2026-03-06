@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-      <defs><filter id="glowSmall"><feGaussianBlur stdDeviation="4" result="b"/></filter></defs>
-      <circle cx="100" cy="100" r="60" fill="none" stroke="#00f0ff" stroke-width="4" filter="url(#neonGlow)"/>
-      <path d="M 100,50 Q 150,100 100,150 Q 50,100 100,50" fill="rgba(0,240,255,0.4)" filter="url(#neonGlow)"/>
-    </svg>
