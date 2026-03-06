@@ -5,6 +5,7 @@
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
 import { useStore, useUser } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { AI_OPPONENTS } from "@utils/constants";
 import { motion } from "framer-motion";
 import { Globe, X } from "lucide-react";
@@ -80,19 +81,37 @@ export default function PveBattlePage() {
   if (result) {
     const won = result === "win";
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040914] text-white">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040914] text-white overflow-hidden">
+        {won && (
+          <img
+            src={PREMIUM_ASSETS.ATMOSPHERE.VICTORY_FX}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover opacity-60 animate-in fade-in zoom-in duration-1000"
+          />
+        )}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-center"
+          className="text-center relative z-10"
         >
+          <div className="mb-6 flex justify-center">
+            <div className="w-24 h-24 rounded-full bg-[var(--ac)]/10 flex items-center justify-center border border-[var(--ac)]/30 shadow-[0_0_30px_rgba(var(--ac-rgb,0,240,255),0.3)] group">
+              <motion.img
+                animate={{ rotateY: [0, 180, 360] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
+                alt=""
+                className="w-16 h-16 object-contain"
+              />
+            </div>
+          </div>
           <h1
-            className="text-4xl font-black mb-2"
-            style={{ color: won ? "#00f0ff" : "#ef4444" }}
+            className="text-5xl font-black mb-2 tracking-tighter"
+            style={{ color: won ? "var(--ac)" : "#ef4444" }}
           >
             {won ? "VICTORY" : "DEFEAT"}
           </h1>
-          <p className="text-[#8F9A9F] mb-8">
+          <p className="text-white/40 font-mono text-sm mb-10">
             You: {score} • {opp.name}: {oppScore}
           </p>
           <div className="flex gap-4 justify-center">
@@ -101,13 +120,14 @@ export default function PveBattlePage() {
                 setResult(null);
                 handleStart();
               }}
-              className="px-6 py-3 rounded-xl border border-[#00f0ff] text-[#00f0ff] font-bold"
+              className="px-8 py-4 rounded-2xl border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/5 transition-colors"
             >
               Rematch
             </button>
             <button
               onClick={() => navigate("/arena")}
-              className="px-6 py-3 rounded-xl bg-[#00f0ff] text-[#040610] font-bold"
+              className="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs text-[#040610]"
+              style={{ background: "var(--ac)" }}
             >
               Continue
             </button>
@@ -179,29 +199,29 @@ export default function PveBattlePage() {
 
   // ── Pre-Battle VS Screen (Exact MusicX Match) ──
   return (
-    <div
-      className="page min-h-screen font-sans pb-safe pt-12 relative overflow-hidden"
-      style={{
-        background:
-          "radial-gradient(ellipse at top right, #0a252f 0%, #03080e 50%, #010305 100%)",
-      }}
-    >
+    <div className="page min-h-screen font-sans pb-safe pt-12 relative overflow-hidden bg-[var(--background)]">
+      <img
+        src="/assets/images/generated/battle_arena_teal.png"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-screen pointer-events-none"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-[var(--background)]/80 pointer-events-none" />
       {/* ── Top Nav ── */}
       <div className="px-5 mb-8 flex justify-between items-start relative z-10">
         <h1 className="text-[22px] font-bold tracking-tight text-white leading-none">
-          <span className="text-[#00f0ff]">Music</span>X
+          <span className="text-[#00f0ff]">Aura</span> Arena
         </h1>
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/5 backdrop-blur-md">
           <Globe className="w-3.5 h-3.5 text-[#00f0ff]" />
           <span className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase">
-            MusicX World Cup
+            Global PvE Battle
           </span>
         </div>
       </div>
 
       <div className="text-center relative z-10 mb-10">
         <h2 className="text-[32px] font-black uppercase tracking-[0.15em] text-[#00f0ff] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-          Choose Winner
+          PvE Battle
         </h2>
       </div>
 
@@ -255,13 +275,18 @@ export default function PveBattlePage() {
             </h3>
             <button
               onClick={handleStart}
-              className="w-full py-2.5 rounded-[8px] font-bold text-[11px] uppercase tracking-widest text-[#040914]"
+              className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] text-[#040914] flex items-center justify-center gap-3 active:scale-95 transition-transform"
               style={{
-                background: "#00f0ff",
-                boxShadow: "0 4px 15px rgba(0,240,255,0.3)",
+                background: "var(--ac)",
+                boxShadow: "0 0 25px rgba(var(--ac-rgb, 0,240,255),0.4)",
               }}
             >
-              Bet 50 Tokens
+              <img
+                src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
+                alt=""
+                className="w-5 h-5 drop-shadow-md"
+              />
+              Stake 50 AC
             </button>
           </div>
         </div>
@@ -289,38 +314,30 @@ export default function PveBattlePage() {
             </h3>
             <button
               onClick={handleStart}
-              className="w-full py-2.5 rounded-[8px] border border-white/20 font-bold text-[11px] uppercase tracking-widest text-white/80"
+              className="w-full py-2.5 rounded-[12px] border border-white/20 font-black text-[10px] uppercase tracking-widest text-white/80 flex items-center justify-center gap-2"
               style={{
                 background: "#061217",
                 boxShadow: "inset 0 0 10px rgba(0,0,0,0.5)",
               }}
             >
-              Bet 50 Tokens
+              <img
+                src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
+                alt=""
+                className="w-4 h-4 opacity-70"
+              />
+              Bet 50 AC
             </button>
           </div>
         </div>
       </div>
 
       {/* ── Match Details Footer ── */}
-      <div className="absolute bottom-safe w-full px-6 pb-6 text-center z-20">
-        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#00f0ff] opacity-70 mb-2 cursor-pointer flex items-center justify-center gap-2">
-          Match Details
-          <svg
-            width="10"
-            height="6"
-            viewBox="0 0 10 6"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1 1L5 5L9 1"
-              stroke="#00f0ff"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </p>
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <img
+          src={PREMIUM_ASSETS.ATMOSPHERE.FLOOR_GRID}
+          alt=""
+          className="absolute bottom-0 w-full h-[60%] object-cover scale-x-150"
+        />
       </div>
 
       {/* Background Grid / Detail lines */}

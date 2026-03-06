@@ -20,7 +20,10 @@ export default function App() {
               fontSize: "14px",
             },
             success: {
-              iconTheme: { primary: "#00f0ff", secondary: "#04060f" },
+              iconTheme: {
+                primary: "var(--ac)",
+                secondary: "var(--background)",
+              },
             },
             error: { iconTheme: { primary: "#ef4444", secondary: "#04060f" } },
           }}

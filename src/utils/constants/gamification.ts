@@ -53,7 +53,7 @@ export const TIERS: Tier[] = [
   {
     id: "champ",
     name: "Void",
-    color: "#00f0ff",
+    color: "var(--ac)",
     glowColor: "rgba(0,240,255,0.5)",
     icon: "🏆",
     xpMin: 40000,
@@ -520,7 +520,7 @@ export const AI_OPPONENTS: AiOpponent[] = [
     discipline: "martialarts",
     subDiscipline: "kung_fu_wushu",
     targetScore: 88,
-    color: "#00f0ff",
+    color: "var(--ac)",
     difficulty: 5,
     avatar: "🏯",
     styleNote: "Competition Wushu routines",

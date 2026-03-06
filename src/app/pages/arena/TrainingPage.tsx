@@ -28,6 +28,7 @@ export default function TrainingPage() {
 
   const [elapsed, setElapsed] = useState(0);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [ended, setEnded] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const camera = useCamera({
@@ -47,7 +48,9 @@ export default function TrainingPage() {
   }, []);
 
   const handleEndSession = useCallback(() => {
-    setSessionActive(false);
+    if (ended) return;
+    setEnded(true);
+
     if (timerRef.current) clearInterval(timerRef.current);
     camera.stopCamera();
 
@@ -58,12 +61,26 @@ export default function TrainingPage() {
     }
 
     navigate(-1);
-  }, [camera, elapsed, endSession, addXP, navigate]);
+  }, [camera, elapsed, endSession, addXP, navigate, ended]);
+
+  const handleBack = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    camera.stopCamera();
+    navigate(-1);
+  }, [camera, navigate]);
 
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)
       .toString()
       .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+
+  // Real metrics from camera scoring
+  const score = camera.currentScore;
+  const sideMetrics = [
+    { icon: Activity, label: "Form", val: `${score.accuracy ?? 0}%` },
+    { icon: Zap, label: "Speed", val: `${score.timing ?? 0}%` },
+    { icon: Shield, label: "Power", val: `${score.power ?? 0}%` },
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black overflow-hidden font-sans">
@@ -83,7 +100,7 @@ export default function TrainingPage() {
           style={{ transform: "scaleX(-1)" }}
         />
 
-        {/* Vignette & Scanlines for HUD effect */}
+        {/* Vignette for HUD effect */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -91,21 +108,24 @@ export default function TrainingPage() {
               "radial-gradient(circle, transparent 40%, rgba(4,9,20,0.8) 100%)",
           }}
         />
-        <div className="absolute inset-0 pointer-events-none opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmIi8+Cjwvc3ZnPg==')]" />
       </div>
 
       {/* ── 2. Top HUD Bar ── */}
       <div className="relative z-10 p-5 flex items-start justify-between">
         <button
-          onClick={handleEndSession}
+          onClick={handleBack}
           className="w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl transition-all active:scale-90"
           style={{
             background: "rgba(4,9,20,0.5)",
-            border: "1px solid rgba(0,240,255,0.3)",
-            boxShadow: "0 0 20px rgba(0,240,255,0.15)",
+            border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.3)",
+            boxShadow: "0 0 20px rgba(var(--ac-rgb, 0,240,255), 0.15)",
           }}
         >
-          <ArrowLeft className="w-5 h-5 text-[#00f0ff]" strokeWidth={2.5} />
+          <ArrowLeft
+            className="w-5 h-5"
+            style={{ color: "var(--ac)" }}
+            strokeWidth={2.5}
+          />
         </button>
 
         {/* Center Top: Match/Drill Title */}
@@ -113,11 +133,14 @@ export default function TrainingPage() {
           <div
             className="px-5 py-1.5 rounded-full backdrop-blur-md mb-2"
             style={{
-              background: "rgba(0,240,255,0.1)",
-              border: "1px solid rgba(0,240,255,0.4)",
+              background: "rgba(var(--ac-rgb, 0,240,255), 0.1)",
+              border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.4)",
             }}
           >
-            <span className="text-[10px] font-mono text-[#0cebeb] uppercase tracking-[0.3em] font-bold">
+            <span
+              className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold"
+              style={{ color: "var(--ac)" }}
+            >
               Live Telemetry
             </span>
           </div>
@@ -143,13 +166,9 @@ export default function TrainingPage() {
         </div>
       </div>
 
-      {/* ── 3. Floating Side Metrics (Left) ── */}
+      {/* ── 3. Floating Side Metrics (Left) — Real Data ── */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-10 pointer-events-none">
-        {[
-          { icon: Activity, label: "Form", val: "94%" },
-          { icon: Zap, label: "Speed", val: "88%" },
-          { icon: Shield, label: "Def", val: "72%" },
-        ].map((m, i) => (
+        {sideMetrics.map((m, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, x: -20 }}
@@ -158,14 +177,20 @@ export default function TrainingPage() {
             className="flex items-center gap-3 backdrop-blur-md p-2 rounded-2xl"
             style={{
               background: "rgba(0,0,0,0.4)",
-              borderLeft: "3px solid #00f0ff",
+              borderLeft: "3px solid var(--ac)",
             }}
           >
-            <div className="w-8 h-8 rounded-full bg-[#00f0ff]/20 flex items-center justify-center">
-              <m.icon className="w-4 h-4 text-[#0cebeb]" />
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(var(--ac-rgb, 0,240,255), 0.2)" }}
+            >
+              <m.icon className="w-4 h-4" style={{ color: "var(--ac)" }} />
             </div>
             <div>
-              <p className="text-[#00f0ff] font-black text-sm tabular-nums">
+              <p
+                className="font-black text-sm tabular-nums"
+                style={{ color: "var(--ac)" }}
+              >
                 {m.val}
               </p>
               <p className="text-[8px] font-mono text-white/50 uppercase tracking-widest">
@@ -181,20 +206,24 @@ export default function TrainingPage() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 w-[120px] h-[120px] -ml-[10px] -mt-[10px] rounded-full border-t-2 border-r-2 border-[#00f0ff] opacity-40"
+          className="absolute inset-0 w-[120px] h-[120px] -ml-[10px] -mt-[10px] rounded-full border-t-2 border-r-2 border-[var(--ac)] opacity-40"
         />
         <div
-          className="w-[100px] h-[100px] rounded-full backdrop-blur-md flex flex-col items-center justify-center relative shadow-[0_0_30px_rgba(0,240,255,0.2)]"
+          className="w-[100px] h-[100px] rounded-full backdrop-blur-md flex flex-col items-center justify-center relative"
           style={{
             background: "rgba(4,9,20,0.7)",
-            border: "2px solid rgba(0,240,255,0.4)",
+            border: "2px solid rgba(var(--ac-rgb, 0,240,255), 0.4)",
+            boxShadow: "0 0 30px rgba(var(--ac-rgb, 0,240,255), 0.2)",
           }}
         >
-          <span className="text-[10px] font-mono text-[#0cebeb] font-bold mb-[-4px]">
+          <span
+            className="text-[10px] font-mono font-bold mb-[-4px]"
+            style={{ color: "var(--ac)" }}
+          >
             SCORE
           </span>
           <span className="text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-lg">
-            {camera.currentScore.overall}
+            {score.overall}
           </span>
         </div>
       </div>
@@ -203,11 +232,16 @@ export default function TrainingPage() {
       <motion.div
         className="absolute bottom-0 inset-x-0 z-20 flex flex-col rounded-t-[32px] overflow-hidden"
         initial={{ y: "100%" }}
-        animate={{ y: showAnalysis ? 0 : "75%" }} // Peek mode vs Full mode
+        animate={{ y: showAnalysis ? 0 : "75%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {/* Glass heavy background for the whole panel */}
-        <div className="absolute inset-0 backdrop-blur-[40px] bg-black/60 border-t border-[#00f0ff]/30" />
+        <div
+          className="absolute inset-0 backdrop-blur-[40px]"
+          style={{
+            background: "rgba(0,0,0,0.6)",
+            borderTop: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.3)",
+          }}
+        />
 
         <div className="relative z-10 flex flex-col w-full h-full">
           {/* Grab Handle & Toggle */}
@@ -217,23 +251,24 @@ export default function TrainingPage() {
           >
             <div className="absolute top-3 w-12 h-1.5 bg-white/20 rounded-full" />
             <div className="flex items-center gap-2 mt-4">
-              <Target className="w-4 h-4 text-[#00f0ff]" />
+              <Target className="w-4 h-4" style={{ color: "var(--ac)" }} />
               <span className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em]">
                 AI Engine Analysis
               </span>
               {showAnalysis ? (
                 <ChevronDown className="w-4 h-4 text-white/50" />
               ) : (
-                <ChevronUp className="w-4 h-4 text-[#00f0ff]" />
+                <ChevronUp className="w-4 h-4" style={{ color: "var(--ac)" }} />
               )}
             </div>
           </button>
 
           {/* Expanded Content */}
           <div className="px-6 pb-8 pt-2">
-            {/* 6-Dimension Radar/Metrics visual placeholder */}
-            <div className="h-48 w-full rounded-2xl bg-[#040914]/80 border border-white/10 mb-6 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#00f0ff] via-transparent to-transparent" />
+            <div
+              className="h-48 w-full rounded-2xl border border-white/10 mb-6 flex items-center justify-center relative overflow-hidden"
+              style={{ background: "rgba(var(--ac-rgb, 0,240,255), 0.02)" }}
+            >
               <MetricsPanel score={camera.currentScore} />
             </div>
 

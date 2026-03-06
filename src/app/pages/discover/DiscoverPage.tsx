@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useUser } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import {
   ChevronLeft,
   Headphones,
@@ -152,7 +153,7 @@ export default function DiscoverPage() {
             {/* Large background image */}
             <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity duration-500 blend-luminosity">
               <img
-                src="/assets/onboarding/ob-karate.png"
+                src={PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA}
                 alt="Featured Athlete"
                 className="w-full h-full object-cover"
               />
@@ -229,19 +230,19 @@ export default function DiscoverPage() {
                 title: "Mankirt vs Dilpreet",
                 time: "Tomorrow, 8PM EST",
                 type: "Sparring",
-                icon: "🥊",
+                img: PREMIUM_ASSETS.EVENTS.BOXING,
               },
               {
                 title: "Yoga Challenge",
                 time: "Friday, 12PM EST",
                 type: "Endurance",
-                icon: "🧘",
+                img: PREMIUM_ASSETS.EVENTS.YOGA,
               },
               {
                 title: "Zen Mastery",
                 time: "Sun, 9AM EST",
                 type: "Focus",
-                icon: "🥋",
+                img: PREMIUM_ASSETS.EVENTS.ZEN,
               },
             ].map((match, i) => (
               <div
@@ -256,13 +257,13 @@ export default function DiscoverPage() {
                 />
                 <div className="flex items-center gap-4 relative z-10">
                   <div
-                    className="w-14 h-14 rounded-[16px] flex items-center justify-center text-2xl shadow-inner border group-hover:scale-105 transition-transform"
+                    className="w-14 h-14 rounded-[16px] overflow-hidden shadow-inner border group-hover:scale-105 transition-transform flex-shrink-0"
                     style={{
                       background: "var(--s2)",
                       borderColor: "var(--b2)",
                     }}
                   >
-                    {match.icon}
+                    <img src={match.img} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h4 className="text-[15px] font-bold text-white leading-snug transition-colors group-hover:text-[var(--ac)]">

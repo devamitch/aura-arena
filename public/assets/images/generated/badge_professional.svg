@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="6" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <path d="M 100,0 L 200,50 L 200,150 L 100,200 L 0,150 L 0,50 Z" fill="rgba(0,240,255,0.05)" stroke="#f43f5e" stroke-width="4" filter="url(#glow)"/>
+      <polygon points="100,20 140,80 180,80 140,120 160,180 100,140 40,180 60,120 20,80 60,80" fill="#f43f5e" fill-opacity="0.4" stroke="#f43f5e" stroke-width="2" filter="url(#glow)"/>
+      <circle cx="100" cy="100" r="30" fill="none" stroke="#f43f5e" stroke-width="4" filter="url(#glow)"/>
+    </svg>

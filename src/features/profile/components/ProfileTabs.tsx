@@ -22,6 +22,7 @@ import {
   Eye,
   Flame,
   Globe,
+  Settings,
   Share2,
   Shield,
   Star,
@@ -88,7 +89,7 @@ export function ProfileOverviewTab() {
               label: "XP Earned",
               value: weekSessions.reduce((a, s) => a + s.xpEarned, 0),
               icon: Star,
-              color: "#00f0ff",
+              color: "var(--ac)",
             },
             { label: "Reels", value: 0, icon: Trophy, color: "#a855f7" },
           ].map(({ label, value, icon: Icon, color, suffix = "" }) => (
@@ -463,12 +464,19 @@ export function ProfileSettingsTab() {
     title: string;
     children: React.ReactNode;
   }) => (
-    <div className="mb-6">
-      <p className="text-xs font-mono text-t3 uppercase tracking-widest px-1 mb-2">
-        {title}
-      </p>
-      <div className="bg-s1 border border-b1 rounded-xl overflow-hidden divide-y divide-b1/50">
-        {children}
+    <div className="mb-8">
+      <div className="flex items-center gap-3 mb-4 px-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-[var(--ac)] shadow-[0_0_8px_var(--ac)]" />
+        <p className="text-[11px] font-black font-mono text-white uppercase tracking-[0.2em] relative top-[1px]">
+          {title}
+        </p>
+        <div className="flex-1 h-[1px] bg-gradient-to-r from-white/10 to-transparent" />
+      </div>
+      <div className="rounded-[24px] overflow-hidden border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-xl relative backdrop-blur-md">
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--ac)]/20 to-transparent" />
+        <div className="divide-y divide-[var(--glass-border)] flex flex-col pt-1 pb-1">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -484,33 +492,51 @@ export function ProfileSettingsTab() {
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors",
-        danger ? "hover:bg-red-500/10" : "hover:bg-s2",
+        "w-full flex items-center gap-4 px-5 py-4 text-left transition-all duration-300 group",
+        danger ? "hover:bg-red-500/10" : "hover:bg-[var(--ac)]/5",
         onClick ? "cursor-pointer" : "cursor-default",
       )}
     >
       <div
         className={cn(
-          "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-          danger ? "bg-red-500/10" : "bg-s2",
+          "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 border transition-all duration-300",
+          danger
+            ? "bg-red-500/10 border-red-500/20 text-red-400 group-hover:bg-red-500/20 group-hover:scale-110"
+            : "bg-[var(--s2)] border-[var(--glass-border)] text-[var(--t2)] group-hover:border-[var(--ac)]/40 group-hover:text-[var(--ac)] group-hover:scale-110 shadow-[0_0_15px_rgba(0,0,0,0.5)]",
         )}
       >
-        <Icon className={cn("w-4 h-4", danger ? "text-red-400" : "text-t2")} />
+        <Icon className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0">
         <p
           className={cn(
-            "text-sm font-medium",
-            danger ? "text-red-400" : "text-t1",
+            "text-[15px] font-bold tracking-wide transition-colors duration-300",
+            danger ? "text-red-400" : "text-white group-hover:text-[var(--ac)]",
           )}
         >
           {label}
         </p>
-        {sub && <p className="text-xs text-t3 mt-0.5">{sub}</p>}
+        {sub && (
+          <p className="text-xs text-[var(--t3)] font-medium mt-0.5 tracking-wide">
+            {sub}
+          </p>
+        )}
       </div>
-      {right && <div className="flex-shrink-0">{right}</div>}
+      {right && (
+        <div
+          className="flex-shrink-0 relative z-10"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {right}
+        </div>
+      )}
       {onClick && !right && (
-        <ChevronRight className="w-4 h-4 text-t3 flex-shrink-0" />
+        <div className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-[var(--ac)]/10 transition-colors">
+          <ChevronRight
+            className="w-5 h-5 text-[var(--t3)] group-hover:text-[var(--ac)] flex-shrink-0 transition-colors"
+            strokeWidth={2.5}
+          />
+        </div>
       )}
     </button>
   );
@@ -525,20 +551,64 @@ export function ProfileSettingsTab() {
     <button
       onClick={() => onChange(!value)}
       className={cn(
-        "w-10 h-6 rounded-full transition-colors relative",
-        value ? "bg-accent" : "bg-s3",
+        "w-12 h-7 rounded-full transition-all duration-500 relative border",
+        value
+          ? "bg-[var(--ac)]/20 border-[var(--ac)] shadow-[0_0_15px_rgba(var(--ac-rgb,0,240,255),0.4)]"
+          : "bg-[var(--s3)] border-[var(--glass-border)] opacity-60",
       )}
     >
       <motion.div
-        className="absolute top-1 w-4 h-4 rounded-full bg-void"
-        animate={{ left: value ? 20 : 4 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className={cn(
+          "absolute top-1 w-4 h-4 rounded-full border shadow-sm",
+          value
+            ? "bg-[var(--ac)] border-white/50 shadow-[0_0_10px_var(--ac)]"
+            : "bg-[var(--t2)] border-transparent",
+        )}
+        animate={{ left: value ? 26 : 4 }}
+        transition={{ type: "spring", stiffness: 600, damping: 35 }}
       />
     </button>
   );
 
   return (
-    <div className="p-4 pb-12">
+    <div className="p-5 pb-10">
+      {/* ── Cinematic Header Banner ── */}
+      <div className="relative w-full h-[180px] rounded-[32px] overflow-hidden mb-8 shadow-2xl border border-[var(--glass-border)] group">
+        <img
+          src="/assets/images/generated/training_hub_teal.png"
+          alt="Settings Banner"
+          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-[#02040a]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--ac)]/20 to-transparent mix-blend-overlay" />
+
+        {/* Tech Grid Overlay */}
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none mix-blend-screen"
+          style={{
+            backgroundImage: `linear-gradient(to right, var(--ac) 1px, transparent 1px), linear-gradient(to bottom, var(--ac) 1px, transparent 1px)`,
+            backgroundSize: "20px 20px",
+          }}
+        />
+
+        <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-1.5 h-1.5 bg-[var(--ac)] animate-pulse shadow-[0_0_8px_var(--ac)]" />
+              <span className="text-[9px] font-mono font-bold tracking-[0.3em] uppercase text-[var(--ac)]">
+                SYSTEM_CONFIG
+              </span>
+            </div>
+            <h2 className="text-3xl font-black text-white tracking-widest uppercase drop-shadow-lg">
+              Settings
+            </h2>
+          </div>
+          <div className="w-12 h-12 rounded-full border border-[var(--ac)]/30 bg-[var(--ac)]/10 backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(var(--ac-rgb,0,240,255),0.2)]">
+            <Settings className="w-6 h-6 text-[var(--ac)] animate-[spin_10s_linear_infinite]" />
+          </div>
+        </div>
+      </div>
+
       {/* Account */}
       <Section title="Account">
         <Row
@@ -608,15 +678,20 @@ export function ProfileSettingsTab() {
           label="Master Volume"
           sub={`${Math.round(masterVolume * 100)}%`}
           right={
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={masterVolume}
-              onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
-              className="w-24 accent-accent"
-            />
+            <div className="relative flex items-center w-28 group">
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={masterVolume}
+                onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none bg-[var(--s3)] outline-none relative z-10"
+                style={{
+                  background: `linear-gradient(to right, var(--ac) ${masterVolume * 100}%, var(--s3) ${masterVolume * 100}%)`,
+                }}
+              />
+            </div>
           }
         />
       </Section>
@@ -680,33 +755,35 @@ export function ProfileSettingsTab() {
         />
       </Section>
 
-      {/* Confirmation dialog */}
+      {/* Confirmation dialog - Retained untouched behavior but styled */}
       <AnimatePresence>
         {confirmDelete && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-void/80 backdrop-blur-sm flex items-end justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-end justify-center z-50 p-4"
             onClick={() => setConfirmDelete(null)}
           >
             <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              exit={{ y: 100 }}
-              className="w-full max-w-sm bg-s1 border border-red-500/30 rounded-2xl p-5"
+              initial={{ y: 200, scale: 0.95 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: 200, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="w-full max-w-sm bg-[var(--s1)] border border-red-500/30 rounded-[32px] p-6 shadow-[0_0_40px_rgba(239,68,68,0.15)] mb-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="text-center mb-4">
-                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-3">
-                  <AlertTriangle className="w-6 h-6 text-red-400" />
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4 relative">
+                  <div className="absolute inset-0 rounded-full border border-red-500 animate-ping opacity-20" />
+                  <AlertTriangle className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="font-display font-bold text-t1 text-lg">
+                <h3 className="font-display font-black text-white text-2xl uppercase tracking-wider">
                   {confirmDelete === "account"
                     ? "Delete Account?"
                     : `Delete ${confirmDelete}?`}
                 </h3>
-                <p className="text-sm text-t2 mt-1">
+                <p className="text-sm text-[var(--t2)] mt-2 font-medium">
                   {confirmDelete === "account"
                     ? `Type your username "${user?.username}" to confirm.`
                     : "This action cannot be undone."}
@@ -717,16 +794,10 @@ export function ProfileSettingsTab() {
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   placeholder={user?.username}
-                  className="w-full h-10 px-3 rounded-xl bg-s2 border border-b1 text-t1 text-sm mb-4 focus:outline-none focus:border-red-500"
+                  className="w-full h-14 px-4 rounded-2xl bg-[var(--s2)] border border-[var(--b1)] text-white text-[15px] font-bold tracking-wide mb-6 focus:outline-none focus:border-red-500 focus:bg-red-500/5 transition-all text-center"
                 />
               )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setConfirmDelete(null)}
-                  className="flex-1 h-11 rounded-xl bg-s2 text-t1 text-sm font-semibold"
-                >
-                  Cancel
-                </button>
+              <div className="flex flex-col gap-3">
                 <button
                   onClick={() => {
                     setConfirmDelete(null);
@@ -735,9 +806,15 @@ export function ProfileSettingsTab() {
                     confirmDelete === "account" &&
                     deleteConfirmText !== user?.username
                   }
-                  className="flex-1 h-11 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-bold disabled:opacity-40"
+                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white text-[15px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-50 disabled:shadow-none hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  Delete
+                  Confirm Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="w-full h-14 rounded-2xl bg-transparent border border-[var(--b1)] text-[var(--t1)] text-[15px] font-bold tracking-wider hover:bg-[var(--s2)] transition-all"
+                >
+                  Cancel
                 </button>
               </div>
             </motion.div>

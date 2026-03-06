@@ -9,6 +9,7 @@ import { ArcGauge } from "@shared/components/ui/ArcGauge";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { TierBadge } from "@shared/components/ui/TierBadge";
 import { useUser } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -20,8 +21,6 @@ import {
   Swords,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const ACCENT = "#00f0ff";
 
 export default function ArenaHubPage() {
   const navigate = useNavigate();
@@ -46,7 +45,7 @@ export default function ArenaHubPage() {
       label: "Training Session",
       sub: "AI-scored drills",
       icon: <Play className="w-6 h-6 fill-current" />,
-      color: ACCENT,
+      color: "var(--ac)",
       path: "/arena/drills",
       locked: false,
       lockMsg: "",
@@ -85,20 +84,30 @@ export default function ArenaHubPage() {
   ];
 
   return (
-    <div className="page pb-safe" style={{ background: "#040610" }}>
+    <div
+      className="page pb-safe relative"
+      style={{ background: "var(--background)" }}
+    >
+      <img
+        src={PREMIUM_ASSETS.ATMOSPHERE.TRAINING_HUB_HERO}
+        alt=""
+        className="absolute inset-0 w-full h-[55vh] object-cover opacity-40 mix-blend-screen pointer-events-none"
+      />
+      <div className="absolute inset-0 h-[55vh] bg-gradient-to-t from-[var(--background)] via-[var(--background)]/70 to-transparent pointer-events-none" />
+
       {/* ── Hero ── */}
       <div className="relative px-5 pt-8 pb-5">
         {/* Glow */}
         <div
           className="absolute -top-8 -right-8 w-48 h-48 rounded-full opacity-10 blur-3xl pointer-events-none"
-          style={{ background: ACCENT }}
+          style={{ background: "var(--ac)" }}
         />
 
         <div className="flex items-center justify-between mb-5 relative z-10">
           <div>
             <p
               className="text-[9px] font-mono uppercase tracking-[0.3em] mb-1"
-              style={{ color: ACCENT }}
+              style={{ color: "var(--ac)" }}
             >
               The Arena
             </p>
@@ -106,7 +115,7 @@ export default function ArenaHubPage() {
               <DynamicIcon
                 name={disc.icon}
                 className="w-5 h-5"
-                style={{ color: ACCENT }}
+                style={{ color: "var(--ac)" }}
               />
               {subDiscipline?.name ?? disc.name}
             </h1>
@@ -116,7 +125,12 @@ export default function ArenaHubPage() {
 
         {/* Stats */}
         <div className="flex items-center gap-3 relative z-10">
-          <ArcGauge value={avgScore} size={72} strokeWidth={7} color={ACCENT} />
+          <ArcGauge
+            value={avgScore}
+            size={72}
+            strokeWidth={7}
+            color={"var(--ac)"}
+          />
           <div className="flex-1 grid grid-cols-2 gap-2">
             {[
               { v: sessionsCount, l: "Sessions" },

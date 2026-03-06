@@ -2,9 +2,9 @@
 // AURA ARENA — PvE Opponents List (Exact Match to MusicX "Contests" screen)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { usePersonalization } from "@hooks/usePersonalization";
 import { useStore, useUser } from "@store";
 import type { AiOpponent } from "@types";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { AI_OPPONENTS } from "@utils/constants";
 import { ChevronLeft, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,6 @@ export default function PvePrePage() {
   const navigate = useNavigate();
   const { selectOpponent, setBattlePhase } = useStore();
   const user = useUser();
-  const { discipline: disc } = usePersonalization();
 
   const handleSelect = (opp: AiOpponent) => {
     selectOpponent(opp);
@@ -136,10 +135,15 @@ export default function PvePrePage() {
 
                   <div className="flex items-center gap-2 mt-3">
                     <span
-                      className="px-3 py-1.5 rounded text-[10px] font-bold"
-                      style={{ background: "#00f0ff", color: "#040610" }}
+                      className="px-3 py-1.5 rounded text-[10px] font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(var(--ac-rgb,0,240,255),0.2)]"
+                      style={{ background: "var(--ac)", color: "#040610" }}
                     >
-                      50 Aura-X
+                      <img
+                        src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
+                        alt=""
+                        className="w-3.5 h-3.5"
+                      />
+                      50 AC
                     </span>
                     <span
                       className="px-3 py-1.5 rounded text-[10px] font-bold border"

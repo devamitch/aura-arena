@@ -17,7 +17,7 @@ export default function LivePrePage() {
   const user = useUser();
 
   return (
-    <div className="page pb-safe" style={{ background: "#040610" }}>
+    <div className="page pb-safe" style={{ background: "var(--background)" }}>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-8 pb-4">
         <button
@@ -33,7 +33,7 @@ export default function LivePrePage() {
         <div>
           <p
             className="text-[9px] font-mono uppercase tracking-[0.3em]"
-            style={{ color: "#60a5fa" }}
+            style={{ color: "var(--ac)" }}
           >
             Live Battle
           </p>
@@ -46,15 +46,15 @@ export default function LivePrePage() {
         <div
           className="rounded-[22px] p-6 text-center relative overflow-hidden"
           style={{
-            background: "rgba(96,165,250,0.05)",
-            border: "1px solid rgba(96,165,250,0.15)",
-            boxShadow: "0 4px 30px rgba(96,165,250,0.06)",
+            background: "rgba(0,240,255,0.04)",
+            border: "1px solid rgba(0,240,255,0.15)",
+            boxShadow: "0 4px 30px rgba(0,240,255,0.06)",
           }}
         >
           {/* Glow */}
           <div
             className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-10"
-            style={{ background: "#60a5fa" }}
+            style={{ background: "var(--ac)" }}
           />
 
           <motion.div
@@ -62,15 +62,15 @@ export default function LivePrePage() {
             transition={{ duration: 2, repeat: Infinity }}
             className="w-20 h-20 rounded-[2rem] mx-auto mb-4 flex items-center justify-center"
             style={{
-              background: "rgba(96,165,250,0.08)",
-              border: "1px solid rgba(96,165,250,0.2)",
-              boxShadow: "0 0 30px rgba(96,165,250,0.12)",
+              background: "rgba(0,240,255,0.07)",
+              border: "1px solid rgba(0,240,255,0.2)",
+              boxShadow: "0 0 30px rgba(0,240,255,0.12)",
             }}
           >
             <DynamicIcon
               name={disc.icon}
               className="w-10 h-10"
-              style={{ color: "#60a5fa" }}
+              style={{ color: "var(--ac)" }}
             />
           </motion.div>
 
@@ -97,7 +97,7 @@ export default function LivePrePage() {
               >
                 <Icon
                   className="w-5 h-5 mx-auto mb-1"
-                  style={{ color: "#60a5fa" }}
+                  style={{ color: "var(--ac)" }}
                 />
                 <p className="text-xs font-bold text-white">{label}</p>
                 <p className="text-[9px] text-white/20">{desc}</p>
@@ -111,9 +111,9 @@ export default function LivePrePage() {
             onClick={() => navigate("/battle/live")}
             className="w-full py-4 rounded-2xl font-black text-base flex items-center justify-center gap-3"
             style={{
-              background: "linear-gradient(135deg, #60a5fa, #3b82f6)",
-              color: "#fff",
-              boxShadow: "0 0 30px rgba(96,165,250,0.3)",
+              background: "linear-gradient(135deg, var(--ac), var(--ac2))",
+              color: "#040914",
+              boxShadow: "0 0 30px rgba(0,240,255,0.3)",
             }}
           >
             <Wifi className="w-5 h-5" />

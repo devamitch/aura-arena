@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+      <defs>
+        <linearGradient id="floorFade" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="rgba(0, 240, 255, 0.6)"/>
+          <stop offset="100%" stop-color="rgba(0, 240, 255, 0)"/>
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="#040914" />
+      <g stroke="url(#floorFade)" stroke-width="2">
+        <line x1="400" y1="0" x2="400" y2="400" />
+        <line x1="300" y1="0" x2="100" y2="400" />
+        <line x1="500" y1="0" x2="700" y2="400" />
+        <line x1="0" y1="350" x2="800" y2="350" stroke-width="3"/>
+      </g>
+    </svg>

@@ -47,11 +47,17 @@ export default function DetectionLabPage() {
   useEffect(() => {
     if (streaming) {
       const interval = setInterval(() => {
-        setStatsHistory((prev) => [...prev.slice(-59), Math.round(60)]); // Mocking 60fps for visual
+        setStatsHistory((prev) => {
+          const newStat = Math.max(
+            10,
+            currentScore.stability || currentScore.accuracy,
+          );
+          return [...prev.slice(-59), newStat];
+        });
       }, 500);
       return () => clearInterval(interval);
     }
-  }, [streaming]);
+  }, [streaming, currentScore]);
 
   const landmarksCount = lastResult
     ? (lastResult.poseLandmarks?.[0]?.length ?? 0) +

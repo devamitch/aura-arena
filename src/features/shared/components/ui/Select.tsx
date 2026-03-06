@@ -1,22 +1,26 @@
-import * as SelectPrimitive from '@radix-ui/react-select';
-import { ChevronDown, Check } from 'lucide-react';
-import { cn } from '@lib/utils';
-import { motion } from 'framer-motion';
+import { cn } from "@lib/utils";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { motion } from "framer-motion";
+import { Check, ChevronDown } from "lucide-react";
 
 // ─── SELECT ───────────────────────────────────────────────────────────────────
 
 export const Select = SelectPrimitive.Root;
 export const SelectValue = SelectPrimitive.Value;
 
-export function SelectTrigger({ children, className, ...props }: React.ComponentProps<typeof SelectPrimitive.Trigger>) {
+export function SelectTrigger({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Trigger>) {
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        'flex h-10 w-full items-center justify-between rounded-xl border border-b1 bg-s1 px-3 py-2 text-sm text-t1',
-        'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-void',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        'hover:border-b2 transition-colors',
-        className
+        "flex h-10 w-full items-center justify-between rounded-xl border border-b1 bg-s1 px-3 py-2 text-sm text-t1",
+        "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-void",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        "hover:border-b2 transition-colors",
+        className,
       )}
       {...props}
     >
@@ -28,15 +32,19 @@ export function SelectTrigger({ children, className, ...props }: React.Component
   );
 }
 
-export function SelectContent({ children, className, ...props }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+export function SelectContent({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          'relative z-50 overflow-hidden rounded-xl border border-b1 bg-s1 text-t1 shadow-depth',
-          'data-[state=open]:animate-in data-[state=closed]:animate-out',
-          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-          className
+          "relative z-50 overflow-hidden rounded-xl border border-b1 bg-s1 text-t1 shadow-depth",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          className,
         )}
         position="popper"
         sideOffset={4}
@@ -50,14 +58,18 @@ export function SelectContent({ children, className, ...props }: React.Component
   );
 }
 
-export function SelectItem({ children, className, ...props }: React.ComponentProps<typeof SelectPrimitive.Item>) {
+export function SelectItem({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Item>) {
   return (
     <SelectPrimitive.Item
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm',
-        'focus:bg-s2 focus:text-t1 outline-none transition-colors',
-        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-        className
+        "relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm",
+        "focus:bg-s2 focus:text-t1 outline-none transition-colors",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        className,
       )}
       {...props}
     >
@@ -75,33 +87,44 @@ export function SelectItem({ children, className, ...props }: React.ComponentPro
 
 interface ScoreDisplayProps {
   score: number;
-  size?: 'sm' | 'md' | 'lg' | 'hero';
+  size?: "sm" | "md" | "lg" | "hero";
   color?: string;
   label?: string;
   animate?: boolean;
   className?: string;
 }
 
-export function ScoreDisplay({ score, size = 'md', color = '#00f0ff', label, animate = true, className }: ScoreDisplayProps) {
+export function ScoreDisplay({
+  score,
+  size = "md",
+  color = "var(--ac)",
+  label,
+  animate = true,
+  className,
+}: ScoreDisplayProps) {
   const sizes = {
-    sm:   'text-2xl',
-    md:   'text-4xl',
-    lg:   'text-6xl',
-    hero: 'text-8xl',
+    sm: "text-2xl",
+    md: "text-4xl",
+    lg: "text-6xl",
+    hero: "text-8xl",
   };
 
   return (
-    <div className={cn('flex flex-col items-center', className)}>
+    <div className={cn("flex flex-col items-center", className)}>
       <motion.div
-        className={cn('font-display font-black tabular-nums', sizes[size])}
+        className={cn("font-display font-black tabular-nums", sizes[size])}
         style={{ color, textShadow: `0 0 20px ${color}60` }}
         initial={animate ? { scale: 0.5, opacity: 0 } : false}
         animate={animate ? { scale: 1, opacity: 1 } : {}}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
         {score.toFixed(0)}
       </motion.div>
-      {label && <p className="text-xs font-mono text-t3 uppercase tracking-widest mt-1">{label}</p>}
+      {label && (
+        <p className="text-xs font-mono text-t3 uppercase tracking-widest mt-1">
+          {label}
+        </p>
+      )}
     </div>
   );
 }
@@ -116,16 +139,27 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ icon = '🏟️', title, description, cta, className }: EmptyStateProps) {
+export function EmptyState({
+  icon = "🏟️",
+  title,
+  description,
+  cta,
+  className,
+}: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn('flex flex-col items-center justify-center py-12 px-6 text-center', className)}
+      className={cn(
+        "flex flex-col items-center justify-center py-12 px-6 text-center",
+        className,
+      )}
     >
       <div className="text-5xl mb-4">{icon}</div>
       <h3 className="font-display font-bold text-lg text-t1 mb-2">{title}</h3>
-      {description && <p className="text-t2 text-sm max-w-xs mb-5">{description}</p>}
+      {description && (
+        <p className="text-t2 text-sm max-w-xs mb-5">{description}</p>
+      )}
       {cta && (
         <button
           onClick={cta.onClick}
@@ -147,12 +181,20 @@ interface ErrorStateProps {
   className?: string;
 }
 
-export function ErrorState({ title = 'Something went wrong', message, onRetry, className }: ErrorStateProps) {
+export function ErrorState({
+  title = "Something went wrong",
+  message,
+  onRetry,
+  className,
+}: ErrorStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={cn('flex flex-col items-center justify-center py-10 px-6 text-center', className)}
+      className={cn(
+        "flex flex-col items-center justify-center py-10 px-6 text-center",
+        className,
+      )}
     >
       <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-4">
         <span className="text-2xl">⚠️</span>
@@ -173,7 +215,13 @@ export function ErrorState({ title = 'Something went wrong', message, onRetry, c
 
 // ─── LOADING PULSE (inline) ───────────────────────────────────────────────────
 
-export function LoadingPulse({ color = '#00f0ff', size = 24 }: { color?: string; size?: number }) {
+export function LoadingPulse({
+  color = "#00f0ff",
+  size = 24,
+}: {
+  color?: string;
+  size?: number;
+}) {
   return (
     <div className="flex items-center justify-center gap-1.5">
       {[0, 1, 2].map((i) => (

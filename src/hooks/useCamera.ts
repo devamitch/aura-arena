@@ -82,20 +82,16 @@ export interface UseCameraReturn {
 
 // ─── SIMULATED DATA (for when MediaPipe hasn't loaded yet) ────────────────────
 
-const simulateScore = (t: number, _discipline: DisciplineId): FrameScore => {
-  const base = 65;
-  const wave = Math.sin(t / 3000) * 12 + Math.sin(t / 1100) * 6;
-  const noise = (Math.random() - 0.5) * 8;
-  const overall = Math.max(0, Math.min(100, Math.round(base + wave + noise)));
+const simulateScore = (_t: number, _discipline: DisciplineId): FrameScore => {
   return {
-    overall,
-    accuracy: Math.round(overall + (Math.random() - 0.5) * 10),
-    stability: Math.round(overall + (Math.random() - 0.5) * 8),
-    timing: Math.round(overall + (Math.random() - 0.5) * 12),
-    expressiveness: Math.round(60 + Math.random() * 20),
-    power: Math.round(50 + Math.random() * 30),
-    balance: Math.round(65 + Math.random() * 20),
-    combo: overall > 78 ? Math.floor(t / 3000) % 8 : 0,
+    overall: 0,
+    accuracy: 0,
+    stability: 0,
+    timing: 0,
+    expressiveness: 0,
+    power: 0,
+    balance: 0,
+    combo: 0,
     raw: {
       cosineSimilarity: 0,
       jitterMagnitude: 0,
@@ -108,12 +104,12 @@ const simulateScore = (t: number, _discipline: DisciplineId): FrameScore => {
   };
 };
 
-const simulateLandmarks = (t: number): Landmark[] =>
-  Array.from({ length: 33 }, (_, i) => ({
-    x: 0.5 + (i % 2 === 0 ? -0.1 : 0.1) + Math.sin(t / 2000 + i) * 0.02,
-    y: 0.05 + i * 0.028 + Math.sin(t / 3000 + i * 0.5) * 0.015,
-    z: Math.sin(t / 4000 + i) * 0.02,
-    visibility: 0.9,
+const simulateLandmarks = (_t: number): Landmark[] =>
+  Array.from({ length: 33 }, () => ({
+    x: -1,
+    y: -1,
+    z: -1,
+    visibility: 0,
   }));
 
 // ─── HOOK ─────────────────────────────────────────────────────────────────────

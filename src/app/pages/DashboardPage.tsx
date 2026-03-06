@@ -1,35 +1,71 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — Dashboard (Exact MusicX Match)
+// AURA ARENA — Dashboard (MusicX-inspired clean layout)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useAuth } from "@hooks/useAuth";
 import { formatNumber } from "@lib/utils";
-import { useUnreadCount, useUser, useXP } from "@store";
+import {
+  useSessionHistory,
+  useUnreadCount,
+  useUser,
+  useViewerCount,
+  useXP,
+} from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Bell,
   ChevronRight,
   LogOut,
   Settings,
   Shield,
+  Swords,
   User as UserIcon,
   X,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ── Settings Bottom Sheet Component ── //
+// ── Athlete roster (using available public images) ──
+const ROSTER = [
+  {
+    name: "Boxer",
+    image: "/assets/images/generated/intro_boxing_athlete.png",
+    status: "IN BATTLE",
+  },
+  {
+    name: "Yogi",
+    image: "/assets/images/generated/intro_yoga_athlete.png",
+    status: "ONLINE",
+  },
+  {
+    name: "Warrior",
+    image: "/assets/images/generated/intro_martial_arts.png",
+    status: "READY",
+  },
+  {
+    name: "Champion",
+    image: "/assets/images/generated/intro_arena_1.png",
+    status: "OFFLINE",
+  },
+  {
+    name: "Referee",
+    image: "/assets/images/generated/intro_arena_referee.png",
+    status: "ONLINE",
+  },
+];
+
+// ── Settings Sheet ──
 const SettingsSheet = ({ onClose }: { onClose: () => void }) => {
-  const { signOut } = useAuth();
+  const { logout: signOut } = useAuth();
   return (
     <div className="fixed inset-0 z-[100] flex flex-col justify-end">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80"
         onClick={onClose}
       />
       <motion.div
@@ -37,46 +73,65 @@ const SettingsSheet = ({ onClose }: { onClose: () => void }) => {
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="relative bg-[#040610] rounded-t-[32px] p-6 pb-safe border-t border-[#00f0ff]/20 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]"
+        className="relative rounded-t-[28px] p-6 pb-10"
+        style={{
+          background: "#0a0d1a",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 -16px 60px rgba(0,0,0,0.8)",
+        }}
       >
-        <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6" />
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold text-white tracking-widest uppercase">
-            Settings
-          </h2>
-          <button onClick={onClose} className="p-2 bg-white/5 rounded-full">
-            <X className="w-5 h-5 text-white/70" />
+        <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-6" />
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-black text-white">Settings</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.06)" }}
+          >
+            <X className="w-4 h-4 text-white/50" />
           </button>
         </div>
 
-        <div className="space-y-3">
-          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div className="flex items-center gap-3">
-              <UserIcon className="w-5 h-5 text-[#00f0ff]" />
-              <span className="font-semibold text-white">Edit Profile</span>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/40" />
+        <div className="space-y-2">
+          <button
+            className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-colors hover:bg-white/5"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <UserIcon className="w-5 h-5" style={{ color: "var(--ac)" }} />
+            <span className="font-semibold text-white flex-1">
+              Edit Profile
+            </span>
+            <ChevronRight className="w-4 h-4 text-white/30" />
           </button>
-          <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-[#00f0ff]" />
-              <span className="font-semibold text-white">
-                Privacy & Security
-              </span>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/40" />
+          <button
+            className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-colors hover:bg-white/5"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <Shield className="w-5 h-5" style={{ color: "var(--ac)" }} />
+            <span className="font-semibold text-white flex-1">
+              Privacy & Security
+            </span>
+            <ChevronRight className="w-4 h-4 text-white/30" />
           </button>
           <button
             onClick={() => {
               signOut();
               onClose();
             }}
-            className="w-full flex items-center justify-between p-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors mt-4 border border-red-500/20"
+            className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-colors hover:bg-red-500/10 mt-2"
+            style={{
+              background: "rgba(239,68,68,0.06)",
+              border: "1px solid rgba(239,68,68,0.15)",
+            }}
           >
-            <div className="flex items-center gap-3">
-              <LogOut className="w-5 h-5 text-red-500" />
-              <span className="font-semibold text-red-500">Log Out</span>
-            </div>
+            <LogOut className="w-5 h-5 text-red-500" />
+            <span className="font-semibold text-red-500">Log Out</span>
           </button>
         </div>
       </motion.div>
@@ -91,411 +146,335 @@ export default function DashboardPage() {
   const unread = useUnreadCount();
   const [showSettings, setShowSettings] = useState(false);
 
+  const sessionHistory = useSessionHistory();
+  const viewerCount = useViewerCount();
+
   const firstName = (user?.arenaName || user?.displayName || "Athlete").split(
     " ",
   )[0];
 
   return (
     <div
-      className="page min-h-screen text-foreground font-sans pb-safe relative overflow-hidden flex flex-col pt-10"
-      style={{
-        background: "#02040a",
-      }}
+      className="page pb-safe text-white font-sans"
+      style={{ background: "#040610" }}
     >
-      {/* ── Extreme Cinematic Background ── */}
-      <div className="absolute inset-x-0 inset-y-0 z-0 overflow-hidden pointer-events-none">
+      {/* ── Hero Section ── */}
+      <div className="relative h-56 overflow-hidden">
+        <img
+          src={PREMIUM_ASSETS.ATMOSPHERE.DASHBOARD_HERO}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-90 transition-opacity duration-1000"
+        />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(135deg, rgba(2, 6, 16, 0.9) 0%, rgba(2, 6, 16, 0.4) 50%, rgba(2, 6, 16, 0.95) 100%)",
+              "linear-gradient(180deg, rgba(4,6,16,0.3) 0%, rgba(4,6,16,0.6) 60%, rgba(4,6,16,1) 100%)",
           }}
         />
-        {/* Tactical UI Grid Lines Overlay */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, #00f0ff 1px, transparent 1px),
-              linear-gradient(to bottom, #00f0ff 1px, transparent 1px)
-            `,
-            backgroundSize: "40px 40px",
-            maskImage:
-              "radial-gradient(circle at top, transparent 10%, black 100%)",
-            WebkitMaskImage:
-              "radial-gradient(circle at top, transparent 10%, black 100%)",
-          }}
-        />
-      </div>
 
-      {/* ── Decorative Sci-Fi Top Bar ── */}
-      <div className="relative flex items-center justify-between px-6 mb-8 mt-2 z-20">
-        <div className="flex flex-col gap-1">
+        {/* Header row */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-10">
           <div className="flex items-center gap-2">
-            <span
-              className="font-black text-2xl tracking-tighter"
+            <img
+              src="/logo.png"
+              alt=""
+              className="w-6 h-6 rounded-md object-cover"
+            />
+            <span className="font-black text-sm tracking-tight text-white">
+              AURA<span style={{ color: "var(--ac)" }}>ARENA</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/notifications")}
+              className="w-9 h-9 rounded-full flex items-center justify-center relative"
               style={{
-                color: "white",
-                textShadow: "0 0 10px rgba(0,240,255,0.4)",
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.10)",
               }}
             >
-              AURA<span className="text-[#00f0ff]">ARENA</span>
-            </span>
+              <Bell className="w-4 h-4 text-white" />
+              {unread > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-[#040610]" />
+              )}
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.10)",
+              }}
+            >
+              <Settings className="w-4 h-4 text-white" />
+            </button>
           </div>
-          <div className="h-[2px] w-24 bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]" />
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end gap-1">
-            <span className="text-[#00f0ff] font-mono text-[9px] tracking-[0.2em] uppercase opacity-70">
-              SYS.SYNC // ACTIVE
-            </span>
-            <div className="flex gap-1">
-              <div className="w-1 h-3 bg-[#00f0ff] animate-pulse" />
-              <div className="w-1 h-3 bg-[#00f0ff] opacity-40" />
-              <div className="w-1 h-3 bg-[#00f0ff] opacity-20" />
-            </div>
-          </div>
-          <button
-            onClick={() => navigate("/notifications")}
-            className="w-10 h-10 rounded-full flex items-center justify-center border relative transition-colors shadow-[0_0_15px_rgba(0,240,255,0.15)]"
-            style={{
-              background: "rgba(0,240,255,0.05)",
-              borderColor: "rgba(0,240,255,0.3)",
-            }}
-          >
-            <Bell className="w-4 h-4 text-[#00f0ff]" />
-            {unread > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] border border-[#02040a]" />
-            )}
-          </button>
         </div>
       </div>
 
-      {/* ── Active Operatives (Global Roster) ── */}
-      <div className="mb-8 pl-6 relative z-10">
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide pr-6 pb-4">
-          {[
-            {
-              name: "Mankirt",
-              image: "https://i.pravatar.cc/150?img=11",
-              status: "ONLINE",
-            },
-            {
-              name: "Dilpreet",
-              image: "https://i.pravatar.cc/150?img=12",
-              status: "IN BATTLE",
-            },
-            {
-              name: "Babbu",
-              image: "https://i.pravatar.cc/150?img=33",
-              status: "READY",
-            },
-            {
-              name: "Roman",
-              image: "https://i.pravatar.cc/150?img=47",
-              status: "OFFLINE",
-            },
-            {
-              name: "Zen",
-              image: "https://i.pravatar.cc/150?img=59",
-              status: "ONLINE",
-            },
-          ].map((athlete, i) => (
+      {/* ── Profile Card ── */}
+      <div className="px-5 -mt-12 relative z-10">
+        <div
+          className="rounded-[24px] p-5"
+          style={{
+            background: "rgba(10,13,26,0.92)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          {/* Avatar + name row */}
+          <div className="flex items-center gap-4 mb-5">
+            <div
+              className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-black text-2xl flex-shrink-0"
+              style={{
+                background: "rgba(0,240,255,0.08)",
+                border: "1px solid rgba(0,240,255,0.2)",
+                color: "var(--ac)",
+              }}
+            >
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                firstName[0]
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-black text-white truncate">
+                {firstName}
+              </h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span
+                  className="text-[10px] font-mono uppercase tracking-[0.2em]"
+                  style={{ color: "var(--ac)" }}
+                >
+                  {user?.tier ?? "Bronze"}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="text-[10px] text-white/40 font-mono">
+                  {user?.pveWins ?? 0} wins
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* XP Balance */}
+          <div
+            className="rounded-2xl p-4 mb-4 flex items-center justify-between"
+            style={{
+              background: "rgba(0,240,255,0.04)",
+              border: "1px solid rgba(0,240,255,0.12)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-[9px] font-mono uppercase tracking-[0.3em] mb-1"
+                  style={{ color: "var(--ac)", opacity: 0.7 }}
+                >
+                  Aura Credits
+                </p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-black font-mono tabular-nums text-white">
+                    {formatNumber(xp)}
+                  </span>
+                  <span className="text-xs font-bold font-mono text-white/40 ml-1">
+                    AC
+                  </span>
+                </div>
+              </div>
+              <div className="w-16 h-16 relative flex-shrink-0 group">
+                <div className="absolute inset-0 bg-[var(--ac)] blur-[25px] opacity-20 animate-pulse" />
+                <motion.img
+                  whileHover={{ rotateY: 180, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ duration: 0.6, type: "spring" }}
+                  src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
+                  alt=""
+                  className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(var(--ac-rgb, 0,240,255),0.4)]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={() => navigate("/arena")}
+              className="h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+              style={{
+                background: "linear-gradient(135deg, var(--ac), var(--ac2))",
+                color: "#040914",
+              }}
+            >
+              <Zap className="w-4 h-4" />
+              Train Now
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={() => navigate("/battle/live/lobby")}
+              className="h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "white",
+              }}
+            >
+              <Swords className="w-4 h-4" />
+              Battle
+            </motion.button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stats Row ── */}
+      <div className="px-5 mt-4 grid grid-cols-3 gap-3">
+        {[
+          { label: "Sessions", value: sessionHistory.length || 0 },
+          { label: "Live Now", value: viewerCount || 0 },
+          { label: "Wins", value: user?.pveWins ?? 0 },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl p-4 text-center"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <p className="text-2xl font-black text-white">{stat.value}</p>
+            <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider mt-0.5">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Athlete Roster ── */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between px-5 mb-3">
+          <h2 className="text-sm font-black text-white uppercase tracking-wider">
+            Active Athletes
+          </h2>
+          <button
+            onClick={() => navigate("/discover")}
+            className="text-[11px] font-semibold"
+            style={{ color: "var(--ac)" }}
+          >
+            View All
+          </button>
+        </div>
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 pb-2">
+          {ROSTER.map((athlete, i) => (
             <motion.button
               key={athlete.name}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              whileTap={{ scale: 0.9 }}
-              className="flex flex-col items-center gap-2 flex-shrink-0 relative group"
+              whileTap={{ scale: 0.92 }}
+              className="flex flex-col items-center gap-2 flex-shrink-0"
               onClick={() => navigate("/discover")}
             >
-              {/* Refined MusicX Portrait */}
-              <div className="relative w-20 h-20 rounded-full bg-transparent overflow-hidden border-2 border-transparent group-hover:border-[var(--ac)] transition-colors duration-300 shadow-xl">
-                <div className="absolute inset-0 bg-[var(--s2)] p-0.5 rounded-full">
-                  <div className="w-full h-full rounded-full relative overflow-hidden bg-[var(--s1)]">
-                    <img
-                      src={athlete.image}
-                      alt={athlete.name}
-                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)]/80 via-transparent to-transparent" />
-                  </div>
-                </div>
+              <div
+                className="w-16 h-16 rounded-full overflow-hidden relative"
+                style={{
+                  border: `2px solid ${athlete.status === "IN BATTLE" ? "#ef4444" : athlete.status === "OFFLINE" ? "rgba(255,255,255,0.1)" : "rgba(0,240,255,0.4)"}`,
+                }}
+              >
+                <img
+                  src={athlete.image}
+                  alt={athlete.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-
-              {/* Status and Name */}
-              <div className="flex flex-col items-center mt-1">
-                <span
-                  className={`text-[8px] font-mono tracking-[0.2em] mb-0.5 ${athlete.status === "IN BATTLE" ? "text-red-500 animate-pulse" : athlete.status === "OFFLINE" ? "text-white/30" : "text-[#00f0ff]"}`}
+              <div className="text-center">
+                <p className="text-[11px] font-bold text-white">
+                  {athlete.name}
+                </p>
+                <p
+                  className={`text-[9px] font-mono ${athlete.status === "IN BATTLE" ? "text-red-500 animate-pulse" : athlete.status === "OFFLINE" ? "text-white/30" : "text-green-400"}`}
                 >
                   {athlete.status}
-                </span>
-                <span className="text-xs font-bold text-white tracking-widest uppercase shadow-[0_0_5px_rgba(0,0,0,0.8)]">
-                  {athlete.name}
-                </span>
+                </p>
               </div>
             </motion.button>
           ))}
         </div>
       </div>
 
-      {/* ── HUD Dashboard Body ── */}
-      <div className="flex-1 flex flex-col gap-4 pb-20 z-10 px-5 relative">
-        {/* ── Main Profile & Data Block ── */}
-        <div
-          className="p-6 relative overflow-hidden group border border-[#00f0ff]/30 shadow-[0_0_20px_rgba(0,240,255,0.05),inset_0_0_30px_rgba(0,240,255,0.05)] bg-[#030b14]/80 backdrop-blur-md"
-          style={{
-            clipPath:
-              "polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)",
-          }}
-        >
-          {/* Animated Tech Lines Vector */}
-          <div className="absolute inset-0 pointer-events-none opacity-20">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-[#00f0ff] to-transparent" />
-            <div className="absolute bottom-0 right-0 w-full h-[1px] bg-gradient-to-l from-[#00f0ff] to-transparent" />
-          </div>
+      {/* ── Upcoming Events ── */}
+      <div className="px-5 mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-black text-white uppercase tracking-wider">
+            Upcoming Events
+          </h2>
+          <button
+            className="text-[11px] font-semibold"
+            style={{ color: "var(--ac)" }}
+          >
+            View All
+          </button>
+        </div>
+        <div className="flex flex-col gap-3">
+          {[
+            {
+              title: "Mankirt vs Dilpreet",
+              sub: "Sparring · Tomorrow, 8PM EST",
+              image: PREMIUM_ASSETS.EVENTS.BOXING,
+              color: "rgba(244,63,94,0.06)",
+              border: "rgba(244,63,94,0.12)",
+            },
+            {
+              title: "Yoga Challenge",
+              sub: "Endurance · Friday, 12PM EST",
+              image: PREMIUM_ASSETS.EVENTS.YOGA,
+              color: "rgba(16,185,129,0.06)",
+              border: "rgba(16,185,129,0.12)",
+            },
+            {
+              title: "Zen Mastery",
+              sub: "Focus · Sun, 9AM EST",
+              image: PREMIUM_ASSETS.EVENTS.ZEN,
+              color: "rgba(59,130,246,0.06)",
+              border: "rgba(59,130,246,0.12)",
+            },
+          ].map((ev, i) => (
+            <motion.button
+              key={i}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full overflow-hidden rounded-2xl text-left relative h-24 group"
+              style={{
+                background: ev.color,
+                border: `1px solid ${ev.border}`,
+              }}
+            >
+              <img
+                src={ev.image}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
 
-          {/* Profile Header */}
-          <div className="flex items-center justify-between mb-8 relative z-10">
-            <div className="flex items-center gap-4">
-              {/* Smooth Rounded Profile Pic */}
-              <div className="w-16 h-16 relative overflow-hidden flex justify-center items-center rounded-2xl border border-[var(--glass-border)] bg-[var(--s2)] shadow-lg">
-                {user?.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt="Avatar"
-                    className="w-full h-full object-cover opacity-90"
-                  />
-                ) : (
-                  <div className="font-bold text-2xl text-[var(--ac)] tracking-tighter">
-                    {firstName[0]}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col">
-                <p
-                  className="text-xl font-black text-white tracking-widest uppercase"
-                  style={{ textShadow: "2px 2px 0px rgba(0,240,255,0.5)" }}
-                >
-                  {firstName}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="w-2 h-2 rounded-sm bg-[#00f0ff] animate-pulse" />
-                  <p className="text-[10px] font-mono tracking-[0.2em] text-[#00f0ff]/80 uppercase">
-                    IDENT_VERIFIED
+              <div className="relative z-10 flex items-center h-full px-5 gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-base font-black text-white uppercase tracking-tight">
+                    {ev.title}
+                  </p>
+                  <p className="text-[10px] text-white/50 font-mono mt-0.5">
+                    {ev.sub}
                   </p>
                 </div>
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-[var(--ac)] transition-colors">
+                  <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-[var(--ac)] transition-colors" />
+                </div>
               </div>
-            </div>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 -mr-2 text-[#00f0ff]/60 hover:text-[#00f0ff] transition-colors"
-            >
-              <Settings className="w-6 h-6" />
-            </button>
-          </div>
-
-          {/* Balance Section (MusicX Premium Block) */}
-          <div className="p-5 flex items-center justify-between relative overflow-hidden transition-colors mt-4 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)]">
-            {/* Soft background glow */}
-            <div className="absolute right-0 top-0 bottom-0 w-32 bg-[var(--ac)]/10 blur-xl rounded-full" />
-
-            <div className="relative z-10 flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] font-mono font-bold text-[#00f0ff] tracking-[0.3em] uppercase opacity-80">
-                  CREDITS // AURA
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-[#00f0ff] mr-1">$</span>
-                <span
-                  className="text-[44px] font-black font-mono tabular-nums tracking-tighter leading-none text-white"
-                  style={{ textShadow: "0 0 20px rgba(0,240,255,0.4)" }}
-                >
-                  {formatNumber(xp)}
-                </span>
-                <span className="text-sm font-bold text-[#00f0ff]/50 ml-1">
-                  .00
-                </span>
-              </div>
-            </div>
-
-            <div className="relative z-10 w-14 h-14 rounded-full border border-[var(--ac)]/40 flex items-center justify-center flex-shrink-0 bg-[var(--s2)] shadow-inner">
-              <span className="text-[var(--ac)] font-bold text-xs uppercase text-shadow-sm">
-                AURA
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mt-2">
-          {/* Deposit Button (Clean MusicX style) */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/arena/drills")}
-            className="h-[68px] px-5 flex items-center justify-between relative overflow-hidden group rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-gradient)] shadow-xl transition-all"
-          >
-            {/* Gentle Hover Fill */}
-            <div className="absolute inset-0 bg-[#00d4ff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out z-0" />
-
-            <div className="flex items-center gap-3 relative z-10 w-full group-hover:text-[var(--ac)] transition-colors">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--ac)]/40 bg-[var(--s2)] group-hover:bg-[var(--s4)] transition-colors">
-                <ArrowDownLeft className="w-5 h-5 text-[var(--foreground)] group-hover:text-[var(--ac)]" />
-              </div>
-              <span className="font-bold text-[14px] text-[var(--foreground)] tracking-wide">
-                Deposit
-              </span>
-            </div>
-          </motion.button>
-
-          {/* Withdraw Button */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/battle/live/lobby")}
-            className="h-[68px] px-5 flex items-center justify-between relative overflow-hidden group rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-gradient)] shadow-xl transition-all"
-          >
-            <div className="absolute inset-0 bg-[var(--ac)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out z-0" />
-            <div className="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--ac)]/50 to-transparent" />
-
-            <div className="flex items-center gap-3 relative z-10 w-full justify-between pr-1">
-              <span className="font-bold text-[14px] text-[var(--foreground)] tracking-wide ml-1">
-                Withdraw
-              </span>
-              <div className="w-10 h-10 rounded-full border border-[var(--ac)]/40 bg-[var(--s2)] flex items-center justify-center group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform">
-                <ArrowUpRight className="w-5 h-5 text-[var(--foreground)] group-hover:text-[var(--ac)]" />
-              </div>
-            </div>
-          </motion.button>
-        </div>
-
-        {/* ── Extreme HUD Stats Grid ── */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          {/* Main Target List HUD Block */}
-          <motion.div
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/discover/reels")}
-            className="p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden border border-[#00f0ff]/40 bg-[rgba(0,240,255,0.03)]"
-            style={{
-              minHeight: "180px",
-              clipPath:
-                "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)",
-            }}
-          >
-            {/* Grid Background */}
-            <div
-              className="absolute inset-0 opacity-10 pointer-events-none mix-blend-screen"
-              style={{
-                backgroundImage: `linear-gradient(to right, #00f0ff 1px, transparent 1px), linear-gradient(to bottom, #00f0ff 1px, transparent 1px)`,
-                backgroundSize: "15px 15px",
-              }}
-            />
-
-            <div className="flex justify-between items-start group-hover:opacity-80 transition-opacity relative z-10">
-              <span className="text-[10px] font-black font-mono tracking-widest text-[#00f0ff] uppercase shadow-[0_0_10px_#00f0ff]">
-                GLOBAL_ROSTER
-              </span>
-              <div className="w-6 h-6 border-[1px] border-[#00f0ff]/60 flex items-center justify-center bg-transparent group-hover:translate-x-1 group-hover:-translate-y-1 transition-all">
-                <ChevronRight className="w-4 h-4 text-[#00f0ff]" />
-              </div>
-            </div>
-
-            <div className="relative z-10 mt-auto">
-              <span className="text-[54px] font-black font-mono leading-none text-transparent bg-clip-text bg-gradient-to-b from-white to-[#00f0ff]/50 tracking-tighter drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">
-                24
-              </span>
-              <div
-                className="w-full h-0.5 bg-[#00f0ff] mt-2 shadow-[0_0_10px_#00f0ff]"
-                style={{ width: "40%" }}
-              />
-            </div>
-          </motion.div>
-
-          {/* Secondary Stats HUD Blocks */}
-          <div className="flex flex-col gap-4">
-            {/* Stat Block 1 */}
-            <div
-              className="p-4 flex flex-col justify-center relative overflow-hidden group border border-[#00f0ff]/20 bg-[rgba(0,240,255,0.02)] flex-1 shadow-[inset_0_0_15px_rgba(0,240,255,0.05)]"
-              style={{
-                clipPath: "polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px)",
-              }}
-            >
-              <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#00f0ff]/80 uppercase relative z-10">
-                LOBBIES_LIVE
-              </span>
-              <span className="text-[36px] font-black font-mono leading-none text-white tracking-tighter relative z-10 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">
-                3
-              </span>
-              <div className="absolute right-3 bottom-0 w-[2px] h-1/2 bg-[#00f0ff] opacity-40 group-hover:opacity-100 transition-opacity" />
-            </div>
-
-            {/* Stat Block 2 */}
-            <div
-              className="p-4 flex flex-col justify-center relative overflow-hidden group border border-[#00f0ff]/20 bg-[rgba(0,240,255,0.02)] flex-1 shadow-[inset_0_0_15px_rgba(0,240,255,0.05)]"
-              style={{
-                clipPath:
-                  "polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)",
-              }}
-            >
-              <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#00f0ff]/80 uppercase relative z-10">
-                WINS_SECURED
-              </span>
-              <span className="text-[36px] font-black font-mono leading-none text-white tracking-tighter relative z-10 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">
-                12
-              </span>
-              <div className="absolute left-3 bottom-0 w-[2px] h-1/2 bg-[#00f0ff] opacity-40 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Large Horizontal Action Button ── */}
-        <div className="px-5 relative z-10">
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            className="w-full rounded-[24px] p-6 flex items-center justify-between mt-6 relative overflow-hidden group border transition-colors shadow-xl"
-            style={{
-              background: "var(--s1)",
-              borderColor: "var(--glass-border)",
-            }}
-          >
-            {/* Swirling glow inside button */}
-            <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
-              <div
-                className="w-full h-full rounded-full blur-[30px]"
-                style={{ background: "var(--hover-gradient)" }}
-              />
-            </div>
-
-            <div className="flex items-center gap-4 relative z-10">
-              <div
-                className="w-12 h-12 rounded-full border flex items-center justify-center shadow-md transition-colors"
-                style={{ background: "var(--s2)", borderColor: "var(--ac)" }}
-              >
-                <span
-                  className="font-black text-2xl mb-1"
-                  style={{ color: "var(--ac)" }}
-                >
-                  +
-                </span>
-              </div>
-              <div className="text-left">
-                <span className="block text-[16px] font-black text-white tracking-wide">
-                  Add Funds
-                </span>
-                <span className="block text-[12px] font-medium text-[var(--t2)] tracking-wider">
-                  Deposit Aura-X tokens
-                </span>
-              </div>
-            </div>
-
-            <div className="w-10 h-10 rounded-full border border-[var(--ac)] flex items-center justify-center bg-[var(--s2)] group-hover:scale-110 transition-transform relative z-10 shadow-sm">
-              <ChevronRight
-                className="w-5 h-5 text-[var(--ac)] transition-colors ml-0.5"
-                strokeWidth={3}
-              />
-            </div>
-          </motion.button>
+            </motion.button>
+          ))}
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // AURA ARENA — AppShell
-// Bottom nav with spring-animated tab indicator + Plus sheet with drag-to-dismiss
+// Clean bottom nav bar + Plus sheet with drag-to-dismiss
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { TierUpCelebration } from "@features/gamification/components/TierUpCelebration";
@@ -74,6 +74,16 @@ const QUICK = [
   },
 ] as const;
 
+// ─── Nav Items ────────────────────────────────────────────────────────────────
+
+const NAV_ITEMS = [
+  { icon: Home, label: "Home", path: "/home", match: (p: string) => p === "/home" || p === "/" },
+  { icon: Calendar, label: "Arena", path: "/arena", match: (p: string) => p.startsWith("/arena") },
+  { icon: Plus, label: "Quick", path: null, match: () => false },
+  { icon: Search, label: "Discover", path: "/discover", match: (p: string) => p.startsWith("/discover") },
+  { icon: SettingsIcon, label: "Profile", path: "/profile", match: (p: string) => p.startsWith("/profile") },
+];
+
 // ─── Plus Sheet ───────────────────────────────────────────────────────────────
 
 const PlusSheet = ({ onClose }: { onClose: () => void }) => {
@@ -103,12 +113,7 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[60]"
-        style={{
-          background: "rgba(2,4,12,0.78)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-        }}
+        className="fixed inset-0 z-[60] bg-black/70"
         onClick={onClose}
       />
       <motion.div
@@ -126,18 +131,23 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
         <div
           className="rounded-t-[28px] pt-3 pb-10"
           style={{
-            background: "var(--s1)",
-            border: "1px solid var(--b1)",
-            borderBottom: "none",
-            boxShadow: "0 -24px 80px rgba(0,0,0,0.75)",
+            background: "#0a0d1a",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 -16px 60px rgba(0,0,0,0.8)",
           }}
         >
-          <div className="w-8 h-1 bg-b2 rounded-full mx-auto mb-5" />
+          <div className="w-8 h-1 bg-white/15 rounded-full mx-auto mb-5" />
 
           <div className="flex items-center justify-between px-5 mb-5">
-            <p className="label-section">Quick Start</p>
-            <button onClick={onClose} className="btn-icon w-8 h-8">
-              <X className="w-3.5 h-3.5 text-t2" />
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/40">
+              Quick Start
+            </p>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(255,255,255,0.06)" }}
+            >
+              <X className="w-3.5 h-3.5 text-white/50" />
             </button>
           </div>
 
@@ -162,22 +172,20 @@ const PlusSheet = ({ onClose }: { onClose: () => void }) => {
                   }}
                   className="relative overflow-hidden rounded-2xl p-4 text-left"
                   style={{
-                    background: `${q.color}0e`,
-                    border: `1px solid ${q.color}22`,
+                    background: `${q.color}0d`,
+                    border: `1px solid ${q.color}20`,
                   }}
                 >
-                  <div
-                    className="absolute -top-5 -right-5 w-20 h-20 rounded-full blur-2xl opacity-25"
-                    style={{ background: q.color }}
-                  />
                   <Icon
                     className="w-6 h-6 mb-3 relative z-10"
                     style={{ color: q.color }}
                   />
-                  <p className="text-sm font-black text-t1 leading-none mb-1 relative z-10">
+                  <p className="text-sm font-black text-white leading-none mb-1 relative z-10">
                     {q.label}
                   </p>
-                  <p className="text-[11px] text-t3 relative z-10">{q.sub}</p>
+                  <p className="text-[11px] text-white/40 relative z-10">
+                    {q.sub}
+                  </p>
                 </motion.button>
               );
             })}
@@ -207,7 +215,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       className="flex flex-col h-full w-full text-white"
       style={{ background: "#040610" }}
     >
-      {/* Main scrollable area — each page uses .page class for its own scroll */}
+      {/* Main scrollable area */}
       <div className="flex-1 flex flex-col min-h-0">{children}</div>
 
       {/* ── Bottom Navigation ── */}
@@ -219,211 +227,81 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 72, opacity: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className="fixed bottom-6 left-6 right-6 z-[60] flex justify-center"
+            className="fixed bottom-0 left-0 right-0 z-[50]"
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           >
-            {/* ── Outer Floating Track ── */}
             <div
-              className="relative w-full max-w-md rounded-full p-2 flex items-center justify-between shadow-2xl"
+              className="flex items-stretch justify-around"
               style={{
-                background: "var(--glass-bg)",
-                border: "1px solid var(--glass-border)",
-                backdropFilter: "blur(20px)",
+                background: "rgba(4,6,16,0.97)",
+                borderTop: "1px solid rgba(255,255,255,0.07)",
+                height: 64,
               }}
             >
-              {/* Outer Glow Highlight */}
-              <div
-                className="absolute top-0 inset-x-12 h-[1px] opacity-80"
-                style={{ background: "var(--primary-gradient)" }}
-              />
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.match(currentPath);
+                const isPlus = item.path === null;
 
-              {/* Navigation Items overlaying the Pill */}
-              <div className="relative w-full h-16 flex justify-between items-center pointer-events-auto z-20 px-2">
-                {/* 1. Home */}
-                <button
-                  onClick={() => navigate("/home")}
-                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
-                >
-                  {/* Active Background Box */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-[20px] transition-all duration-300",
-                      currentPath === "/home" || currentPath === "/"
-                        ? "opacity-100 shadow-md"
-                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
-                    )}
-                    style={
-                      currentPath === "/home" || currentPath === "/"
-                        ? {
-                            background: "var(--s2)",
-                            borderColor: "var(--b2)",
-                            borderWidth: "1px",
-                          }
-                        : {}
-                    }
-                  />
-                  <Home
-                    className={cn(
-                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
-                      currentPath === "/home" || currentPath === "/"
-                        ? ""
-                        : "text-white/40 group-hover:text-white/80",
-                    )}
-                    style={
-                      currentPath === "/home" || currentPath === "/"
-                        ? { color: "var(--ac)" }
-                        : {}
-                    }
-                    strokeWidth={
-                      currentPath === "/home" || currentPath === "/" ? 2.5 : 2
-                    }
-                  />
-                </button>
+                if (isPlus) {
+                  return (
+                    <button
+                      key="plus"
+                      onClick={() => setShowPlusSheet(!showSheet)}
+                      className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{
+                          background: "var(--ac)",
+                          boxShadow: "0 0 20px rgba(0,240,255,0.35)",
+                        }}
+                      >
+                        <Plus
+                          className="w-5 h-5"
+                          style={{ color: "#040914" }}
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                    </button>
+                  );
+                }
 
-                {/* 2. Calendar / Events */}
-                <button
-                  onClick={() => navigate("/arena")}
-                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
-                >
-                  <div
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => item.path && navigate(item.path)}
                     className={cn(
-                      "absolute inset-0 rounded-[20px] transition-all duration-300",
-                      currentPath.startsWith("/arena")
-                        ? "opacity-100 shadow-md"
-                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
+                      "flex-1 flex flex-col items-center justify-center gap-1 relative transition-opacity",
+                      isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
                     )}
-                    style={
-                      currentPath.startsWith("/arena")
-                        ? {
-                            background: "var(--s2)",
-                            borderColor: "var(--b2)",
-                            borderWidth: "1px",
-                          }
-                        : {}
-                    }
-                  />
-                  <Calendar
-                    className={cn(
-                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
-                      currentPath.startsWith("/arena")
-                        ? ""
-                        : "text-white/40 group-hover:text-white/80",
+                  >
+                    {/* Active indicator line */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full"
+                        style={{
+                          background: "var(--ac)",
+                          boxShadow: "0 0 8px var(--ac)",
+                        }}
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
                     )}
-                    style={
-                      currentPath.startsWith("/arena")
-                        ? { color: "var(--ac)" }
-                        : {}
-                    }
-                    strokeWidth={currentPath.startsWith("/arena") ? 2.5 : 2}
-                  />
-                </button>
-
-                {/* 3. Central Add Button */}
-                <button
-                  onClick={() => setShowPlusSheet(!showSheet)}
-                  className="relative group w-14 h-14 flex justify-center items-center rounded-full border shadow-md"
-                  style={{ background: "var(--s1)", borderColor: "var(--b2)" }}
-                >
-                  {/* Swirling glow inside central button */}
-                  <div className="absolute inset-0 rounded-full overflow-hidden">
-                    <div
-                      className="absolute -inset-4 opacity-30 animate-[spin_4s_linear_infinite]"
-                      style={{
-                        background:
-                          "conic-gradient(from 0deg, transparent 0%, var(--ac) 30%, transparent 60%)",
-                      }}
+                    <Icon
+                      className="w-[22px] h-[22px]"
+                      style={{ color: isActive ? "var(--ac)" : "white" }}
+                      strokeWidth={isActive ? 2.5 : 1.8}
                     />
-                  </div>
-                  <div
-                    className="absolute inset-1 rounded-full border"
-                    style={{
-                      background: "var(--s2)",
-                      borderColor: "var(--b1)",
-                    }}
-                  />
-                  <Plus
-                    className="w-5 h-5 relative z-10 hover:scale-110 transition-transform"
-                    style={{ color: "var(--ac)" }}
-                    strokeWidth={3}
-                  />
-                </button>
-
-                {/* 4. Global Search / Explore */}
-                <button
-                  onClick={() => navigate("/discover")}
-                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
-                >
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-[20px] transition-all duration-300",
-                      currentPath.startsWith("/discover")
-                        ? "opacity-100 shadow-md"
-                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
-                    )}
-                    style={
-                      currentPath.startsWith("/discover")
-                        ? {
-                            background: "var(--s2)",
-                            borderColor: "var(--b2)",
-                            borderWidth: "1px",
-                          }
-                        : {}
-                    }
-                  />
-                  <Search
-                    className={cn(
-                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
-                      currentPath.startsWith("/discover")
-                        ? ""
-                        : "text-white/40 group-hover:text-white/80",
-                    )}
-                    style={
-                      currentPath.startsWith("/discover")
-                        ? { color: "var(--ac)" }
-                        : {}
-                    }
-                    strokeWidth={currentPath.startsWith("/discover") ? 2.5 : 2}
-                  />
-                </button>
-
-                {/* 5. Settings / Profile */}
-                <button
-                  onClick={() => navigate("/profile")}
-                  className="relative group w-14 h-14 flex items-center justify-center rounded-[20px] transition-all"
-                >
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-[20px] transition-all duration-300",
-                      currentPath.startsWith("/profile")
-                        ? "opacity-100 shadow-md"
-                        : "bg-transparent opacity-0 group-hover:bg-white/5 border border-transparent group-hover:border-white/10",
-                    )}
-                    style={
-                      currentPath.startsWith("/profile")
-                        ? {
-                            background: "var(--s2)",
-                            borderColor: "var(--b2)",
-                            borderWidth: "1px",
-                          }
-                        : {}
-                    }
-                  />
-                  <SettingsIcon
-                    className={cn(
-                      "w-[22px] h-[22px] relative z-10 transition-colors duration-300",
-                      currentPath.startsWith("/profile")
-                        ? ""
-                        : "text-white/40 group-hover:text-white/80",
-                    )}
-                    style={
-                      currentPath.startsWith("/profile")
-                        ? { color: "var(--ac)" }
-                        : {}
-                    }
-                    strokeWidth={currentPath.startsWith("/profile") ? 2.5 : 2}
-                  />
-                </button>
-              </div>
+                    <span
+                      className="text-[10px] font-medium tracking-wide"
+                      style={{ color: isActive ? "var(--ac)" : "rgba(255,255,255,0.5)" }}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </motion.nav>
         )}

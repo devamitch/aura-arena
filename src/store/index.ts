@@ -7,6 +7,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { createAvatarSlice, type AvatarSlice } from "./slices/avatarSlice";
 import {
   createDetectionSlice,
   type DetectionSlice,
@@ -20,7 +21,8 @@ export type AppStore = GameSlice &
   LeagueSlice &
   FeedSlice &
   DetectionSlice &
-  UserSlice;
+  UserSlice &
+  AvatarSlice;
 
 export const useStore = create<AppStore>()(
   persist(
@@ -30,6 +32,7 @@ export const useStore = create<AppStore>()(
       ...createFeedSlice(...a),
       ...createDetectionSlice(...a),
       ...createUserSlice(...a),
+      ...createAvatarSlice(...a),
     })),
     {
       name: "aura-arena-v4",
@@ -59,6 +62,7 @@ export const useStore = create<AppStore>()(
         installPromptDismissed: s.installPromptDismissed,
         likedReels: [...s.likedReels],
         savedReels: [...s.savedReels],
+        avatarConfig: s.avatarConfig,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
@@ -129,6 +133,9 @@ export const useSkeletonVisible = () => useStore((s) => s.skeletonVisible);
 export const useFeedTab = () => useStore((s) => s.feedTab);
 export const useDiscoverFilter = () => useStore((s) => s.discoverFilter);
 export const useActiveReelIndex = () => useStore((s) => s.activeReelIndex);
+
+// AvatarSlice
+export const useAvatarConfig = () => useStore((s) => s.avatarConfig);
 
 // ─── Action shortcuts (for components that prefer direct destructuring) ───────
 export const useMarkNotificationRead = () =>

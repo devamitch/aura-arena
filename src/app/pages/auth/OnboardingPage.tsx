@@ -1,69 +1,86 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — Onboarding Page (MusicX-inspired)
-// 6 steps: Intro → Discipline → Style → Level → Goals → Coach Name
+// AURA ARENA — Onboarding (premium multi-step flow)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { AvatarCanvas } from "@components/3d/AvatarCanvas";
 import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineSelector";
 import { generateWelcomeMessage } from "@lib/gemini";
 import { cn } from "@lib/utils";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { useStore, useUser } from "@store";
 import type { DisciplineId, SubDisciplineId } from "@types";
+import {
+  DISCIPLINE_ATHLETE,
+  DISCIPLINE_BANNER,
+  PREMIUM_ASSETS,
+} from "@utils/assets";
 import { DISCIPLINES, getDiscipline } from "@utils/constants/disciplines";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Bot,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Target,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const ACCENT = "#00f0ff";
+// ── Constants ──────────────────────────────────────────────────────────────────
 
 const EXPERIENCE_LEVELS = [
   {
     id: "beginner",
-    label: "Beginner",
-    desc: "Just starting, building foundations",
+    title: "Rookie",
+    desc: "Just starting my journey.",
+    badge: PREMIUM_ASSETS.BADGES.BEGINNER,
   },
   {
     id: "intermediate",
-    label: "Intermediate",
-    desc: "Regular training, improving consistently",
+    title: "Amateur",
+    desc: "I train regularly.",
+    badge: PREMIUM_ASSETS.BADGES.INTERMEDIATE,
   },
   {
     id: "advanced",
-    label: "Advanced",
-    desc: "Serious athlete, competitive mindset",
+    title: "Pro",
+    desc: "I compete at a high level.",
+    badge: PREMIUM_ASSETS.BADGES.ADVANCED,
   },
   {
-    id: "professional",
-    label: "Professional",
-    desc: "Elite level, performance-focused",
+    id: "expert",
+    title: "Elite",
+    desc: "I am a master of my craft.",
+    badge: PREMIUM_ASSETS.BADGES.PROFESSIONAL,
   },
 ] as const;
 
 const GOALS = [
   {
     id: "fitness",
-    label: "Get Fit",
-    desc: "Build strength and endurance",
-    icon: "Dumbbell",
+    title: "Fitness",
+    desc: "Build muscle, improve stamina.",
+    icon: PREMIUM_ASSETS.GOALS.FITNESS,
   },
   {
     id: "compete",
-    label: "Compete",
-    desc: "Win battles and climb ranks",
-    icon: "Trophy",
+    title: "Competition",
+    desc: "Climb ranks, win tournaments.",
+    icon: PREMIUM_ASSETS.GOALS.COMPETE,
   },
   {
-    id: "skill",
-    label: "Master Skills",
-    desc: "Perfect technique and form",
-    icon: "Target",
+    id: "skills",
+    title: "Skill Master",
+    desc: "Perfect form, learn technique.",
+    icon: PREMIUM_ASSETS.GOALS.SKILLS,
   },
   {
     id: "social",
-    label: "Community",
-    desc: "Connect with athletes worldwide",
-    icon: "Users",
+    title: "Community",
+    desc: "Train with friends, join crew.",
+    icon: PREMIUM_ASSETS.GOALS.COMMUNITY,
   },
 ];
 
@@ -73,20 +90,92 @@ const FREQUENCIES = [
   { id: 7, label: "Daily", desc: "Dedicated" },
 ];
 
+const COACHES = [
+  {
+    id: "Aria",
+    name: "ARIA AI",
+    motto: "Train smart, not just hard.",
+    img: PREMIUM_ASSETS.COACHES.ARIA,
+    desc: "Balanced",
+    color: "var(--ac)",
+  },
+  {
+    id: "Max",
+    name: "MAX",
+    motto: "Unleash your inner power.",
+    img: PREMIUM_ASSETS.COACHES.MAX,
+    desc: "Power",
+    color: "#f43f5e",
+  },
+  {
+    id: "Sensei",
+    name: "SENSEI",
+    motto: "Master the art of focus.",
+    img: PREMIUM_ASSETS.COACHES.SENSEI,
+    desc: "Focus",
+    color: "#22c55e",
+  },
+];
+
 const STEPS = [
   "Setup",
   "Discipline",
   "Style",
   "Level",
   "Goals",
+  "Avatar",
   "Coach",
   "Confirm",
 ] as const;
 
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+const CardGlass = ({
+  selected,
+  onClick,
+  children,
+  className = "",
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "text-left rounded-2xl p-4 transition-all active:scale-[0.97]",
+      className,
+    )}
+    style={
+      selected
+        ? {
+            background: "rgba(0,240,255,0.06)",
+            border: "1px solid rgba(0,240,255,0.30)",
+            boxShadow: "0 0 20px rgba(0,240,255,0.08)",
+          }
+        : {
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.07)",
+          }
+    }
+  >
+    {children}
+  </button>
+);
+
+const GradientLabel = ({ children }: { children: React.ReactNode }) => (
+  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--ac)] to-[#a855f7]">
+    {children}
+  </span>
+);
+
+// ── Page ───────────────────────────────────────────────────────────────────────
+
 export default function OnboardingPage() {
   const navigate = useNavigate();
   const user = useUser();
-  const { updateUser } = useStore();
+  const { updateUser, setAvatarConfig } = useStore();
 
   const [step, setStep] = useState(0);
   const [disciplineId, setDisciplineId] = useState<DisciplineId>("boxing");
@@ -96,6 +185,9 @@ export default function OnboardingPage() {
   const [experience, setExperience] = useState<string>("beginner");
   const [goals, setGoals] = useState<string[]>([]);
   const [frequency, setFrequency] = useState(3);
+  const [avatarUrl, setAvatarUrl] = useState<string>(
+    "/assets/models/avatar.vrm",
+  );
   const [coachName, setCoachName] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -152,6 +244,7 @@ export default function OnboardingPage() {
       discipline: disciplineId,
       subDiscipline: subDisciplineId as any,
       experienceLevel: experience as any,
+      avatarUrl: avatarUrl,
       goals,
       trainingFrequency: frequency,
       aiCoachName: coachName,
@@ -166,7 +259,6 @@ export default function OnboardingPage() {
       bestScore: user?.bestScore ?? 0,
       bio: user?.bio ?? "",
       lastActiveDate: user?.lastActiveDate ?? "",
-      avatarUrl: user?.avatarUrl ?? "",
       country: user?.country ?? "UN",
       sessionDuration: user?.sessionDuration ?? 0,
       tier: user?.tier ?? "bronze",
@@ -178,70 +270,41 @@ export default function OnboardingPage() {
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
-  // ── Selection card helper ─────────────────────────────────────────────────
-  const SelectCard = ({
-    selected,
-    onClick,
-    children,
-    className = "",
-  }: {
-    selected: boolean;
-    onClick: () => void;
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <button
-      onClick={onClick}
-      className={cn(
-        "text-left rounded-2xl p-4 transition-all active:scale-[0.97]",
-        className,
-      )}
-      style={
-        selected
-          ? {
-              background: `rgba(0,240,255,0.06)`,
-              border: `1px solid rgba(0,240,255,0.25)`,
-              boxShadow: `0 0 20px rgba(0,240,255,0.08)`,
-            }
-          : {
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }
-      }
-    >
-      {children}
-    </button>
-  );
-
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ background: "var(--background)" }}
+      style={{ background: "#040610" }}
     >
-      {/* Background image — subtle */}
-      <div className="absolute inset-0 opacity-40 z-0 pointer-events-none">
+      {/* ── Background ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <img
-          src="/assets/images/generated/auth_thunder_bg_2.png"
+          src={PREMIUM_ASSETS.ATMOSPHERE.AUTH_BG}
           alt=""
-          className="w-full h-full object-cover mix-blend-screen"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/80 to-[var(--background)]/40" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(4,6,16,0.6) 0%, rgba(4,6,16,0.88) 50%, rgba(4,6,16,1) 100%)",
+          }}
+        />
       </div>
 
       <div className="relative z-10 flex flex-col h-full">
-        {/* ── Progress bar ── */}
+        {/* Progress bar */}
         <div className="h-0.5" style={{ background: "rgba(255,255,255,0.04)" }}>
           <motion.div
             className="h-full"
             style={{
-              background: `linear-gradient(90deg, var(--ac), rgba(var(--ac-rgb, 0,240,255), 0.7))`,
+              background: "linear-gradient(90deg, var(--ac), var(--ac2))",
             }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
           />
         </div>
 
-        {/* ── Step indicator header ── */}
+        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4">
           <button
             onClick={back}
@@ -250,11 +313,11 @@ export default function OnboardingPage() {
               step === 0 ? "opacity-0 pointer-events-none" : "",
             )}
             style={{
-              background: "rgba(255,255,255,0.05)",
+              background: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <ChevronLeft className="w-4 h-4 text-white/50" />
+            <ChevronLeft className="w-4 h-4 text-white/60" />
           </button>
 
           <div className="flex gap-1.5">
@@ -263,11 +326,12 @@ export default function OnboardingPage() {
                 key={i}
                 animate={{
                   width: i === step ? 20 : 8,
-                  opacity: i <= step ? 1 : 0.25,
+                  opacity: i <= step ? 1 : 0.2,
                 }}
                 className="h-1.5 rounded-full"
                 style={{
-                  background: i <= step ? ACCENT : "rgba(255,255,255,0.1)",
+                  background:
+                    i <= step ? "var(--ac)" : "rgba(255,255,255,0.15)",
                 }}
               />
             ))}
@@ -278,55 +342,77 @@ export default function OnboardingPage() {
           </span>
         </div>
 
-        {/* ── Content ── */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           <AnimatePresence mode="wait">
-            {/* Step 0: Setup Context */}
+            {/* ── Step 0: Setup ── */}
             {step === 0 && (
               <motion.div
                 key="setup"
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                className="flex-1 flex flex-col items-center justify-center text-center py-12 min-h-[60vh] px-2"
+                exit={{ opacity: 0, scale: 1.04 }}
+                className="flex flex-col items-center justify-center text-center py-10 min-h-[60vh]"
               >
-                <div className="w-24 h-24 mb-8 rounded-full flex items-center justify-center border border-[#00f0ff]/30 shadow-[0_0_40px_rgba(0,240,255,0.2)] bg-[#00f0ff]/5 relative">
-                  <Bot className="w-10 h-10 text-[#00f0ff]" />
-                  <div className="absolute inset-0 rounded-full border border-[##00f0ff]/50 animate-[spin_4s_linear_infinite] border-dashed" />
+                <div
+                  className="w-24 h-24 mb-8 rounded-full flex items-center justify-center relative"
+                  style={{
+                    background: "rgba(0,240,255,0.06)",
+                    border: "1px solid rgba(0,240,255,0.25)",
+                    boxShadow: "0 0 40px rgba(0,240,255,0.15)",
+                  }}
+                >
+                  <Bot className="w-10 h-10" style={{ color: "var(--ac)" }} />
+                  <div
+                    className="absolute inset-0 rounded-full border border-dashed animate-spin"
+                    style={{
+                      borderColor: "rgba(0,240,255,0.35)",
+                      animationDuration: "5s",
+                    }}
+                  />
                 </div>
-                <h2 className="text-[32px] font-black leading-tight text-white mb-4 drop-shadow-md">
-                  Initialize Your{" "}
-                  <span className="text-gradient">AI Coach</span>
+
+                <h2 className="text-[32px] font-black text-white mb-4 leading-tight">
+                  Initialize Your <GradientLabel>AI Coach</GradientLabel>
                 </h2>
-                <p className="text-[15px] font-medium text-white/70 leading-relaxed max-w-[300px] mb-8">
-                  To accurately track your joints and score your realtime
-                  movements, the Vision Engine needs to know your specific
-                  discipline and skill level.
+                <p className="text-[15px] text-white/55 leading-relaxed max-w-[300px] mb-8">
+                  The Vision Engine needs to know your discipline and skill
+                  level to accurately track your joints and score your movements
+                  in real-time.
                 </p>
 
-                <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
-                  <h3 className="font-bold text-white text-sm mb-3">
-                    Calibration Sequence:
+                <div
+                  className="w-full rounded-2xl p-5"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <h3 className="font-bold text-white text-sm mb-4 text-left">
+                    Calibration Sequence
                   </h3>
-                  <ul className="text-left text-[13px] text-white/50 space-y-2.5 font-medium ml-2">
-                    <li className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-[#00f0ff]" /> 1.
-                      Select primary arena discipline
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-[#00f0ff]" /> 2.
-                      Define current athlete tier
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-[#00f0ff]" /> 3. Set
-                      competitive goals
-                    </li>
+                  <ul className="text-left text-[13px] text-white/50 space-y-3">
+                    {[
+                      "Select primary arena discipline",
+                      "Define current athlete tier",
+                      "Set competitive goals",
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <CheckCircle
+                          className="w-4 h-4 flex-shrink-0"
+                          style={{ color: "var(--ac)" }}
+                        />
+                        <span>
+                          {i + 1}. {item}
+                        </span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 1: Discipline */}
+            {/* ── Step 1: Discipline ── */}
             {step === 1 && (
               <motion.div
                 key="disc"
@@ -335,77 +421,81 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -30 }}
               >
                 <h2 className="text-2xl font-black text-white mb-1">
-                  Choose your <span className="text-gradient">discipline</span>
+                  Choose your <GradientLabel>discipline</GradientLabel>
                 </h2>
                 <p className="text-sm text-white/35 mb-6">
-                  Your primary training focus — you can add more later
+                  Your primary training focus — add more later
                 </p>
+
                 <div className="grid grid-cols-2 gap-3">
                   {DISCIPLINES.map((d: any) => {
-                    let bannerImg =
-                      "/assets/images/generated/intro_martial_arts.png";
-                    if (d.id === "boxing")
-                      bannerImg =
-                        "/assets/images/generated/banner_boxing_teal.png";
-                    else if (d.id === "yoga")
-                      bannerImg =
-                        "/assets/images/generated/banner_yoga_teal.png";
-                    else if (d.id === "dance")
-                      bannerImg =
-                        "/assets/images/generated/aura_arena_banner_dance.png";
-
+                    const banner =
+                      DISCIPLINE_BANNER[d.id] ??
+                      PREMIUM_ASSETS.ATHLETES.WARRIOR;
+                    const selected = disciplineId === d.id;
                     return (
-                      <SelectCard
+                      <button
                         key={d.id}
-                        selected={disciplineId === d.id}
                         onClick={() => {
                           setDisciplineId(d.id);
                           setSubDisciplineId(undefined);
                         }}
-                        className="h-32 !p-0 overflow-hidden relative group"
+                        className="h-32 rounded-2xl overflow-hidden relative group active:scale-[0.97] transition-transform"
+                        style={{
+                          border: selected
+                            ? "2px solid rgba(0,240,255,0.5)"
+                            : "1px solid rgba(255,255,255,0.07)",
+                          boxShadow: selected
+                            ? "0 0 24px rgba(0,240,255,0.15)"
+                            : "none",
+                        }}
                       >
-                        {/* Banner Image Background */}
-                        <div className="absolute inset-0 z-0">
-                          <img
-                            src={bannerImg}
-                            alt={d.name}
-                            className="w-full h-full object-cover opacity-60 mix-blend-screen transition-transform duration-700 group-hover:scale-110"
-                          />
-                          {/* Gradient to ensure text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-transparent" />
-                        </div>
+                        <img
+                          src={banner}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#040610] via-[#040610]/55 to-transparent" />
+                        {selected && (
+                          <div className="absolute inset-0 bg-[var(--ac)]/8" />
+                        )}
 
-                        {/* Content Foreground */}
-                        <div className="relative z-10 flex flex-col justify-end h-full p-4">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <div className="flex items-center gap-2">
                             <DynamicIcon
                               name={d.icon}
-                              className="w-5 h-5 drop-shadow-[0_0_8px_rgba(var(--ac-rgb, 0,240,255), 0.6)]"
+                              className="w-4 h-4"
                               style={{
-                                color:
-                                  disciplineId === d.id
-                                    ? "var(--ac)"
-                                    : "rgba(255,255,255,0.9)",
+                                color: selected ? "var(--ac)" : "white",
                               }}
                             />
-                            <p className="font-black text-white text-sm tracking-wide drop-shadow-md">
+                            <p className="font-black text-white text-sm">
                               {d.name}
                             </p>
                           </div>
                           {d.subDisciplines.length > 0 && (
-                            <p className="text-[10px] font-bold text-[var(--ac)] uppercase tracking-widest opacity-80">
+                            <p className="text-[9px] font-mono text-white/35 mt-0.5 uppercase tracking-widest">
                               {d.subDisciplines.length} styles
                             </p>
                           )}
                         </div>
-                      </SelectCard>
+
+                        {selected && (
+                          <div
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ background: "var(--ac)" }}
+                          >
+                            <CheckCircle className="w-3 h-3 text-black" />
+                          </div>
+                        )}
+                      </button>
                     );
                   })}
                 </div>
               </motion.div>
             )}
 
-            {/* Step 2: Sub-style */}
+            {/* ── Step 2: Sub-style ── */}
             {step === 2 && hasSubDisciplines && (
               <motion.div
                 key="style"
@@ -414,7 +504,7 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -30 }}
               >
                 <h2 className="text-2xl font-black text-white mb-1">
-                  Choose your <span className="text-gradient">style</span>
+                  Choose your <GradientLabel>style</GradientLabel>
                 </h2>
                 <p className="text-sm text-white/35 mb-4">
                   Pick a specific {disc.name} style, or train all
@@ -427,7 +517,7 @@ export default function OnboardingPage() {
                   className="w-full mb-4 py-3.5 rounded-2xl text-sm text-white/50 font-semibold text-center active:scale-[0.97]"
                   style={{
                     background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.07)",
                   }}
                 >
                   All {disc.name} styles (no preference)
@@ -443,7 +533,7 @@ export default function OnboardingPage() {
               </motion.div>
             )}
 
-            {/* Step 3: Experience level */}
+            {/* ── Step 3: Experience ── */}
             {step === 3 && (
               <motion.div
                 key="exp"
@@ -452,45 +542,66 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -30 }}
               >
                 <h2 className="text-2xl font-black text-white mb-1">
-                  Your <span className="text-gradient">experience</span> level
+                  Your <GradientLabel>experience</GradientLabel> level
                 </h2>
                 <p className="text-sm text-white/35 mb-6">
                   We'll personalise drills and AI coaching
                 </p>
-                <div className="space-y-3">
-                  {EXPERIENCE_LEVELS.map((l) => (
-                    <SelectCard
-                      key={l.id}
-                      selected={experience === l.id}
-                      onClick={() => setExperience(l.id)}
-                      className="w-full"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-bold text-white">{l.label}</p>
-                          <p className="text-xs text-white/30 mt-0.5">
-                            {l.desc}
-                          </p>
-                        </div>
-                        {experience === l.id && (
-                          <CheckCircle
-                            className="w-5 h-5 flex-shrink-0"
-                            style={{ color: "var(--ac)" }}
-                          />
+
+                <div className="grid grid-cols-2 gap-3">
+                  {EXPERIENCE_LEVELS.map((level) => {
+                    const selected = experience === level.id;
+                    return (
+                      <button
+                        key={level.id}
+                        onClick={() => setExperience(level.id)}
+                        className="rounded-2xl p-4 flex flex-col items-center text-center transition-all active:scale-[0.97] relative overflow-hidden"
+                        style={
+                          selected
+                            ? {
+                                background: "rgba(0,240,255,0.06)",
+                                border: "1px solid rgba(0,240,255,0.30)",
+                                boxShadow: "0 0 20px rgba(0,240,255,0.08)",
+                              }
+                            : {
+                                background: "rgba(255,255,255,0.03)",
+                                border: "1px solid rgba(255,255,255,0.07)",
+                              }
+                        }
+                      >
+                        <img
+                          src={level.badge}
+                          alt=""
+                          className={`w-16 h-16 mb-3 object-contain transition-all duration-300 ${selected ? "drop-shadow-[0_0_16px_rgba(0,240,255,0.5)] scale-110" : "opacity-55"}`}
+                        />
+                        <p
+                          className={`font-black text-base ${selected ? "text-white" : "text-white/65"}`}
+                        >
+                          {level.title}
+                        </p>
+                        <p className="text-[11px] text-white/40 mt-0.5">
+                          {level.desc}
+                        </p>
+                        {selected && (
+                          <div
+                            className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{ background: "var(--ac)" }}
+                          >
+                            <CheckCircle className="w-2.5 h-2.5 text-black" />
+                          </div>
                         )}
-                      </div>
-                    </SelectCard>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Training frequency */}
                 <div className="mt-6">
-                  <p className="text-sm font-semibold text-white/60 mb-3">
+                  <p className="text-sm font-semibold text-white/45 mb-3">
                     Training frequency
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {FREQUENCIES.map((f) => (
-                      <SelectCard
+                      <CardGlass
                         key={f.id}
                         selected={frequency === f.id}
                         onClick={() => setFrequency(f.id)}
@@ -499,15 +610,15 @@ export default function OnboardingPage() {
                         <p className="text-sm font-bold text-white">
                           {f.label}
                         </p>
-                        <p className="text-[10px] text-white/25">{f.desc}</p>
-                      </SelectCard>
+                        <p className="text-[10px] text-white/30">{f.desc}</p>
+                      </CardGlass>
                     ))}
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 4: Goals */}
+            {/* ── Step 4: Goals ── */}
             {step === 4 && (
               <motion.div
                 key="goals"
@@ -516,46 +627,143 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -30 }}
               >
                 <h2 className="text-2xl font-black text-white mb-1">
-                  What <span className="text-gradient">drives</span> you?
+                  What <GradientLabel>drives</GradientLabel> you?
                 </h2>
                 <p className="text-sm text-white/35 mb-6">
                   Select all that apply
                 </p>
+
                 <div className="grid grid-cols-2 gap-3 pb-8">
                   {GOALS.map((g) => {
                     const on = goals.includes(g.id);
                     return (
-                      <SelectCard
+                      <CardGlass
                         key={g.id}
                         selected={on}
                         onClick={() => toggleGoal(g.id)}
+                        className="flex flex-col items-center text-center !py-6 relative overflow-hidden"
                       >
+                        {on && (
+                          <div className="absolute inset-0 bg-[var(--ac)]/5 pointer-events-none" />
+                        )}
                         <div
-                          className="mb-2"
+                          className={`mb-4 w-14 h-14 rounded-2xl flex items-center justify-center relative z-10 transition-all duration-300 ${on ? "scale-110" : ""}`}
                           style={{
-                            color: on ? "var(--ac)" : "rgba(255,255,255,0.25)",
+                            background: on
+                              ? "rgba(0,240,255,0.08)"
+                              : "rgba(255,255,255,0.04)",
+                            border: on
+                              ? "1px solid rgba(0,240,255,0.3)"
+                              : "1px solid rgba(255,255,255,0.08)",
+                            boxShadow: on
+                              ? "0 0 20px rgba(0,240,255,0.2)"
+                              : "none",
                           }}
                         >
-                          <DynamicIcon
-                            name={g.icon as any}
-                            className="w-6 h-6"
+                          <img
+                            src={g.icon}
+                            alt={g.title}
+                            className={`w-9 h-9 object-contain ${on ? "" : "opacity-50"}`}
                           />
                         </div>
-                        <p className="text-sm font-bold text-white">
-                          {g.label}
+                        <p
+                          className={`text-[15px] font-black relative z-10 ${on ? "text-white" : "text-white/65"}`}
+                        >
+                          {g.title}
                         </p>
-                        <p className="text-[10px] text-white/25 mt-0.5">
+                        <p className="text-[10px] text-white/40 mt-1 relative z-10 leading-tight">
                           {g.desc}
                         </p>
-                      </SelectCard>
+                      </CardGlass>
                     );
                   })}
                 </div>
               </motion.div>
             )}
 
-            {/* Step 5: Coach name */}
+            {/* ── Step 5: Avatar (3D R3F) ── */}
             {step === 5 && (
+              <motion.div
+                key="avatar"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                className="flex flex-col h-full"
+              >
+                <h2 className="text-2xl font-black text-white mb-1">
+                  Choose <GradientLabel>Avatar</GradientLabel>
+                </h2>
+                <p className="text-sm text-white/35 mb-6">
+                  Your representation in the Global Arena.
+                </p>
+
+                {/* 3D Preview Glass Panel */}
+                <div className="w-full h-[260px] mb-6 rounded-3xl overflow-hidden relative shadow-[0_0_30px_rgba(0,240,255,0.15)] border border-white/10 bg-black/40">
+                  <AvatarCanvas />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pb-8">
+                  {[
+                    {
+                      id: "/assets/models/avatar.vrm",
+                      title: "Standard VRM",
+                      desc: "Anime base model",
+                      icon: User,
+                    },
+                    {
+                      id: "/assets/models/Xbot.glb",
+                      title: "XBot Tactical",
+                      desc: "Military grade",
+                      icon: Target,
+                    },
+                    {
+                      id: "/assets/models/RobotExpressive.glb",
+                      title: "Android",
+                      desc: "Expressive synth",
+                      icon: Sparkles,
+                    },
+                  ].map((av) => {
+                    const selected = avatarUrl === av.id;
+                    return (
+                      <CardGlass
+                        key={av.id}
+                        selected={selected}
+                        onClick={() => {
+                          setAvatarUrl(av.id);
+                          setAvatarConfig({ modelUrl: av.id });
+                        }}
+                        className="flex flex-col items-center justify-center p-4 min-h-[140px] relative"
+                      >
+                        <av.icon
+                          className={cn(
+                            "w-6 h-6 mb-3",
+                            selected ? "text-[var(--ac)]" : "text-t3",
+                          )}
+                        />
+                        <span className="font-bold text-sm text-center mb-1 text-white">
+                          {av.title}
+                        </span>
+                        <span className="text-[10px] text-white/50 text-center">
+                          {av.desc}
+                        </span>
+
+                        {selected && (
+                          <div
+                            className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{ background: "var(--ac)" }}
+                          >
+                            <CheckCircle className="w-2.5 h-2.5 text-black" />
+                          </div>
+                        )}
+                      </CardGlass>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Step 6: Coach ── */}
+            {step === 6 && (
               <motion.div
                 key="coach"
                 initial={{ opacity: 0, x: 30 }}
@@ -563,179 +771,266 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -30 }}
               >
                 <h2 className="text-2xl font-black text-white mb-1">
-                  Name your <span className="text-gradient">AI Coach</span>
+                  Select your <GradientLabel>AI Coach</GradientLabel>
                 </h2>
-                <p className="text-sm text-white/35 mb-6">
-                  Your coach will give you personalised {disc.name} feedback
+                <p className="text-sm text-white/35 mb-8">
+                  Choose a personality to guide your {disc.name} training
                 </p>
-                <div className="flex items-center justify-center mb-6">
-                  <div
-                    className="w-24 h-24 rounded-[2rem] flex items-center justify-center relative shadow-lg"
-                    style={{
-                      background: "rgba(var(--ac-rgb, 0,240,255), 0.06)",
-                      border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.15)",
-                      boxShadow:
-                        "0 0 40px rgba(var(--ac-rgb, 0,240,255), 0.12)",
-                    }}
-                  >
-                    <Bot className="w-12 h-12" style={{ color: "var(--ac)" }} />
-                  </div>
-                </div>
-                <input
-                  type="text"
-                  value={coachName}
-                  onChange={(e) => setCoachName(e.target.value)}
-                  placeholder="e.g. Aria, Max, Sensei…"
-                  maxLength={20}
-                  className="w-full h-14 rounded-2xl px-5 text-white font-medium text-[15px] focus:outline-none transition-all placeholder:text-white/20"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border:
-                      coachName.length >= 2
-                        ? "1px solid var(--ac)"
-                        : "1px solid rgba(255,255,255,0.08)",
-                  }}
-                />
-                <div className="flex gap-2 flex-wrap justify-center mt-4">
-                  {["Aria", "Max", "Sensei", "Coach K", "Zara", "Atlas"].map(
-                    (n) => (
-                      <button
-                        key={n}
-                        onClick={() => setCoachName(n)}
-                        className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95"
-                        style={{
-                          background:
-                            coachName === n
-                              ? "rgba(0,240,255,0.1)"
-                              : "rgba(255,255,255,0.04)",
-                          border:
-                            coachName === n
-                              ? "1px solid rgba(0,240,255,0.25)"
-                              : "1px solid rgba(255,255,255,0.06)",
-                          color:
-                            coachName === n ? ACCENT : "rgba(255,255,255,0.4)",
-                        }}
+
+                <div className="space-y-4">
+                  {COACHES.map((coach) => {
+                    const selected = coachName === coach.id;
+                    return (
+                      <CardGlass
+                        key={coach.id}
+                        selected={selected}
+                        onClick={() => setCoachName(coach.id)}
+                        className="flex items-center gap-4 !p-4 overflow-hidden"
                       >
-                        {n}
-                      </button>
-                    ),
-                  )}
+                        <div
+                          className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center"
+                          style={{
+                            background: `${coach.color}15`,
+                            border: `1px solid ${coach.color}30`,
+                          }}
+                        >
+                          <img
+                            src={coach.img}
+                            alt=""
+                            className="w-11 h-11 object-contain"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-sm font-black text-white uppercase tracking-tight">
+                              {coach.name}
+                            </span>
+                            <span
+                              className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
+                              style={{
+                                color: selected
+                                  ? coach.color
+                                  : "rgba(255,255,255,0.35)",
+                                background: selected
+                                  ? `${coach.color}15`
+                                  : "rgba(255,255,255,0.04)",
+                                border: `1px solid ${selected ? coach.color + "40" : "rgba(255,255,255,0.08)"}`,
+                              }}
+                            >
+                              {coach.desc}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-white/40 italic leading-tight">
+                            "{coach.motto}"
+                          </p>
+                        </div>
+                        {selected && (
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: coach.color,
+                              boxShadow: `0 0 16px ${coach.color}80`,
+                            }}
+                          >
+                            <Bot className="w-4 h-4 text-black" />
+                          </div>
+                        )}
+                      </CardGlass>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
 
-            {/* Step 6: Confirm */}
-            {step === 6 && (
+            {/* ── Step 7: Confirm ── */}
+            {step === 7 && (
               <motion.div
                 key="confirm"
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
+                exit={{ opacity: 0, scale: 1.04 }}
                 className="py-6 flex flex-col items-center"
               >
-                <h2 className="text-3xl font-black text-white mb-2 text-center drop-shadow-lg">
-                  <span className="text-gradient">Ready</span> for Battle
-                </h2>
-                <p className="text-[15px] font-medium text-white/50 mb-8 text-center max-w-[280px]">
-                  Coach {coachName} is fully calibrated and waiting in the
-                  arena.
-                </p>
+                <motion.h2
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1, transition: { delay: 0.2 } }}
+                  className="text-3xl font-black text-white mb-2 text-center"
+                >
+                  <GradientLabel>Ready</GradientLabel> for Battle
+                </motion.h2>
+                <motion.p
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1, transition: { delay: 0.4 } }}
+                  className="text-[15px] text-white/50 mb-8 text-center max-w-[280px]"
+                >
+                  Coach {coachName} is calibrated and waiting in the arena.
+                </motion.p>
 
-                <div className="w-full bg-black/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <DynamicIcon name={disc.icon} className="w-24 h-24" />
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1, transition: { delay: 0.6 } }}
+                  className="w-full rounded-[28px] overflow-hidden relative"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(0,240,255,0.2)",
+                    boxShadow: "0 0 40px rgba(0,240,255,0.08)",
+                  }}
+                >
+                  {/* Athlete portrait (right side fade) */}
+                  <div
+                    className="absolute right-0 top-0 bottom-0 w-2/5 pointer-events-none"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to left, rgba(0,0,0,0.5), transparent)",
+                      WebkitMaskImage:
+                        "linear-gradient(to left, rgba(0,0,0,0.5), transparent)",
+                    }}
+                  >
+                    <img
+                      src={
+                        DISCIPLINE_ATHLETE[disciplineId] ??
+                        PREMIUM_ASSETS.ATHLETES.BOXER
+                      }
+                      alt=""
+                      className="w-full h-full object-cover object-top opacity-60"
+                    />
                   </div>
 
-                  <h3 className="text-xs font-mono text-[#00f0ff] uppercase tracking-widest mb-4">
-                    Athlete Profile
-                  </h3>
-
-                  <div className="space-y-4 relative z-10">
-                    <div>
-                      <p className="text-[11px] text-white/40 uppercase tracking-wider font-bold mb-1">
-                        Discipline
-                      </p>
-                      <p className="text-lg font-bold text-white tracking-tight">
-                        {disc.name}{" "}
-                        {hasSubDisciplines && subDisciplineId
-                          ? `(${disc.subDisciplines.find((s) => s.id === subDisciplineId)?.name})`
-                          : ""}
-                      </p>
+                  <div className="relative z-10 p-6">
+                    {/* Header row */}
+                    <div
+                      className="flex items-center gap-2 mb-5 pb-4"
+                      style={{
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      <div
+                        className="w-1.5 h-1.5 rounded-full bg-[var(--ac)] animate-pulse"
+                        style={{ boxShadow: "0 0 8px var(--ac)" }}
+                      />
+                      <h3
+                        className="text-[10px] font-mono font-bold uppercase tracking-[0.25em]"
+                        style={{ color: "var(--ac)" }}
+                      >
+                        Athlete Profile
+                      </h3>
                     </div>
 
-                    <div className="flex justify-between items-center border-t border-white/5 pt-4">
+                    <div className="space-y-4 w-[58%]">
                       <div>
-                        <p className="text-[11px] text-white/40 uppercase tracking-wider font-bold mb-1">
-                          Tier Level
+                        <p className="text-[9px] text-white/30 uppercase tracking-widest font-mono mb-1">
+                          Discipline
                         </p>
-                        <p className="text-sm font-bold text-white">
-                          {
-                            EXPERIENCE_LEVELS.find((l) => l.id === experience)
-                              ?.label
-                          }
+                        <p className="text-2xl font-black text-white">
+                          {disc.name}
                         </p>
+                        {hasSubDisciplines && subDisciplineId && (
+                          <p
+                            className="text-[12px] font-bold uppercase tracking-wide mt-0.5"
+                            style={{ color: "var(--ac)" }}
+                          >
+                            {
+                              disc.subDisciplines.find(
+                                (s) => s.id === subDisciplineId,
+                              )?.name
+                            }{" "}
+                            style
+                          </p>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-[11px] text-white/40 uppercase tracking-wider font-bold mb-1">
-                          Frequency
-                        </p>
-                        <p className="text-sm font-bold text-white">
-                          {FREQUENCIES.find((f) => f.id === frequency)?.label}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="border-t border-white/5 pt-4">
-                      <p className="text-[11px] text-white/40 uppercase tracking-wider font-bold mb-2">
-                        Primary Drivers
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {goals.map((gId) => {
-                          const lg = GOALS.find((g) => g.id === gId);
-                          return lg ? (
-                            <span
-                              key={gId}
-                              className="px-2.5 py-1 rounded border border-white/10 bg-white/5 text-xs font-semibold text-white/90"
-                            >
-                              {lg.label}
-                            </span>
-                          ) : null;
-                        })}
+                      <div
+                        className="grid grid-cols-2 gap-3 pt-3"
+                        style={{
+                          borderTop: "1px solid rgba(255,255,255,0.06)",
+                        }}
+                      >
+                        <div>
+                          <p className="text-[9px] text-white/30 uppercase tracking-widest font-mono mb-0.5">
+                            Tier
+                          </p>
+                          <p className="text-sm font-black text-white">
+                            {
+                              EXPERIENCE_LEVELS.find((l) => l.id === experience)
+                                ?.title
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-white/30 uppercase tracking-widest font-mono mb-0.5">
+                            Frequency
+                          </p>
+                          <p className="text-sm font-black text-white">
+                            {FREQUENCIES.find((f) => f.id === frequency)?.label}
+                          </p>
+                        </div>
                       </div>
+
+                      {goals.length > 0 && (
+                        <div
+                          className="pt-3"
+                          style={{
+                            borderTop: "1px solid rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          <p className="text-[9px] text-white/30 uppercase tracking-widest font-mono mb-2">
+                            Goals
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {goals.map((gId) => {
+                              const lg = GOALS.find((g) => g.id === gId);
+                              return lg ? (
+                                <span
+                                  key={gId}
+                                  className="px-2 py-1 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider"
+                                  style={{
+                                    background: "rgba(0,240,255,0.08)",
+                                    border: "1px solid rgba(0,240,255,0.2)",
+                                  }}
+                                >
+                                  {lg.title}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* ── Next / Finish button ── */}
+        {/* ── CTA ── */}
         <div className="px-5 pb-8 pt-3">
           <button
             onClick={handleNext}
             disabled={!canAdvance() || saving}
             className={cn(
-              "w-full py-[18px] rounded-full font-black text-[15px] uppercase tracking-[0.1em] flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-              !canAdvance() && "opacity-30 cursor-not-allowed",
+              "w-full h-16 rounded-[24px] font-black text-[16px] uppercase tracking-[0.15em] flex items-center justify-center gap-3 transition-all active:scale-[0.98]",
+              canAdvance() && !saving
+                ? "text-[#040914]"
+                : "opacity-40 cursor-not-allowed text-white/40",
             )}
             style={
-              canAdvance()
+              canAdvance() && !saving
                 ? {
-                    background: `var(--primary-gradient)`,
-                    color: "#040914",
-                    boxShadow: `0 0 30px rgba(var(--ac-rgb, 0,240,255), 0.4)`,
+                    background:
+                      "linear-gradient(135deg, var(--ac), var(--ac2))",
+                    boxShadow: "0 0 30px rgba(0,240,255,0.3)",
                   }
                 : {
-                    background: "rgba(255,255,255,0.06)",
-                    color: "rgba(255,255,255,0.3)",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
                   }
             }
           >
             {saving ? (
-              <div className="w-5 h-5 border-2 border-[var(--background)]/40 border-t-[var(--background)] rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-black/40 border-t-black rounded-full animate-spin" />
             ) : step === STEPS.length - 1 ? (
-              <>Enter Arena</>
+              "Enter Arena"
             ) : (
               <>
                 Continue{" "}
@@ -745,7 +1040,6 @@ export default function OnboardingPage() {
           </button>
         </div>
       </div>
-      {/* NEW CLOSED DIV */}
     </div>
   );
 }

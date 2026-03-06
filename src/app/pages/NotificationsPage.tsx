@@ -22,7 +22,7 @@ export default function NotificationsPage() {
   const { markAllRead } = useStore();
 
   return (
-    <div className="page pb-safe" style={{ background: "#040610" }}>
+    <div className="page pb-safe" style={{ background: "var(--background)" }}>
       {/* Header */}
       <div className="px-5 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">

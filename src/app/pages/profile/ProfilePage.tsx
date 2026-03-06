@@ -1,6 +1,9 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// AURA ARENA — Profile Page (premium rebuild)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 import { useDailyTip, useTrainingPlan } from "@hooks/useAI";
 import { usePersonalization } from "@hooks/usePersonalization";
-import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { Skeleton } from "@shared/components/ui/Skeleton";
 import { TierBadge } from "@shared/components/ui/TierBadge";
 import { Slider } from "@shared/components/ui/slider";
@@ -15,10 +18,12 @@ import {
   useUser,
   useXP,
 } from "@store";
+import { DISCIPLINE_ATHLETE, PREMIUM_ASSETS } from "@utils/assets";
 import { ACHIEVEMENTS } from "@utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart2,
+  Bell,
   Brain,
   ChevronRight,
   Edit2,
@@ -40,12 +45,14 @@ import {
   YAxis,
 } from "recharts";
 
+// ── Types ──────────────────────────────────────────────────────────────────────
+
 const TABS = [
-  { id: "overview", label: "Overview", Icon: Star },
-  { id: "stats", label: "Stats", Icon: BarChart2 },
-  { id: "coach", label: "Coach", Icon: Brain },
-  { id: "trophies", label: "Trophies", Icon: Trophy },
-  { id: "settings", label: "Settings", Icon: Settings },
+  { id: "overview",  label: "Overview",  Icon: Star },
+  { id: "stats",     label: "Stats",     Icon: BarChart2 },
+  { id: "coach",     label: "Coach",     Icon: Brain },
+  { id: "trophies",  label: "Trophies",  Icon: Trophy },
+  { id: "settings",  label: "Settings",  Icon: Settings },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -55,6 +62,14 @@ const RARITY_C: Record<string, string> = {
   Epic: "#c084fc",
   Legendary: "#fbbf24",
 };
+
+// ── Shared card style ──────────────────────────────────────────────────────────
+const cardStyle = {
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.07)",
+};
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
   const [tab, setTab] = useState<TabId>("overview");
@@ -71,71 +86,107 @@ export default function ProfilePage() {
     avgScore,
   } = usePersonalization();
 
+  const athleteImg = DISCIPLINE_ATHLETE[user?.discipline ?? "boxing"] ?? PREMIUM_ASSETS.ATHLETES.BOXER;
+  const firstName = (user?.arenaName || user?.displayName || "Athlete").split(" ")[0];
+
   return (
     <div className="page pb-safe" style={{ background: "#040610" }}>
-      {/* header */}
-      <div className="px-5 pt-6 pb-3 flex-shrink-0 relative overflow-hidden">
-        <div
-          className="absolute -top-10 -right-10 w-52 h-52 rounded-full opacity-10 blur-3xl pointer-events-none"
-          style={{ background: accentColor }}
+
+      {/* ── Hero Header ── */}
+      <div className="relative h-52 overflow-hidden flex-shrink-0">
+        {/* Background image */}
+        <img
+          src={PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
         />
-        <div className="flex items-center justify-between mb-4 relative z-10">
-          <div>
-            <p
-              className="text-[9px] font-mono uppercase tracking-[0.3em] mb-1"
-              style={{ color: accentColor }}
-            >
-              Your Profile
-            </p>
-            <h1 className="text-2xl font-black text-white leading-none">
-              {user?.arenaName || user?.displayName || "Athlete"}
-            </h1>
-            <p className="text-xs text-white/30 mt-1">
-              {subDiscipline?.name ?? disc.name}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <TierBadge tier={currentTier.id} />
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={() => navigate("/profile/avatar")}
-              className="btn-icon"
-            >
-              <Edit2 className="w-3.5 h-3.5" />
-            </motion.button>
-          </div>
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(180deg, rgba(4,6,16,0.4) 0%, rgba(4,6,16,0.7) 60%, rgba(4,6,16,1) 100%)" }}
+        />
+        {/* Profile glow */}
+        <img
+          src={PREMIUM_ASSETS.ATMOSPHERE.PROFILE_GLOW}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-screen pointer-events-none"
+        />
+
+        {/* Edit button */}
+        <button
+          onClick={() => navigate("/profile/avatar")}
+          className="absolute top-10 right-4 z-10 w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+        >
+          <Edit2 className="w-4 h-4 text-white/70" />
+        </button>
+
+        {/* Athlete portrait - right side */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-2/5 pointer-events-none"
+          style={{ maskImage: "linear-gradient(to left, black 0%, transparent 80%)", WebkitMaskImage: "linear-gradient(to left, black 0%, transparent 80%)" }}
+        >
+          <img
+            src={athleteImg}
+            alt=""
+            className="w-full h-full object-cover object-top opacity-80"
+          />
         </div>
-        {/* tab pills */}
-        <div className="flex gap-1.5 overflow-x-auto scroll-none pb-0.5">
-          {TABS.map(({ id, label, Icon }) => (
-            <motion.button
-              key={id}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setTab(id)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-[14px] text-xs font-bold transition-all font-mono"
-              style={
-                tab === id
-                  ? {
-                      background: accentColor,
-                      color: "#040610",
-                      boxShadow: `0 0 16px ${accentColor}50`,
-                    }
-                  : {
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      color: "rgba(255,255,255,0.35)",
-                    }
-              }
+
+        {/* Profile info */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+          <div className="flex items-end gap-3">
+            {/* Avatar circle */}
+            <div
+              className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center font-black text-xl"
+              style={{ background: `${accentColor}18`, border: `2px solid ${accentColor}40`, color: accentColor }}
             >
-              <Icon className="w-3 h-3" />
-              {label}
-            </motion.button>
-          ))}
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                firstName[0]
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <h1 className="text-xl font-black text-white truncate">{firstName}</h1>
+                <TierBadge tier={currentTier.id} />
+              </div>
+              <p className="text-xs text-white/40 font-mono">
+                {subDiscipline?.name ?? disc.name} ·{" "}
+                <span style={{ color: accentColor }}>{xp.toLocaleString()} XP</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* content */}
-      <div className="flex-1 overflow-y-auto px-5 pb-safe scroll-none">
+      {/* ── Tab bar ── */}
+      <div
+        className="flex gap-1 px-4 py-2 overflow-x-auto flex-shrink-0"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        {TABS.map(({ id, label, Icon }) => (
+          <motion.button
+            key={id}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setTab(id)}
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"
+            style={
+              tab === id
+                ? { background: accentColor, color: "#040610", boxShadow: `0 0 16px ${accentColor}50` }
+                : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+            }
+          >
+            <Icon className="w-3 h-3" />
+            {label}
+          </motion.button>
+        ))}
+      </div>
+
+      {/* ── Tab Content ── */}
+      <div className="flex-1 overflow-y-auto px-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
@@ -145,19 +196,12 @@ export default function ProfilePage() {
             transition={{ duration: 0.18 }}
           >
             {tab === "overview" && (
-              <OverviewTab
-                accentColor={accentColor}
-                xp={xp}
-                currentTier={currentTier}
-                nextTier={nextTier}
-                tierProgress={tierProgress}
-                avgScore={avgScore}
-              />
+              <OverviewTab accentColor={accentColor} xp={xp} currentTier={currentTier} nextTier={nextTier} tierProgress={tierProgress} avgScore={avgScore} />
             )}
             {tab === "stats" && <StatsTab accentColor={accentColor} />}
-            {tab === "coach" && <CoachTab />}
+            {tab === "coach" && <CoachTab accentColor={accentColor} />}
             {tab === "trophies" && <TrophiesTab accentColor={accentColor} />}
-            {tab === "settings" && <SettingsTab navigate={navigate} />}
+            {tab === "settings" && <SettingsTab navigate={navigate} accentColor={accentColor} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -165,100 +209,65 @@ export default function ProfilePage() {
   );
 }
 
-/* ── Overview ── */
-const OverviewTab = ({
-  accentColor,
-  xp,
-  currentTier,
-  nextTier,
-  tierProgress,
-  avgScore,
-}: any) => {
+// ── Overview Tab ───────────────────────────────────────────────────────────────
+
+const OverviewTab = ({ accentColor, xp, currentTier, nextTier, tierProgress, avgScore }: any) => {
   const user = useUser();
   const history = useSessionHistory();
-  const chart = history
-    .slice(0, 8)
-    .map((s, i) => ({ i: i + 1, score: s.score }))
-    .reverse();
+  const chart = history.slice(0, 8).map((s, i) => ({ i: i + 1, score: s.score })).reverse();
+
   return (
-    <div className="space-y-3.5 pt-3 pb-4">
-      {/* stats grid */}
+    <div className="space-y-3 pt-4 pb-4">
+      {/* Stats grid */}
       <div className="grid grid-cols-3 gap-2">
         {[
           { v: user?.sessionsCompleted ?? 0, l: "Sessions" },
           { v: user?.pveWins ?? 0, l: "PvE Wins" },
-          { v: user?.bestScore ?? 0, l: "Best" },
-          {
-            v: xp > 999 ? `${(xp / 1000).toFixed(1)}k` : xp,
-            l: "XP",
-            c: accentColor,
-          },
+          { v: user?.bestScore ?? 0, l: "Best Score" },
+          { v: xp > 999 ? `${(xp / 1000).toFixed(1)}k` : xp, l: "Total XP", c: accentColor },
           { v: `${user?.dailyStreak ?? 0}🔥`, l: "Streak" },
           { v: Math.round(avgScore), l: "Avg Score", c: accentColor },
         ].map((s) => (
-          <div key={s.l} className="rounded-2xl p-3 text-center card">
-            <p
-              className="font-display font-extrabold text-2xl leading-none tabular"
-              style={{ color: (s as any).c || "var(--t1)" }}
-            >
-              {s.v}
-            </p>
-            <p className="label-hud mt-1">{s.l}</p>
+          <div key={s.l} className="rounded-2xl p-3 text-center" style={cardStyle}>
+            <p className="font-black text-2xl leading-none tabular-nums" style={{ color: (s as any).c || "white" }}>{s.v}</p>
+            <p className="text-[10px] text-white/35 font-mono uppercase tracking-wider mt-1">{s.l}</p>
           </div>
         ))}
       </div>
-      {/* tier progress */}
+
+      {/* Tier progress */}
       {nextTier && (
-        <div className="card rounded-2xl p-4">
-          <div className="flex justify-between mb-2">
-            <span className="label-hud">
-              {currentTier.icon} {currentTier.name}
-            </span>
-            <span className="label-hud">
-              {nextTier.icon} {nextTier.name}
-            </span>
+        <div className="rounded-2xl p-4" style={cardStyle}>
+          <div className="flex justify-between mb-3">
+            <span className="text-xs font-mono text-white/40 uppercase tracking-wider">{currentTier.icon} {currentTier.name}</span>
+            <span className="text-xs font-mono text-white/40 uppercase tracking-wider">{nextTier.icon} {nextTier.name}</span>
           </div>
-          <div
-            className="h-1.5 rounded-full overflow-hidden"
-            style={{ background: "var(--s3)" }}
-          >
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
             <motion.div
               className="h-full rounded-full"
-              style={{
-                background: `linear-gradient(90deg,${accentColor}99,${accentColor})`,
-              }}
+              style={{ background: `linear-gradient(90deg, ${accentColor}99, ${accentColor})` }}
               initial={{ width: 0 }}
               animate={{ width: `${tierProgress}%` }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
+          <p className="text-[10px] text-white/30 font-mono mt-2 text-right">{Math.round(tierProgress)}% to {nextTier.name}</p>
         </div>
       )}
-      {/* chart */}
+
+      {/* Score chart */}
       {chart.length >= 3 && (
-        <div className="card rounded-2xl p-4">
-          <p className="label-section mb-3">Score Trend</p>
+        <div className="rounded-2xl p-4" style={cardStyle}>
+          <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider mb-4">Score Trend</p>
           <ResponsiveContainer width="100%" height={90}>
             <LineChart data={chart}>
-              <XAxis dataKey="i" hide /> <YAxis domain={[0, 100]} hide />
+              <XAxis dataKey="i" hide />
+              <YAxis domain={[0, 100]} hide />
               <Tooltip
-                contentStyle={{
-                  background: "var(--s2)",
-                  border: "none",
-                  borderRadius: 10,
-                  fontSize: 11,
-                  color: "var(--t1)",
-                }}
+                contentStyle={{ background: "#0a0d1a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, fontSize: 11, color: "white" }}
                 formatter={(v: number) => [v, "Score"]}
               />
-              <Line
-                type="monotone"
-                dataKey="score"
-                stroke={accentColor}
-                strokeWidth={2.5}
-                dot={{ fill: accentColor, r: 3 }}
-                activeDot={{ r: 5 }}
-              />
+              <Line type="monotone" dataKey="score" stroke={accentColor} strokeWidth={2.5} dot={{ fill: accentColor, r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -267,7 +276,8 @@ const OverviewTab = ({
   );
 };
 
-/* ── Stats ── */
+// ── Stats Tab ──────────────────────────────────────────────────────────────────
+
 const StatsTab = ({ accentColor }: { accentColor: string }) => {
   const sessions = useSessionHistory();
   const weekly = Array.from({ length: 7 }, (_, i) => {
@@ -278,144 +288,98 @@ const StatsTab = ({ accentColor }: { accentColor: string }) => {
     return {
       day: d.toLocaleDateString("en", { weekday: "short" }),
       count: s.length,
-      avg: s.length
-        ? Math.round(s.reduce((a, x) => a + x.score, 0) / s.length)
-        : 0,
+      avg: s.length ? Math.round(s.reduce((a, x) => a + x.score, 0) / s.length) : 0,
     };
   });
+
   return (
-    <div className="space-y-3.5 pt-3 pb-4">
-      <div className="card rounded-2xl p-4">
-        <p className="label-section mb-3">This Week</p>
-        <div className="flex items-end justify-between gap-1.5 h-20">
+    <div className="space-y-3 pt-4 pb-4">
+      <div className="rounded-2xl p-4" style={cardStyle}>
+        <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider mb-4">This Week</p>
+        <div className="flex items-end justify-between gap-1.5 h-24">
           {weekly.map((d) => (
-            <div
-              key={d.day}
-              className="flex-1 flex flex-col items-center gap-1"
-            >
+            <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
               <motion.div
-                className="w-full rounded-t-md flex-1"
-                style={{
-                  background: d.count ? accentColor : "var(--s3)",
-                  minHeight: 4,
-                }}
+                className="w-full rounded-t-lg"
+                style={{ background: d.count ? accentColor : "rgba(255,255,255,0.07)", minHeight: 6, flex: 1 }}
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
-                transition={{
-                  delay: 0.05,
-                  duration: 0.5,
-                }}
+                transition={{ delay: 0.05, duration: 0.5 }}
               />
-              <p className="label-hud">{d.day}</p>
+              <p className="text-[9px] text-white/30 font-mono">{d.day}</p>
             </div>
           ))}
         </div>
       </div>
+
       {sessions.length === 0 && (
-        <p className="label-hud text-center py-8">Train to see stats</p>
+        <p className="text-center text-white/30 text-sm py-12">Train to see stats</p>
       )}
     </div>
   );
 };
 
-/* ── Coach ── */
-const CoachTab = () => {
-  const { discipline: disc, subDiscipline, accentColor } = usePersonalization();
+// ── Coach Tab ──────────────────────────────────────────────────────────────────
+
+const CoachTab = ({ accentColor }: { accentColor: string }) => {
+  const { discipline: disc, subDiscipline } = usePersonalization();
   const user = useUser();
-  const {
-    text: tip,
-    loading: tipL,
-    refresh,
-  } = useDailyTip(disc.id, subDiscipline?.id);
+  const { text: tip, loading: tipL, refresh } = useDailyTip(disc.id, subDiscipline?.id);
   const { plan, loading: planL } = useTrainingPlan(disc.id, subDiscipline?.id);
+
+  const coachImg =
+    user?.aiCoachName === "Aria" ? PREMIUM_ASSETS.COACHES.ARIA :
+    user?.aiCoachName === "Max" ? PREMIUM_ASSETS.COACHES.MAX :
+    PREMIUM_ASSETS.COACHES.SENSEI;
+
   return (
-    <div className="space-y-3.5 pt-3 pb-4">
-      <div className="card rounded-[20px] p-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: `${accentColor}18` }}
-          >
-            <DynamicIcon
-              name={disc.icon}
-              className="w-7 h-7"
-              style={{ color: accentColor }}
-            />
-          </div>
-          <div>
-            <p className="font-display font-bold text-base text-[var(--t1)]">
-              {user?.aiCoachName ?? "Coach"}
-            </p>
-            <p className="label-hud mt-0.5 capitalize">
-              {disc.coachingTone} · {disc.name}
-            </p>
-          </div>
+    <div className="space-y-3 pt-4 pb-4">
+      {/* Coach card */}
+      <div className="rounded-2xl p-4 flex items-center gap-4" style={cardStyle}>
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+          style={{ background: `${accentColor}12`, border: `1px solid ${accentColor}25` }}
+        >
+          <img src={coachImg} alt="" className="w-11 h-11 object-contain" />
+        </div>
+        <div>
+          <p className="font-black text-white text-base">{user?.aiCoachName ?? "Coach"}</p>
+          <p className="text-xs text-white/40 font-mono mt-0.5 capitalize">{disc.coachingTone} · {disc.name}</p>
         </div>
       </div>
-      <div className="card rounded-[20px] overflow-hidden">
-        <div
-          className="flex items-center justify-between px-4 py-2.5"
-          style={{
-            background: `${accentColor}0d`,
-            borderBottom: "1px solid var(--b1)",
-          }}
-        >
-          <p className="label-section">Today's Message</p>
-          <motion.button
-            whileTap={{ scale: 0.8, rotate: 180 }}
-            onClick={refresh}
-            className="w-6 h-6 flex items-center justify-center text-[var(--t3)]"
-          >
-            ↻
-          </motion.button>
+
+      {/* Daily tip */}
+      <div className="rounded-2xl overflow-hidden" style={cardStyle}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider">Today's Message</p>
+          <motion.button whileTap={{ scale: 0.8, rotate: 180 }} onClick={refresh} className="text-white/30 text-sm">↻</motion.button>
         </div>
-        <p className="px-4 py-3 text-sm text-[var(--t2)] leading-relaxed italic">
-          {tipL ? (
-            <span className="block h-3 rounded anim-shimmer" />
-          ) : tip ? (
-            `"${tip}"`
-          ) : (
-            "..."
-          )}
+        <p className="px-4 py-4 text-sm text-white/55 leading-relaxed italic">
+          {tipL ? <span className="block h-4 rounded animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} /> : tip ? `"${tip}"` : "..."}
         </p>
       </div>
-      <div className="card rounded-[20px] overflow-hidden">
-        <div
-          className="px-4 py-2.5"
-          style={{
-            background: `${accentColor}0d`,
-            borderBottom: "1px solid var(--b1)",
-          }}
-        >
-          <p className="label-section">Weekly Plan</p>
+
+      {/* Weekly plan */}
+      <div className="rounded-2xl overflow-hidden" style={cardStyle}>
+        <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider">Weekly Plan</p>
         </div>
         <div className="p-4 space-y-2.5">
           {planL ? (
-            Array(3)
-              .fill(0)
-              .map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)
+            Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)
           ) : plan.length > 0 ? (
             plan.map((day) => (
-              <div
-                key={day.day}
-                className="rounded-xl p-3"
-                style={{ background: "var(--s2)" }}
-              >
-                <p
-                  className="font-mono text-[10px] font-bold mb-1.5"
-                  style={{ color: accentColor }}
-                >
+              <div key={day.day} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="font-mono text-[10px] font-bold mb-1.5" style={{ color: accentColor }}>
                   DAY {day.day} · {day.goal.toUpperCase()}
                 </p>
                 {day.drills.map((d, i) => (
-                  <p key={i} className="text-xs text-[var(--t3)]">
-                    · {d}
-                  </p>
+                  <p key={i} className="text-xs text-white/40">· {d}</p>
                 ))}
               </div>
             ))
           ) : (
-            <p className="label-hud text-center py-4">Generating plan…</p>
+            <p className="text-center text-white/30 text-sm py-4">Generating plan…</p>
           )}
         </div>
       </div>
@@ -423,35 +387,24 @@ const CoachTab = () => {
   );
 };
 
-/* ── Trophies ── */
-const TrophiesTab = ({
-  accentColor: _accentColor,
-}: {
-  accentColor: string;
-}) => {
+// ── Trophies Tab ───────────────────────────────────────────────────────────────
+
+const TrophiesTab = ({ accentColor: _ }: { accentColor: string }) => {
   const earned = useEarnedAchievements();
-  const cats = [
-    "training",
-    "battle",
-    "social",
-    "progression",
-    "mastery",
-    "special",
-  ] as const;
+  const cats = ["training", "battle", "social", "progression", "mastery", "special"] as const;
+
   return (
-    <div className="space-y-5 pt-3 pb-4">
-      <div className="flex items-center justify-between">
-        <p className="label-section">
-          {earned.length}/{ACHIEVEMENTS.length} Unlocked
-        </p>
-      </div>
+    <div className="space-y-5 pt-4 pb-4">
+      <p className="text-xs font-mono text-white/40 uppercase tracking-wider">
+        {earned.length}/{ACHIEVEMENTS.length} Unlocked
+      </p>
       {cats.map((cat) => {
         const list = ACHIEVEMENTS.filter((a) => a.category === cat);
         if (!list.length) return null;
         const unlocked = list.filter((a) => earned.includes(a.id));
         return (
           <div key={cat}>
-            <p className="label-hud mb-2 capitalize">
+            <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-2.5">
               {cat} · {unlocked.length}/{list.length}
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -462,31 +415,18 @@ const TrophiesTab = ({
                   <motion.div
                     key={a.id}
                     whileTap={{ scale: 0.92 }}
-                    className="rounded-2xl p-3 text-center transition-all"
+                    className="rounded-2xl p-3 text-center"
                     style={
                       on
-                        ? {
-                            background: `${c}10`,
-                            border: `1px solid ${c}40`,
-                            boxShadow: `0 0 12px ${c}15`,
-                          }
-                        : {
-                            background: "var(--s1)",
-                            border: "1px solid var(--b0)",
-                            opacity: 0.38,
-                          }
+                        ? { background: `${c}0f`, border: `1px solid ${c}35`, boxShadow: `0 0 12px ${c}12` }
+                        : { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", opacity: 0.35 }
                     }
                   >
-                    <p className="text-2xl">
-                      {a.secret && !on ? "❓" : a.icon}
-                    </p>
-                    <p
-                      className="font-mono text-[9px] font-bold mt-1 leading-tight"
-                      style={{ color: on ? c : "var(--t4)" }}
-                    >
+                    <p className="text-2xl">{a.secret && !on ? "❓" : a.icon}</p>
+                    <p className="font-mono text-[9px] font-bold mt-1 leading-tight" style={{ color: on ? c : "rgba(255,255,255,0.3)" }}>
                       {a.secret && !on ? "???" : a.name}
                     </p>
-                    {on && <p className="label-hud mt-0.5">+{a.xpReward}XP</p>}
+                    {on && <p className="text-[9px] text-white/30 font-mono mt-0.5">+{a.xpReward}XP</p>}
                   </motion.div>
                 );
               })}
@@ -498,81 +438,87 @@ const TrophiesTab = ({
   );
 };
 
-/* ── Settings ── */
-const SettingsTab = ({ navigate }: { navigate: any }) => {
-  const { setSoundEnabled, setReduceMotion, setMasterVolume, signOut } =
-    useStore();
+// ── Settings Tab ───────────────────────────────────────────────────────────────
+
+const SettingsTab = ({ navigate, accentColor }: { navigate: any; accentColor: string }) => {
+  const { setSoundEnabled, setReduceMotion, setMasterVolume, signOut } = useStore();
   const soundEnabled = useSoundEnabled();
   const reduceMotion = useReduceMotion();
   const masterVolume = useMasterVolume();
 
   return (
-    <div className="space-y-3.5 pt-3 pb-4">
-      <div className="card rounded-[20px] p-4 space-y-4">
-        <p className="label-section">Audio</p>
-        <SettingRow
-          label="Sound Effects"
-          icon={<Volume2 className="w-4 h-4" />}
-        >
+    <div className="space-y-4 pt-4 pb-4">
+
+      {/* Audio */}
+      <Section label="Audio">
+        <SettingRow label="Sound Effects" icon={<Volume2 className="w-4 h-4" />}>
           <Switch checked={soundEnabled} onCheckedChange={setSoundEnabled} />
         </SettingRow>
         {soundEnabled && (
-          <div>
+          <div className="mt-4">
             <div className="flex justify-between mb-2">
-              <p className="text-xs text-[var(--t3)]">Volume</p>
-              <p className="font-mono text-xs text-[var(--t3)]">
-                {Math.round(masterVolume * 100)}%
-              </p>
+              <p className="text-xs text-white/40">Volume</p>
+              <p className="font-mono text-xs text-white/40">{Math.round(masterVolume * 100)}%</p>
             </div>
             <Slider
               value={[masterVolume]}
               onValueChange={([v]) => setMasterVolume(v)}
-              min={0}
-              max={1}
-              step={0.05}
+              min={0} max={1} step={0.05}
             />
           </div>
         )}
-      </div>
-      <div className="card rounded-[20px] p-4 space-y-4">
-        <p className="label-section">Accessibility</p>
+      </Section>
+
+      {/* Accessibility */}
+      <Section label="Accessibility">
         <SettingRow label="Reduce Motion" icon={<Eye className="w-4 h-4" />}>
           <Switch checked={reduceMotion} onCheckedChange={setReduceMotion} />
         </SettingRow>
-      </div>
-      <div className="card rounded-[20px] p-4 space-y-2">
-        <p className="label-section mb-2">Account</p>
+      </Section>
+
+      {/* Account */}
+      <Section label="Account">
         {[
-          { label: "Edit Profile", action: () => navigate("/profile/avatar") },
-          { label: "Import Data", action: () => navigate("/profile/import") },
-          { label: "Notifications", action: () => navigate("/notifications") },
+          { label: "Edit Profile",   icon: <Edit2 className="w-4 h-4" />,  action: () => navigate("/profile/avatar") },
+          { label: "Notifications",  icon: <Bell className="w-4 h-4" />,   action: () => navigate("/notifications") },
         ].map((r) => (
           <motion.button
             key={r.label}
             whileTap={{ scale: 0.97 }}
             onClick={r.action}
-            className="w-full flex items-center justify-between p-3 rounded-2xl"
-            style={{ background: "var(--s2)" }}
+            className="w-full flex items-center gap-3 py-3 rounded-xl text-left transition-colors hover:bg-white/5"
           >
-            <p className="text-sm text-[var(--t1)]">{r.label}</p>
-            <ChevronRight className="w-4 h-4 text-[var(--t3)]" />
+            <span className="text-white/40">{r.icon}</span>
+            <p className="text-sm text-white flex-1">{r.label}</p>
+            <ChevronRight className="w-4 h-4 text-white/20" />
           </motion.button>
         ))}
+        {/* Divider */}
+        <div className="h-px my-1" style={{ background: "rgba(255,255,255,0.06)" }} />
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={() => {
-            signOut();
-            navigate("/login", { replace: true });
-          }}
-          className="w-full flex items-center gap-3 p-3 rounded-2xl mt-1 text-destructive bg-destructive/10 border border-destructive/20"
+          onClick={() => { signOut(); navigate("/login", { replace: true }); }}
+          className="w-full flex items-center gap-3 py-3 rounded-xl text-left"
         >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          <p className="text-sm font-semibold">Sign Out</p>
+          <LogOut className="w-4 h-4 text-red-500" />
+          <p className="text-sm font-semibold text-red-500">Sign Out</p>
         </motion.button>
-      </div>
+      </Section>
+
+      {/* Version */}
+      <p className="text-center text-[10px] font-mono text-white/15 pt-2">Aura Arena v1.0.0</p>
     </div>
   );
 };
+
+// ── UI Primitives ──────────────────────────────────────────────────────────────
+
+const Section = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="rounded-2xl p-4" style={cardStyle}>
+    <p className="text-[10px] font-mono text-white/35 uppercase tracking-wider mb-4">{label}</p>
+    <div className="space-y-3">{children}</div>
+  </div>
+);
 
 const SettingRow = ({
   label,
@@ -585,8 +531,8 @@ const SettingRow = ({
 }) => (
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
-      <span className="text-[var(--t2)]">{icon}</span>
-      <p className="text-sm text-[var(--t1)]">{label}</p>
+      <span className="text-white/40">{icon}</span>
+      <p className="text-sm text-white">{label}</p>
     </div>
     {children}
   </div>

@@ -19,6 +19,14 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         glow: "bg-background text-primary border border-primary/30 shadow-[0_0_15px_rgba(0,240,255,0.15)] hover:shadow-[0_0_25px_rgba(0,240,255,0.3)]",
+        "auth-google":
+          "bg-white text-gray-900 hover:bg-gray-100 shadow-md font-bold rounded-2xl",
+        "auth-apple":
+          "bg-black text-white hover:bg-gray-900 font-bold rounded-2xl border border-white/10",
+        cta: "bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-black font-black rounded-2xl shadow-[0_0_30px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.5)] hover:brightness-110",
+        battle:
+          "border border-[rgba(0,240,255,0.3)] text-[#00f0ff] bg-[rgba(0,240,255,0.06)] hover:bg-[rgba(0,240,255,0.12)] hover:border-[rgba(0,240,255,0.5)] font-black tracking-widest uppercase rounded-2xl",
+        live: "bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 font-bold",
       },
       size: {
         default: "h-11 px-6 py-2",
