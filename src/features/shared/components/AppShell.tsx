@@ -21,13 +21,15 @@ import {
 import {
   Bot,
   Home,
+  MessageSquare,
   Plus,
   Search,
+  Shield,
   Swords,
+  User as UserIcon,
   Video,
   X,
   Zap,
-  Shield,
 } from "lucide-react";
 import { useRef, type TouchEvent as RTE, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -60,6 +62,13 @@ const QUICK = [
     color: "#60a5fa",
   },
   {
+    icon: MessageSquare,
+    label: "AI Coach Chat",
+    sub: "Get coaching tips",
+    path: "/chat",
+    color: "#f59e0b",
+  },
+  {
     icon: Video,
     label: "Player Reels",
     sub: "Watch athletes",
@@ -81,8 +90,7 @@ const NAV_ITEMS = [
     icon: Shield,
     label: "Arena",
     path: "/arena",
-    match: (p: string) =>
-      p.startsWith("/arena") || p.startsWith("/battle"),
+    match: (p: string) => p.startsWith("/arena") || p.startsWith("/battle"),
   },
   { icon: Plus, label: "Quick", path: null, match: () => false },
   {
@@ -92,10 +100,10 @@ const NAV_ITEMS = [
     match: (p: string) => p.startsWith("/discover"),
   },
   {
-    icon: Bot,
+    icon: UserIcon,
     label: "Profile",
     path: "/profile",
-    match: (p: string) => p.startsWith("/profile"),
+    match: (p: string) => p.startsWith("/profile") || p.startsWith("/chat"),
   },
 ];
 
@@ -317,7 +325,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                     >
                       <motion.div
                         whileTap={{ scale: 0.88 }}
-                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                        className="w-12 h-12 rounded-full flex items-center justify-center transition-transform active:scale-95"
                         style={{
                           background: `linear-gradient(145deg, ${accentColor}, ${accentColor}bb)`,
                           boxShadow: `0 0 22px ${accentColor}55, 0 4px 14px rgba(0,0,0,0.5)`,
@@ -346,7 +354,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                   <button
                     key={item.label}
                     onClick={() => item.path && navigate(item.path)}
-                    className="flex-1 flex flex-col items-center justify-center gap-1 relative py-2 select-none"
+                    className="flex-1 flex flex-col items-center justify-center gap-1 relative py-2 select-none group"
                   >
                     {isActive && (
                       <motion.div
@@ -363,7 +371,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
                     <div className="relative z-10 flex flex-col items-center gap-[3px]">
                       <Icon
-                        className="w-[21px] h-[21px] transition-colors duration-200"
+                        className="w-[21px] h-[21px] transition-all duration-300 group-active:scale-90"
                         style={{
                           color: isActive
                             ? accentColor

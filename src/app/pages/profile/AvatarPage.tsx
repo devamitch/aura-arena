@@ -7,7 +7,8 @@ import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineS
 import { DynamicIcon } from "@features/shared/components/ui/DynamicIcon";
 import { usePersonalization } from "@hooks/usePersonalization";
 import { analytics } from "@lib/analytics";
-import { useStore, useUser } from "@store";
+import { useAvatarConfig, useStore, useUser } from "@store";
+
 import type { DisciplineId, SubDisciplineId } from "@types";
 import { COACH_IMAGES, PREMIUM_ASSETS, pickImage } from "@utils/assets";
 import { DISCIPLINES as DISCIPLINES_LIST } from "@utils/constants";
@@ -164,6 +165,8 @@ export default function AvatarPage() {
   const { updateUser, setAvatarConfig } = useStore();
   const { accentColor } = usePersonalization();
 
+  const avatarConfig = useAvatarConfig();
+
   const [arenaName, setArenaName] = useState(user?.arenaName ?? "");
   const [bio, setBio] = useState(user?.bio ?? "");
   const [disciplineId, setDisciplineId] = useState<DisciplineId>(
@@ -178,13 +181,13 @@ export default function AvatarPage() {
 
   // Avatar state (mirrors store)
   const [skinTone, setSkinToneLocal] = useState(
-    user?.avatarConfig?.skinTone ?? "#f1c27d",
+    avatarConfig?.skinTone ?? "#f1c27d",
   );
   const [hairColor, setHairColorLocal] = useState(
-    user?.avatarConfig?.hairColor ?? "#333",
+    avatarConfig?.hairColor ?? "#333",
   );
   const [clothingStyle, setClothingStyleLocal] = useState<string>(
-    user?.avatarConfig?.clothingStyle ?? "default",
+    avatarConfig?.clothingStyle ?? "default",
   );
 
   const selectedDisc = getDiscipline(disciplineId);

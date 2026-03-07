@@ -11,6 +11,7 @@ import type { DisciplineId, SubDisciplineId } from "@types";
 import {
   DISCIPLINE_ATHLETE,
   DISCIPLINE_BANNER,
+  MODELS,
   PREMIUM_ASSETS,
 } from "@utils/assets";
 import { DISCIPLINES, getDiscipline } from "@utils/constants/disciplines";
@@ -185,9 +186,7 @@ export default function OnboardingPage() {
   const [experience, setExperience] = useState<string>("beginner");
   const [goals, setGoals] = useState<string[]>([]);
   const [frequency, setFrequency] = useState(3);
-  const [avatarUrl, setAvatarUrl] = useState<string>(
-    "/assets/models/avatar.vrm",
-  );
+  const [avatarUrl, setAvatarUrl] = useState<string>(MODELS.AVATAR_VRM);
   const [coachName, setCoachName] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -705,19 +704,19 @@ export default function OnboardingPage() {
                 <div className="grid grid-cols-2 gap-3 pb-8">
                   {[
                     {
-                      id: "/assets/models/avatar.vrm",
+                      id: MODELS.AVATAR_VRM,
                       title: "Standard VRM",
                       desc: "Anime base model",
                       icon: User,
                     },
                     {
-                      id: "/assets/models/Xbot.glb",
+                      id: MODELS.XBOT,
                       title: "XBot Tactical",
                       desc: "Military grade",
                       icon: Target,
                     },
                     {
-                      id: "/assets/models/RobotExpressive.glb",
+                      id: MODELS.ROBOT,
                       title: "Android",
                       desc: "Expressive synth",
                       icon: Sparkles,

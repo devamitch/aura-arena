@@ -4,6 +4,9 @@
 // Handles all discipline/sub-discipline scoring nuances.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// NOTE: Split modules for new worker-based code live in './score/*'.
+// Existing code imports from this file directly — no changes needed.
+
 import type {
   DisciplineId,
   Drill,

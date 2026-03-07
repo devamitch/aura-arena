@@ -113,3 +113,60 @@ create policy "profiles_update"    on public.profiles for update using (auth.uid
 create policy "sessions_own"       on public.session_history using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "battles_own"        on public.battle_history  using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "notifications_own"  on public.notifications   using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ─── analytics_events (Supabase-native analytics) ───────────────────────────
+-- Replaces PostHog. All game events are stored here for free, with full SQL access.
+-- Query examples:
+--   SELECT event, count(*) FROM analytics_events GROUP BY event ORDER BY count DESC;
+--   SELECT date_trunc('day', created_at), count(*) FROM analytics_events WHERE event='session_started' GROUP BY 1;
+
+create table if not exists public.analytics_events (
+  id          uuid primary key default uuid_generate_v4(),
+  created_at  timestamptz default now(),
+  event       text not null,
+  user_id     text,
+  session_id  text not null,
+  properties  jsonb default '{}'
+);
+
+-- Fast query indexes
+create index if not exists ae_event_idx      on public.analytics_events (event);
+create index if not exists ae_user_idx       on public.analytics_events (user_id);
+create index if not exists ae_created_idx    on public.analytics_events (created_at desc);
+create index if not exists ae_session_idx    on public.analytics_events (session_id);
+
+-- RLS: anyone (including anon) can INSERT; authenticated users can SELECT their own
+alter table public.analytics_events enable row level security;
+
+create policy "analytics_insert_anon"
+  on public.analytics_events for insert
+  to anon, authenticated
+  with check (true);
+
+create policy "analytics_select_own"
+  on public.analytics_events for select
+  to authenticated
+  using (user_id = auth.uid()::text);
+
+-- ─── Useful analytics views ─────────────────────────────────────────────────
+create or replace view public.analytics_summary as
+select
+  event,
+  count(*) as total,
+  count(distinct user_id) as unique_users,
+  count(distinct session_id) as sessions,
+  max(created_at) as last_seen
+from public.analytics_events
+group by event
+order by total desc;
+
+create or replace view public.analytics_daily as
+select
+  date_trunc('day', created_at at time zone 'UTC') as day,
+  event,
+  count(*) as events,
+  count(distinct user_id) as users
+from public.analytics_events
+where created_at > now() - interval '30 days'
+group by 1, 2
+order by 1 desc, 3 desc;

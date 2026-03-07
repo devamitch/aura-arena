@@ -6,6 +6,7 @@ import { CameraView } from "@features/arena/components/CameraView";
 import { useCamera } from "@hooks/useCamera";
 import { useLiveBattle } from "@hooks/useLiveBattle";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { analytics } from "@lib/analytics";
 import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
 import { AnimatePresence, animate, motion, useMotionValue, useSpring } from "framer-motion";
@@ -49,6 +50,11 @@ export default function LiveBattlePage() {
   const { discipline: disc, accentColor } = usePersonalization();
   const camera = useCamera({ discipline: disc.id, autoStart: false });
 
+  // Track matchmaking start once
+  useEffect(() => {
+    analytics.liveMatchmakingStarted(disc.id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const liveBattle = useLiveBattle(
     user?.id,
     user?.arenaName || user?.displayName || "Fighter",
@@ -75,10 +81,11 @@ export default function LiveBattlePage() {
   useEffect(() => {
     if (uiPhase !== "matchmaking") return;
     if (liveBattle.phase === "battling" || liveBattle.phase === "ai_fallback") {
+      analytics.liveMatchFound(liveBattle.isRealOpponent);
       camera.requestCamera();
       setUiPhase("battle");
     }
-  }, [liveBattle.phase, uiPhase, camera]);
+  }, [liveBattle.phase, uiPhase, camera]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Battle countdown + score broadcast
   useEffect(() => {
@@ -141,6 +148,8 @@ export default function LiveBattlePage() {
         isRealOpponent: liveBattle.isRealOpponent,
       });
     }
+    analytics.liveBattleEnded(won, ps);
+    analytics.xpGained(xpGained, won ? "live_win" : "live_loss");
     setResult({ won, xpGained });
     setUiPhase("result");
   }, [camera, liveBattle, addXP, addPoints]);

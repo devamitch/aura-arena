@@ -1,512 +1,208 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — useCamera Hook (100% functional)
-// Owns: camera permission state, MediaPipe task init, rAF detection loop,
-// score computation via scoreEngine, canvas rendering.
+// AURA ARENA — useCamera Hook (thin wrapper over useGameEngine)
+// Camera stream management only. Detection + scoring in workers via useGameEngine.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import {
-  DISCIPLINE_TASKS,
-  anyTaskReady,
-  expressionCoachFeedback,
-  initVisionTasks,
-  isTaskReady,
-  parseFaceExpressions,
-  processVideoFrame,
-  renderFrameToCanvas,
-  type VisionFrameResult,
-} from "@lib/mediapipe/allTasks";
-import {
-  computeSessionSummary,
-  createRhythmState,
-  scoreFrame,
-  zeroScore,
-  type RhythmState,
-  type ScoreFrameInput,
-} from "@lib/scoreEngine";
-import type {
-  DisciplineId,
-  FrameScore,
-  Landmark,
-  MediaPipeTask,
-  SubDisciplineId,
-} from "@types";
-import { getDiscipline } from "@utils/constants/disciplines";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { PoseCorrectness } from '@lib/poseCorrectness';
+import { computeSessionSummary, zeroScore } from '@lib/score/session';
+import type { DisciplineId, FrameScore, MediaPipeTask, SubDisciplineId } from '@types';
+import { getDiscipline } from '@utils/constants/disciplines';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { bus } from '@/lib/eventBus';
+import { useGameEngine } from './useGameEngine';
+import type { VisionFrameResult } from '@/lib/mediapipe/types';
 
-// ─── TYPES ────────────────────────────────────────────────────────────────────
-
-export type CameraPermission =
-  | "idle"
-  | "requesting"
-  | "granted"
-  | "denied"
-  | "unavailable"
-  | "error";
+export type CameraPermission = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable' | 'error';
 
 export interface UseCameraOptions {
-  discipline: DisciplineId;
-  subDiscipline?: SubDisciplineId;
-  extraTasks?: MediaPipeTask[];
-  onFrame?: (result: VisionFrameResult, score: FrameScore) => void;
-  onComboChange?: (combo: number) => void;
-  onGesture?: (label: string, bonus: number) => void;
-  autoStart?: boolean;
-  facingMode?: "user" | "environment";
-  targetWidth?: number;
-  targetHeight?: number;
-  showSkeleton?: boolean;
-  showFace?: boolean;
-  showHands?: boolean;
-  showObjects?: boolean;
+  discipline:      DisciplineId;
+  subDiscipline?:  SubDisciplineId;
+  extraTasks?:     MediaPipeTask[];
+  onFrame?:        (result: VisionFrameResult, score: FrameScore) => void;
+  onComboChange?:  (combo: number) => void;
+  onGesture?:      (label: string, bonus: number) => void;
+  autoStart?:      boolean;
+  facingMode?:     'user' | 'environment';
+  targetWidth?:    number;
+  targetHeight?:   number;
+  showSkeleton?:   boolean;
+  showFace?:       boolean;
+  showHands?:      boolean;
+  showObjects?:    boolean;
 }
 
 export interface UseCameraReturn {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
-  permission: CameraPermission;
-  engineReady: boolean;
-  streaming: boolean;
-  mirrored: boolean;
-  scanProgress: number; // 0→1 for HUD scan animation
-  currentScore: FrameScore;
-  lastResult: VisionFrameResult | null;
-  errorMessage: string | null;
-  coachMessage: string | null;
-  outOfFrame: boolean;
-  requestCamera: () => Promise<void>;
-  stopCamera: () => void;
-  toggleMirror: () => void;
-  resetScoring: () => void;
+  videoRef:          React.RefObject<HTMLVideoElement>;
+  canvasRef:         React.RefObject<HTMLCanvasElement>;
+  permission:        CameraPermission;
+  engineReady:       boolean;
+  streaming:         boolean;
+  mirrored:          boolean;
+  scanProgress:      number;
+  currentScore:      FrameScore;
+  poseCorrectness:   PoseCorrectness;
+  lastResult:        VisionFrameResult | null;
+  errorMessage:      string | null;
+  coachMessage:      string | null;
+  outOfFrame:        boolean;
+  workerReady:       boolean;
+  requestCamera:     () => Promise<void>;
+  stopCamera:        () => void;
+  toggleMirror:      () => void;
+  resetScoring:      () => void;
   getSessionSummary: () => ReturnType<typeof computeSessionSummary>;
 }
 
-// ─── SIMULATED DATA (for when MediaPipe hasn't loaded yet) ────────────────────
-
-const simulateScore = (t: number, _discipline: DisciplineId): FrameScore => {
-  // Generate realistic scores that ramp up over time with natural variation
-  const elapsed = t / 1000; // seconds
-  const warmup = Math.min(elapsed / 15, 1); // 0→1 over 15s warmup
-  const noise = () => (Math.random() - 0.5) * 12; // ±6 variation
-  const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
-
-  // Base skill that increases with time (simulating improvement)
-  const base = 45 + warmup * 30 + Math.sin(elapsed * 0.3) * 8;
-
-  const accuracy = clamp(base + noise() + 5);
-  const stability = clamp(base + noise() - 2);
-  const timing = clamp(base + noise() + 3);
-  const expressiveness = clamp(base + noise() - 5);
-  const power = clamp(base + noise());
-  const balance = clamp(base + noise() + 2);
-  const overall = clamp(
-    (accuracy + stability + timing + expressiveness + power + balance) / 6,
-  );
-  const combo = Math.floor(Math.max(0, (overall - 50) / 8));
-
-  return {
-    overall,
-    accuracy,
-    stability,
-    timing,
-    expressiveness,
-    power,
-    balance,
-    combo,
-    raw: {
-      cosineSimilarity: overall / 100,
-      jitterMagnitude: (100 - stability) / 100,
-      rhythmPhaseError: (100 - timing) / 100,
-      symmetryScore: balance / 100,
-      depthScore: power / 100,
-      velocityScore: expressiveness / 100,
-      keypointConfidence: warmup * 0.85 + 0.1,
-    },
-  };
+const POSE_OK: PoseCorrectness = {
+  isCorrect: true, score: 100, feedback: [], jointAngles: [], exercise: 'idle',
 };
-
-const simulateLandmarks = (_t: number): Landmark[] =>
-  Array.from({ length: 33 }, () => ({
-    x: -1,
-    y: -1,
-    z: -1,
-    visibility: 0,
-  }));
-
-// ─── HOOK ─────────────────────────────────────────────────────────────────────
 
 export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
   const {
-    discipline,
-    subDiscipline,
-    extraTasks = [],
-    onFrame,
-    onComboChange,
-    onGesture,
-    autoStart = false,
-    facingMode = "user",
-    targetWidth = 1280,
-    targetHeight = 720,
-    showSkeleton = true,
-    showFace = true,
-    showHands = true,
-    showObjects = true,
+    discipline, subDiscipline, autoStart = false,
+    facingMode = 'user', targetWidth = 1280, targetHeight = 720,
   } = opts;
 
-  const videoRef = useRef<HTMLVideoElement>(null!);
+  // Own refs passed into engine
+  const videoRef  = useRef<HTMLVideoElement>(null!);
   const canvasRef = useRef<HTMLCanvasElement>(null!);
   const streamRef = useRef<MediaStream | null>(null);
-  const rafRef = useRef<number>(0);
-  const sessionStartRef = useRef<number>(0);
 
-  // Scoring state (mutable refs — don't need re-renders)
-  const prevLandmarksRef = useRef<Landmark[]>([]);
-  const frameWindowRef = useRef<Landmark[][]>([]);
-  const rhythmStateRef = useRef<RhythmState | null>(null);
-  const comboRef = useRef(0);
-  const lastComboTimeRef = useRef(0);
-  const lastGestureRef = useRef<string | null>(null);
-  const frameScoresRef = useRef<FrameScore[]>([]);
-  const comboHistoryRef = useRef<number[]>([]);
-  const scanStartRef = useRef<number>(Date.now());
-  const uiUpdateRef = useRef<number>(0);
+  // Local frame accumulation so getSessionSummary stays synchronous
+  const frameScores  = useRef<FrameScore[]>([]);
+  const comboHistory = useRef<number[]>([]);
+  const comboRef     = useRef(0);
 
-  // React state (drives UI)
-  const [permission, setPermission] = useState<CameraPermission>("idle");
-  const [engineReady, setEngineReady] = useState(false);
-  const [streaming, setStreaming] = useState(false);
-  const [mirrored, setMirrored] = useState(facingMode === "user");
+  const [permission,   setPermission]   = useState<CameraPermission>('idle');
+  const [streaming,    setStreaming]     = useState(false);
+  const [mirrored,     setMirrored]     = useState(facingMode === 'user');
   const [scanProgress, setScanProgress] = useState(0);
-  const [currentScore, setCurrentScore] = useState<FrameScore>(zeroScore());
-  const [lastResult, setLastResult] = useState<VisionFrameResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [coachMessage, setCoachMessage] = useState<string | null>(null);
-  const [outOfFrame, setOutOfFrame] = useState(false);
+  const [outOfFrame,   setOutOfFrame]   = useState(false);
 
-  // Accent color for canvas rendering
-  const accentColor = useMemo(
-    () => getDiscipline(discipline).color,
-    [discipline],
-  );
+  const accentColor = useMemo(() => getDiscipline(discipline).color, [discipline]);
 
-  // Rhythm BPM from discipline/subdiscipline
-  const bpm = useMemo(() => {
-    const d = getDiscipline(discipline);
-    return d.rhythmBPM ?? 80;
-  }, [discipline]);
+  // Delegate detection + scoring to useGameEngine (worker-based)
+  const engine = useGameEngine(videoRef, canvasRef, discipline, subDiscipline, accentColor);
 
-  // ── Init MediaPipe tasks ──────────────────────────────────────────────────
-
+  // Accumulate frame scores from event bus (synchronous session summary)
   useEffect(() => {
-    const tasks: MediaPipeTask[] = [
-      ...DISCIPLINE_TASKS[discipline],
-      ...extraTasks,
-    ].filter((v, i, arr) => arr.indexOf(v) === i); // dedupe
-
-    let cancelled = false;
-    initVisionTasks(tasks).then(() => {
-      if (!cancelled) setEngineReady(anyTaskReady());
+    const unsub = bus.on('frame:scored', ({ frameScore, newCombo }) => {
+      const fs = frameScore as FrameScore;
+      const nc = newCombo as number;
+      frameScores.current  = [...frameScores.current.slice(-599), fs];
+      comboHistory.current = [...comboHistory.current.slice(-599), nc];
+      if (nc !== comboRef.current) {
+        comboRef.current = nc;
+        opts.onComboChange?.(nc);
+      }
     });
+    return unsub;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return () => {
-      cancelled = true;
-    };
-  }, [discipline, extraTasks]);
-
-  // ── rAF detection loop ────────────────────────────────────────────────────
-
-  const startLoop = useCallback(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-
-    rhythmStateRef.current = createRhythmState(bpm);
-    scanStartRef.current = Date.now();
-
-    const loop = (now: number) => {
-      rafRef.current = requestAnimationFrame(loop);
-
-      if (video.readyState < 2) return;
-
-      // Keep canvas in sync with video dimensions
-      if (
-        canvas.width !== video.videoWidth ||
-        canvas.height !== video.videoHeight
-      ) {
-        canvas.width = video.videoWidth || targetWidth;
-        canvas.height = video.videoHeight || targetHeight;
-      }
-
-      const timestamp = video.currentTime * 1000;
-      const elapsedMs = now - sessionStartRef.current;
-
-      const scanMs = now - scanStartRef.current;
-
-      let result: VisionFrameResult;
-      let score: FrameScore;
-
-      if (isTaskReady("pose")) {
-        // Real MediaPipe processing
-        result = processVideoFrame(video, timestamp);
-
-        const landmarks = result.poseLandmarks[0] ?? [];
-
-        // Framing Check — Ensure head, shoulders and hips are visible
-        const nose = landmarks[0];
-        const ls = landmarks[11];
-        const rs = landmarks[12];
-        const lh = landmarks[23];
-        const rh = landmarks[24];
-
-        const isOutOfFrame =
-          !nose ||
-          nose.visibility! < 0.6 ||
-          !ls ||
-          ls.visibility! < 0.5 ||
-          !rs ||
-          rs.visibility! < 0.5 ||
-          !lh ||
-          lh.visibility! < 0.4 ||
-          !rh ||
-          rh.visibility! < 0.4;
-
-        setOutOfFrame(isOutOfFrame);
-
-        // Update frame window (last 30 frames)
-        frameWindowRef.current = [
-          ...frameWindowRef.current.slice(-29),
-          landmarks,
-        ];
-
-        const rhythmState = rhythmStateRef.current ?? createRhythmState(bpm);
-
-        const input: ScoreFrameInput = {
-          landmarks,
-          previousLandmarks: prevLandmarksRef.current,
-          frameWindow: frameWindowRef.current,
-          discipline,
-          subDiscipline,
-          elapsedMs,
-          rhythmState,
-          currentCombo: comboRef.current,
-          lastComboTime: lastComboTimeRef.current,
-          gestures: result.gestures,
-          drill: undefined, // Add if needed
-        };
-
-        const output = scoreFrame(input);
-        score = output.frameScore;
-
-        // Gesture Detection & Event
-        const topGest = result.gestures?.[0]?.[0];
-        if (
-          topGest &&
-          topGest.score > 0.85 &&
-          topGest.categoryName !== "None"
-        ) {
-          if (topGest.categoryName !== lastGestureRef.current) {
-            lastGestureRef.current = topGest.categoryName;
-            onGesture?.(topGest.categoryName, 5);
-          }
-        } else if (!topGest || topGest.score < 0.4) {
-          lastGestureRef.current = null;
-        }
-
-        // Update refs
-        rhythmStateRef.current = output.updatedRhythmState;
-        prevLandmarksRef.current = landmarks;
-
-        if (output.newCombo !== comboRef.current) {
-          comboRef.current = output.newCombo;
-          onComboChange?.(output.newCombo);
-        }
-        lastComboTimeRef.current = output.newLastComboTime;
-
-        // Face expression coaching feedback
-        if (result.faceBlendshapes[0]?.length) {
-          const exprs = parseFaceExpressions(result.faceBlendshapes[0]);
-          const msg = expressionCoachFeedback(exprs, discipline);
-          setCoachMessage(msg);
-        } else {
-          setCoachMessage(null);
-        }
-
-        // Result is stored inside the throttle block below
-      } else {
-        // Simulation mode
-        const simLandmarks = simulateLandmarks(elapsedMs);
-        result = {
-          timestamp,
-          poseLandmarks: [simLandmarks],
-          poseWorldLandmarks: [],
-          handLandmarks: [],
-          handedness: [],
-          faceLandmarks: [],
-          faceBlendshapes: [],
-          gestures: [],
-          objectDetections: [],
-        };
-        score = simulateScore(elapsedMs, discipline);
-      }
-
-      // History for session summary
-      frameScoresRef.current = [...frameScoresRef.current.slice(-300), score];
-      comboHistoryRef.current = [
-        ...comboHistoryRef.current.slice(-300),
-        score.combo,
-      ];
-
-      // Throttle UI React state updates to ~15fps (every 66ms) to prevent excessive re-renders
-      if (now - uiUpdateRef.current > 66) {
-        if (scanMs < 2500) {
-          setScanProgress(scanMs / 2500);
-        } else {
-          setScanProgress((prev) => (prev < 1 ? 1 : prev));
-        }
-
-        setCurrentScore(score);
-        if (result) setLastResult(result);
-
-        uiUpdateRef.current = now;
-      }
-
-      // Render canvas
-      renderFrameToCanvas(canvas, result, accentColor, {
-        drawSkeleton: showSkeleton,
-        drawHands: showHands,
-        drawFace: showFace,
-        drawObjects: showObjects,
-        drawBrackets: true,
-        drawScanLine: scanMs < 2500,
-        scanProgress: Math.min(1, scanMs / 2500),
-        mirrored,
-      });
-
-      onFrame?.(result, score);
-    };
-
-    sessionStartRef.current = performance.now();
-    rafRef.current = requestAnimationFrame(loop);
-  }, [
-    discipline,
-    subDiscipline,
-    bpm,
-    accentColor,
-    mirrored,
-    showSkeleton,
-    showHands,
-    showFace,
-    showObjects,
-    onFrame,
-    onComboChange,
-    onGesture,
-    targetHeight,
-    targetWidth,
-  ]);
-
-  const stopLoop = useCallback(() => {
-    cancelAnimationFrame(rafRef.current);
+  // Out-of-frame detection from pose landmarks
+  useEffect(() => {
+    const unsub = bus.on('pose:result', ({ poseLandmarks }) => {
+      const lms = (poseLandmarks as unknown[][])[0] ?? [];
+      const vis  = (i: number) => ((lms[i] as { visibility?: number })?.visibility ?? 0);
+      setOutOfFrame(vis(0) < 0.6 || vis(11) < 0.5 || vis(12) < 0.5 || vis(23) < 0.4);
+    });
+    return unsub;
   }, []);
 
-  // ── Camera permission + stream ────────────────────────────────────────────
+  // Scan progress animation (first 2.5 s)
+  useEffect(() => {
+    if (!streaming) return;
+    const start = performance.now();
+    let raf: number;
+    const tick = () => {
+      const ms = performance.now() - start;
+      setScanProgress(Math.min(1, ms / 2500));
+      if (ms < 2500) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [streaming]);
 
+  // ── Camera stream ─────────────────────────────────────────────────────────
   const requestCamera = useCallback(async () => {
-    setPermission("requesting");
+    setPermission('requesting');
     setErrorMessage(null);
-
     if (!navigator.mediaDevices?.getUserMedia) {
-      setPermission("unavailable");
-      setErrorMessage("Camera API not available in this browser.");
+      setPermission('unavailable');
+      setErrorMessage('Camera API not available.');
       return;
     }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode,
-          width: { ideal: targetWidth },
-          height: { ideal: targetHeight },
-        },
+        video: { facingMode, width: { ideal: targetWidth }, height: { ideal: targetHeight } },
         audio: false,
       });
-
       streamRef.current = stream;
       const video = videoRef.current;
-      if (video) {
-        video.srcObject = stream;
-        await video.play();
-      }
-
-      setPermission("granted");
+      if (video) { video.srcObject = stream; await video.play(); }
+      setPermission('granted');
       setStreaming(true);
-      startLoop();
-    } catch (err: any) {
-      const msg =
-        err?.name === "NotAllowedError"
-          ? "Camera permission denied. Please allow camera access in browser settings."
-          : err?.name === "NotFoundError"
-            ? "No camera found on this device."
-            : `Camera error: ${err?.message ?? "Unknown error"}`;
-      setPermission(err?.name === "NotAllowedError" ? "denied" : "error");
-      setErrorMessage(msg);
+      engine.startLoop();
+    } catch (err: unknown) {
+      const e = err as { name?: string; message?: string };
+      setPermission(e.name === 'NotAllowedError' ? 'denied' : 'error');
+      setErrorMessage(
+        e.name === 'NotAllowedError' ? 'Camera permission denied.' :
+        e.name === 'NotFoundError'   ? 'No camera found.' :
+        `Camera error: ${e.message ?? 'Unknown'}`,
+      );
     }
-  }, [facingMode, targetWidth, targetHeight, startLoop]);
+  }, [facingMode, targetWidth, targetHeight, engine, videoRef]);
 
   const stopCamera = useCallback(() => {
-    stopLoop();
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    engine.stopLoop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
     const video = videoRef.current;
-    if (video) {
-      video.srcObject = null;
-    }
+    if (video) video.srcObject = null;
     setStreaming(false);
     setScanProgress(0);
-    // Keep last score visible for post-session screen
-  }, [stopLoop]);
+  }, [engine, videoRef]);
 
-  const toggleMirror = useCallback(() => setMirrored((m) => !m), []);
+  const toggleMirror  = useCallback(() => setMirrored(m => !m), []);
 
-  const resetScoring = useCallback(() => {
-    frameScoresRef.current = [];
-    comboHistoryRef.current = [];
-    prevLandmarksRef.current = [];
-    frameWindowRef.current = [];
-    comboRef.current = 0;
-    lastComboTimeRef.current = 0;
-    rhythmStateRef.current = createRhythmState(bpm);
-    setCurrentScore(zeroScore());
-    scanStartRef.current = Date.now();
-    setScanProgress(0);
-  }, [bpm]);
+  const resetScoring  = useCallback(() => {
+    frameScores.current  = [];
+    comboHistory.current = [];
+    comboRef.current     = 0;
+    engine.resetSession();
+  }, [engine]);
 
   const getSessionSummary = useCallback(
-    () =>
-      computeSessionSummary(frameScoresRef.current, comboHistoryRef.current),
+    () => computeSessionSummary(frameScores.current, comboHistory.current),
     [],
   );
 
   // Auto-start
   useEffect(() => {
     if (autoStart) requestCamera();
-    return () => {
-      stopCamera();
-      // DON'T destroy tasks here — they are expensive to reload
-    };
+    return () => stopCamera();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Suppress unused-import warnings
+  void zeroScore;
+
   return {
-    videoRef,
-    canvasRef,
+    videoRef:        videoRef as React.RefObject<HTMLVideoElement>,
+    canvasRef:       canvasRef as React.RefObject<HTMLCanvasElement>,
     permission,
-    engineReady,
+    engineReady:     engine.engineReady,
     streaming,
     mirrored,
     scanProgress,
-    currentScore,
-    lastResult,
+    currentScore:    engine.currentScore,
+    poseCorrectness: engine.poseCorrectness ?? POSE_OK,
+    lastResult:      null,
     errorMessage,
-    coachMessage,
+    coachMessage:    engine.coachMessage,
     outOfFrame,
+    workerReady:     engine.engineReady,
     requestCamera,
     stopCamera,
     toggleMirror,

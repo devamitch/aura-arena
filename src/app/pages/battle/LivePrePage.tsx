@@ -5,9 +5,10 @@
 import { usePersonalization } from "@hooks/usePersonalization";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { useUser } from "@store";
-import { PREMIUM_ASSETS, TIER_BADGE } from "@utils/assets";
-import { motion } from "framer-motion";
+import { PREMIUM_ASSETS, TIER_BADGE, pickImage } from "@utils/assets";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Globe, Users, Wifi, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ACCENT = "#00f0ff";
@@ -16,6 +17,19 @@ export default function LivePrePage() {
   const navigate = useNavigate();
   const { discipline: disc } = usePersonalization();
   const user = useUser();
+
+  // ── Hero Rotation Logic ──
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setHeroIdx((i) => i + 1), 6000);
+    return () => clearInterval(t);
+  }, []);
+  const heroImg = pickImage(
+    PREMIUM_ASSETS.ATMOSPHERE.HERO_ROTATION_BATTLE || [
+      PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA,
+    ],
+    heroIdx,
+  );
 
   return (
     <div className="page pb-safe" style={{ background: "var(--background)" }}>
@@ -53,11 +67,18 @@ export default function LivePrePage() {
           }}
         >
           {/* Hero background */}
-          <img
-            src={PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
-          />
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={heroImg}
+              src={heroImg}
+              alt=""
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.15 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5 }}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+          </AnimatePresence>
           {/* Glow */}
           <div
             className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-10"

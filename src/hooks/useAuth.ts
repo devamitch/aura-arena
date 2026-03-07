@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
+import { analytics, identifyUser, resetAnalytics } from '@lib/analytics';
 import { useStore, useUser, useIsLoading } from '@store';
 import { signInWithGoogle, signOut as supabaseSignOut, supabase } from '@lib/supabase/client';
 import { initOfflineSync } from '@lib/pwa/offlineQueue';
@@ -22,6 +23,7 @@ export const useAuth = () => {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
+        identifyUser(session.user.id);
         await hydrateUser(session.user.id, setUser);
       }
       setLoading(false);
@@ -29,8 +31,10 @@ export const useAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        identifyUser(session.user.id);
         await hydrateUser(session.user.id, setUser);
       } else if (event === 'SIGNED_OUT') {
+        resetAnalytics();
         storeSignOut();
       }
     });
@@ -52,6 +56,8 @@ export const useAuth = () => {
       try {
         const { session } = await signInWithGoogle(tokenResponse.access_token);
         if (session?.user) {
+          identifyUser(session.user.id);
+          analytics.signInSuccess(session.user.id, 'google');
           const profile = await hydrateUser(session.user.id, setUser);
           if (profile) {
             addSavedAccount({
@@ -75,9 +81,11 @@ export const useAuth = () => {
   // ── Sign out ──────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     setLoading(true);
+    analytics.signOut();
     try {
       await supabaseSignOut();
     } catch {}
+    resetAnalytics();
     storeSignOut();
     setLoading(false);
   }, [storeSignOut, setLoading]);

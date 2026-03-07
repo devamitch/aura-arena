@@ -14,7 +14,7 @@ import {
   useViewerCount,
   useXP,
 } from "@store";
-import { PREMIUM_ASSETS } from "@utils/assets";
+import { PREMIUM_ASSETS, pickImage } from "@utils/assets";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -27,7 +27,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── Athlete roster (built from ALL available images — loops in the scroll) ──
@@ -163,6 +163,19 @@ export default function DashboardPage() {
   const missions = useDailyMissions();
   const { accentColor } = usePersonalization();
 
+  // ── Hero Rotation Logic ──
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setHeroIdx((i) => i + 1), 5000);
+    return () => clearInterval(t);
+  }, []);
+  const heroImg = pickImage(
+    PREMIUM_ASSETS.ATMOSPHERE.HERO_ROTATION_DASHBOARD || [
+      PREMIUM_ASSETS.ATMOSPHERE.DASHBOARD_HERO,
+    ],
+    heroIdx,
+  );
+
   const firstName = (user?.arenaName || user?.displayName || "Athlete").split(
     " ",
   )[0];
@@ -174,11 +187,18 @@ export default function DashboardPage() {
     >
       {/* ── Hero Section ── */}
       <div className="relative h-56 overflow-hidden">
-        <img
-          src={PREMIUM_ASSETS.ATMOSPHERE.DASHBOARD_HERO}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-90 transition-opacity duration-1000"
-        />
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={heroImg}
+            src={heroImg}
+            alt=""
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 1.2 }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </AnimatePresence>
         <div
           className="absolute inset-0"
           style={{
@@ -191,7 +211,7 @@ export default function DashboardPage() {
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-10">
           <div className="flex items-center gap-2">
             <img
-              src="/logo.png"
+              src={PREMIUM_ASSETS.ATMOSPHERE.AURA_LOGO}
               alt=""
               className="w-6 h-6 rounded-md object-cover"
             />

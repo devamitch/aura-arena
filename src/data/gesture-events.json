@@ -1,0 +1,10 @@
+{
+  "Thumb_Up":    { "label": "Great form!",      "comboBonus": 2, "color": "#22c55e", "xp": 5  },
+  "Thumb_Down":  { "label": "Reset position",   "comboBonus": 0, "color": "#ef4444", "xp": 0  },
+  "Victory":     { "label": "Victory stance!",  "comboBonus": 1, "color": "#a855f7", "xp": 3  },
+  "Pointing_Up": { "label": "Ready stance",     "comboBonus": 1, "color": "#3b82f6", "xp": 2  },
+  "Closed_Fist": { "label": "Power fist!",      "comboBonus": 3, "color": "#f97316", "xp": 8  },
+  "Open_Palm":   { "label": "Rest",             "comboBonus": 0, "color": "#6b7280", "xp": 0  },
+  "ILoveYou":    { "label": "Energy boost!",    "comboBonus": 5, "color": "#ec4899", "xp": 12 },
+  "None":        { "label": "",                 "comboBonus": 0, "color": "",        "xp": 0  }
+}

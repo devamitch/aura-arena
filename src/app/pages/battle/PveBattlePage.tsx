@@ -5,9 +5,10 @@
 import { CameraView } from "@features/arena/components/CameraView";
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { analytics } from "@lib/analytics";
 import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
-import { PREMIUM_ASSETS } from "@utils/assets";
+import { PREMIUM_ASSETS, pickImage } from "@utils/assets";
 import { AI_OPPONENTS } from "@utils/constants";
 import {
   AnimatePresence,
@@ -79,6 +80,19 @@ export default function PveBattlePage() {
     " ",
   )[0];
 
+  // ── Hero Rotation Logic ──
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setHeroIdx((i) => i + 1), 8000);
+    return () => clearInterval(t);
+  }, []);
+  const heroImg = pickImage(
+    PREMIUM_ASSETS.ATMOSPHERE.HERO_ROTATION_BATTLE || [
+      PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA,
+    ],
+    heroIdx,
+  );
+
   // ── Battle State ────────────────────────────────────────────────────────────
   const [phase, setPhase] = useState<"pre" | "battle" | "result">("pre");
   const [playerScore, setPlayerScore] = useState(0);
@@ -116,6 +130,7 @@ export default function PveBattlePage() {
 
   // ── Start Battle ────────────────────────────────────────────────────────────
   const handleStart = useCallback(() => {
+    analytics.pveBattleStarted(opp.id, opp.difficulty);
     setPhase("battle");
     setPlayerScore(0);
     setOppScore(0);
@@ -207,13 +222,24 @@ export default function PveBattlePage() {
             isRealOpponent: false,
           });
         }
+        analytics.pveBattleEnded(won, ps, xpGained);
+        analytics.xpGained(xpGained, won ? "pve_win" : "pve_loss");
         setResult({ won, xpGained, pointsGained });
         return os;
       });
       return ps;
     });
     setPhase("result");
-  }, [camera, addXP, addPoints, updateUser, opp.difficulty, user]);
+  }, [
+    camera,
+    addXP,
+    addPoints,
+    updateUser,
+    opp.difficulty,
+    opp.name,
+    user,
+    disc.id,
+  ]);
 
   const fmtTime = (s: number) =>
     `${Math.floor(s / 60)
@@ -492,11 +518,18 @@ export default function PveBattlePage() {
       style={{ background: "var(--background)" }}
     >
       {/* Arena bg */}
-      <img
-        src={PREMIUM_ASSETS.ATMOSPHERE.BATTLE_ARENA}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-screen pointer-events-none"
-      />
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={heroImg}
+          src={heroImg}
+          alt=""
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 w-full h-full object-cover mix-blend-screen pointer-events-none"
+        />
+      </AnimatePresence>
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/70 to-transparent pointer-events-none" />
 
       {/* Grid overlay */}

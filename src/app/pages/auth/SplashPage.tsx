@@ -1,4 +1,5 @@
 import { useIsLoading, useUser } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -62,7 +63,7 @@ export default function SplashPage() {
           }}
         >
           <img
-            src="/logo.png"
+            src={PREMIUM_ASSETS.ATMOSPHERE.AURA_LOGO}
             alt="AURA ARENA Logo"
             className="w-full h-full object-contain p-4"
           />

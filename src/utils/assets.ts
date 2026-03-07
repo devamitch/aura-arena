@@ -150,9 +150,18 @@ export const ORB_PRIMARY = [`${G}/orb_primary.png`];
 
 // ─── Atmosphere / Hero / Background ───────────────────────────────────────────
 
-export const HERO_DASHBOARD = [`${G}/dashboard_hero_teal.png`];
-export const HERO_TRAINING = [`${G}/training_hub_teal.png`];
-export const HERO_BATTLE = [`${G}/battle_arena_teal.png`];
+export const HERO_DASHBOARD = [
+  `${G}/dashboard_hero_teal.png`,
+  `${G}/intro_teal_stadium_1772760887170.png`,
+];
+export const HERO_TRAINING = [
+  `${G}/training_hub_teal.png`,
+  `${G}/profile_header_glow_3d_1772779766320.png`,
+];
+export const HERO_BATTLE = [
+  `${G}/battle_arena_teal.png`,
+  `${G}/onboarding_global_arena.png`,
+];
 export const HERO_VICTORY = [`${G}/battle_victory_3d_1772779463670.png`];
 export const HERO_PROFILE_GLOW = [
   `${G}/profile_header_glow_3d_1772779766320.png`,
@@ -304,6 +313,9 @@ export const PREMIUM_ASSETS = {
     TEAL_STADIUM: INTRO_MISC[1],
     FUTURISTIC_UI: INTRO_MISC[2],
     AURA_LOGO: LOGOS[0],
+    HERO_ROTATION_DASHBOARD: HERO_DASHBOARD,
+    HERO_ROTATION_TRAINING: HERO_TRAINING,
+    HERO_ROTATION_BATTLE: HERO_BATTLE,
   },
 
   INTRO: {

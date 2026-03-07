@@ -7,9 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   Camera,
+  CheckCircle2,
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  XCircle,
 } from "lucide-react";
 
 interface CameraViewProps {
@@ -36,6 +38,7 @@ export function CameraView({
     errorMessage,
     coachMessage,
     outOfFrame,
+    poseCorrectness,
     requestCamera,
     toggleMirror,
   } = camera;
@@ -236,6 +239,65 @@ export function CameraView({
               <br />
               is visible in the frame
             </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Pose Correctness Panel ── */}
+      <AnimatePresence>
+        {streaming && engineReady && poseCorrectness && poseCorrectness.exercise !== 'idle' && !outOfFrame && (
+          <motion.div
+            key={poseCorrectness.isCorrect ? 'ok' : 'fix'}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1.5"
+            style={{ maxWidth: 140 }}
+          >
+            {/* Form score badge */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl backdrop-blur-xl"
+              style={{
+                background: poseCorrectness.isCorrect
+                  ? 'rgba(34,197,94,0.18)'
+                  : 'rgba(239,68,68,0.18)',
+                border: `1px solid ${poseCorrectness.isCorrect ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
+              }}
+            >
+              {poseCorrectness.isCorrect ? (
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-green-400" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5 flex-shrink-0 text-red-400" />
+              )}
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-wider"
+                  style={{ color: poseCorrectness.isCorrect ? '#4ade80' : '#f87171' }}>
+                  Form
+                </p>
+                <p className="font-black text-xs text-white leading-none">
+                  {poseCorrectness.score}
+                  <span className="text-[9px] text-white/40 font-normal">/100</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Feedback cues (up to 2 lines) */}
+            {!poseCorrectness.isCorrect && poseCorrectness.feedback.slice(0, 2).map((cue, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="px-2.5 py-1.5 rounded-xl backdrop-blur-xl"
+                style={{
+                  background: 'rgba(0,0,0,0.55)',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                }}
+              >
+                <p className="text-[9px] text-red-300 leading-tight font-medium">{cue}</p>
+              </motion.div>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>

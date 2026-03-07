@@ -260,8 +260,8 @@ h6 {
   border: 1px solid var(--b1);
   color: var(--t2);
   transition:
-    background 0.15s,
-    transform 0.1s;
+    background 0.25s ease-out,
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .btn-icon:active {
   transform: scale(0.92);
@@ -317,12 +317,12 @@ h6 {
   box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
 }
 .card:active {
-  transform: scale(0.975);
+  transform: scale(0.98);
 }
 .card-press {
   transition:
-    transform 0.1s,
-    box-shadow 0.1s;
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease-out;
 }
 .card-press:active {
   transform: scale(0.972);
@@ -403,8 +403,8 @@ h6 {
   border: none;
   cursor: pointer;
   transition:
-    transform 0.1s,
-    box-shadow 0.15s;
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease-out;
 }
 .btn-primary:active {
   transform: scale(0.96);
@@ -424,8 +424,8 @@ h6 {
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition:
-    transform 0.1s,
-    background 0.15s;
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.25s ease-out;
 }
 .btn-secondary:active {
   transform: scale(0.96);
@@ -445,8 +445,8 @@ h6 {
   border: 1px solid rgba(0, 240, 255, 0.15);
   cursor: pointer;
   transition:
-    transform 0.1s,
-    border-color 0.15s;
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 0.25s ease-out;
 }
 .btn-ghost:active {
   transform: scale(0.96);
@@ -465,7 +465,7 @@ h6 {
   background: rgba(0, 240, 255, 0.05);
   border: 1px solid rgba(0, 240, 255, 0.2);
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
 .btn-outline-gradient:active {
@@ -530,9 +530,9 @@ h6 {
   border: 1px solid var(--b1);
   color: var(--t2);
   transition:
-    background 0.15s,
-    color 0.15s,
-    transform 0.1s;
+    background 0.25s ease-out,
+    color 0.25s ease-out,
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -553,8 +553,8 @@ select {
   font-size: 15px;
   outline: none;
   transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+    border-color 0.25s ease-out,
+    box-shadow 0.25s ease-out;
   width: 100%;
 }
 input:focus,

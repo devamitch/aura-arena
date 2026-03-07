@@ -6,6 +6,7 @@ import {
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { Skeleton } from "@shared/components/ui/Skeleton";
 import { useSessionHistory, useUser } from "@store";
+import { PREMIUM_ASSETS } from "@utils/assets";
 import { getDiscipline } from "@utils/constants/disciplines";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Pin, PinOff, RefreshCw } from "lucide-react";
@@ -111,9 +112,9 @@ function DailyMessage({
         </div>
         <div className="w-12 h-12 rounded-xl glass p-2 border-white/10 overflow-hidden">
           <img
-            src="/logo.png"
-            alt="Logo"
-            className="w-full h-full object-contain"
+            src={PREMIUM_ASSETS.ATMOSPHERE.AURA_LOGO}
+            alt="Coach"
+            className="w-full h-full object-contain p-3"
           />
         </div>
       </div>

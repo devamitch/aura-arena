@@ -4,8 +4,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { usePersonalization } from "@hooks/usePersonalization";
-import { PREMIUM_ASSETS } from "@utils/assets";
+import { PREMIUM_ASSETS, pickImage } from "@utils/assets";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Play, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function TrainingSelectionPage() {
@@ -15,15 +17,35 @@ export default function TrainingSelectionPage() {
   const drills = subDiscipline?.drills || discipline.drills || [];
   const name = subDiscipline?.name || discipline.name;
 
+  // ── Hero Rotation Logic ──
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setHeroIdx((i) => i + 1), 7500);
+    return () => clearInterval(t);
+  }, []);
+  const heroImg = pickImage(
+    PREMIUM_ASSETS.ATMOSPHERE.HERO_ROTATION_TRAINING || [
+      PREMIUM_ASSETS.ATMOSPHERE.TRAINING_HUB_HERO,
+    ],
+    heroIdx,
+  );
+
   return (
     <div className="page pb-safe" style={{ background: "var(--background)" }}>
       {/* ── Hero Banner ── */}
       <div className="relative h-52 overflow-hidden">
-        <img
-          src={PREMIUM_ASSETS.ATMOSPHERE.TRAINING_HUB_HERO}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-screen"
-        />
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={heroImg}
+            src={heroImg}
+            alt=""
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+            className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+          />
+        </AnimatePresence>
         <div
           className="absolute inset-0"
           style={{
@@ -52,7 +74,9 @@ export default function TrainingSelectionPage() {
           >
             Select Drill
           </p>
-          <h1 className="text-2xl font-black text-white tracking-tight">{name}</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">
+            {name}
+          </h1>
         </div>
       </div>
 
@@ -101,7 +125,10 @@ export default function TrainingSelectionPage() {
                 boxShadow: "0 0 20px rgba(0,240,255,0.2)",
               }}
             >
-              <Play className="w-5 h-5 fill-current" style={{ color: "var(--ac)" }} />
+              <Play
+                className="w-5 h-5 fill-current"
+                style={{ color: "var(--ac)" }}
+              />
             </div>
           </div>
         </button>
@@ -112,7 +139,8 @@ export default function TrainingSelectionPage() {
             <div
               className="h-px flex-1"
               style={{
-                background: "linear-gradient(to right, transparent, rgba(0,240,255,0.4))",
+                background:
+                  "linear-gradient(to right, transparent, rgba(0,240,255,0.4))",
               }}
             />
             <span
@@ -124,7 +152,8 @@ export default function TrainingSelectionPage() {
             <div
               className="h-px flex-1"
               style={{
-                background: "linear-gradient(to left, transparent, rgba(0,240,255,0.4))",
+                background:
+                  "linear-gradient(to left, transparent, rgba(0,240,255,0.4))",
               }}
             />
           </div>
@@ -170,7 +199,10 @@ export default function TrainingSelectionPage() {
             {/* Hover accent line on left */}
             <div
               className="absolute left-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: "linear-gradient(to bottom, var(--ac), transparent)" }}
+              style={{
+                background:
+                  "linear-gradient(to bottom, var(--ac), transparent)",
+              }}
             />
 
             <div className="flex items-center justify-between">
@@ -184,7 +216,9 @@ export default function TrainingSelectionPage() {
                 >
                   {drill.difficulty * 25} Aura-X · {drill.duration}s
                 </p>
-                <p className="text-xs text-white/30 mt-1.5 leading-snug">{drill.description}</p>
+                <p className="text-xs text-white/30 mt-1.5 leading-snug">
+                  {drill.description}
+                </p>
               </div>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"

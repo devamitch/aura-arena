@@ -1,0 +1,695 @@
+{
+  "boxing": {
+    "exercise": "boxing_guard",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 60,  "max": 125, "cue": "Tuck left elbow — guard position" },
+      { "joint": "rightElbow", "min": 60,  "max": 125, "cue": "Keep right elbow in — protect your chin" },
+      { "joint": "leftKnee",  "min": 140, "max": 175, "cue": "Soft knees — stay light on your feet" },
+      { "joint": "rightKnee", "min": 140, "max": 175, "cue": "Slight bend — ready to move" }
+    ]
+  },
+  "boxing_jab": {
+    "exercise": "boxing_jab",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 155, "max": 180, "cue": "Fully extend your jab arm" },
+      { "joint": "rightElbow", "min": 55,  "max": 100, "cue": "Keep rear hand at cheek — protect" },
+      { "joint": "leftShoulder","min": 60, "max": 100, "cue": "Drive shoulder through the punch" }
+    ]
+  },
+  "boxing_cross": {
+    "exercise": "boxing_cross",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "rightElbow",  "min": 155, "max": 180, "cue": "Fully extend cross — rotate hips" },
+      { "joint": "leftElbow",   "min": 55,  "max": 100, "cue": "Keep lead hand up — protect chin" },
+      { "joint": "rightHip",    "min": 140, "max": 175, "cue": "Pivot back foot — power from hips" }
+    ]
+  },
+  "boxing_hook": {
+    "exercise": "boxing_hook",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 80,  "max": 110, "cue": "90° elbow — tight hook arc" },
+      { "joint": "leftHip",   "min": 140, "max": 175, "cue": "Rotate your hip into the hook" },
+      { "joint": "leftKnee",  "min": 135, "max": 175, "cue": "Drive from legs for power" }
+    ]
+  },
+  "muay_thai": {
+    "exercise": "muay_thai_stance",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",   "min": 130, "max": 165, "cue": "Keep knees slightly bent" },
+      { "joint": "rightKnee",  "min": 130, "max": 165, "cue": "Weight even — mobile stance" },
+      { "joint": "leftElbow",  "min": 70,  "max": 120, "cue": "Elbows tight — protect ribs" },
+      { "joint": "leftHip",    "min": 140, "max": 175, "cue": "Square hips — ready to kick" }
+    ]
+  },
+  "muay_thai_teep": {
+    "exercise": "muay_thai_teep",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 60,  "max": 100, "cue": "Chamber knee high before extending" },
+      { "joint": "leftHip",   "min": 55,  "max": 90,  "cue": "Drive hip forward with the kick" },
+      { "joint": "rightKnee", "min": 145, "max": 180, "cue": "Push off standing leg fully" }
+    ]
+  },
+  "muay_thai_roundhouse": {
+    "exercise": "muay_thai_roundhouse",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",     "min": 140, "max": 180, "cue": "Swing leg straight — full extension" },
+      { "joint": "rightShoulder","min": 30,  "max": 90,  "cue": "Opposite arm drives rotation" },
+      { "joint": "rightKnee",    "min": 145, "max": 180, "cue": "Pivot on base foot — toes out" }
+    ]
+  },
+  "karate_kata": {
+    "exercise": "karate_kata",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 100, "max": 150, "cue": "Deep zenkutsu-dachi stance" },
+      { "joint": "rightKnee",     "min": 100, "max": 150, "cue": "Back leg drives power" },
+      { "joint": "leftShoulder",  "min": 60,  "max": 120, "cue": "Kiai — commit to the technique" },
+      { "joint": "rightShoulder", "min": 60,  "max": 120, "cue": "Chamber hand at hip, hikite" }
+    ]
+  },
+  "karate_front_kick": {
+    "exercise": "karate_front_kick",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 50,  "max": 90,  "cue": "Chamber knee to hip height" },
+      { "joint": "leftHip",   "min": 50,  "max": 90,  "cue": "Snap kick from the hip" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Support leg locked out" }
+    ]
+  },
+  "taekwondo_axe": {
+    "exercise": "taekwondo_axe_kick",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",  "min": 155, "max": 180, "cue": "Lift leg high — straight kick path" },
+      { "joint": "leftHip",   "min": 30,  "max": 70,  "cue": "Raise hip above shoulder height" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Standing leg fully extended" }
+    ]
+  },
+  "taekwondo_sidekick": {
+    "exercise": "taekwondo_side_kick",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",  "min": 145, "max": 180, "cue": "Extend leg fully sideways" },
+      { "joint": "leftHip",   "min": 60,  "max": 100, "cue": "Drive hip into the kick" },
+      { "joint": "rightKnee", "min": 140, "max": 175, "cue": "Pivot base foot 90°" }
+    ]
+  },
+  "bjj_guard": {
+    "exercise": "bjj_closed_guard",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftHip",   "min": 40,  "max": 90,  "cue": "Pull hips up — active guard" },
+      { "joint": "leftKnee",  "min": 40,  "max": 100, "cue": "Squeeze knees — maintain control" },
+      { "joint": "leftElbow", "min": 60,  "max": 110, "cue": "Frames up — create distance" }
+    ]
+  },
+  "wrestling_stance": {
+    "exercise": "wrestling_stance",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 100, "max": 150, "cue": "Low stance — knees bent deep" },
+      { "joint": "rightKnee", "min": 100, "max": 150, "cue": "Staggered feet — stable base" },
+      { "joint": "leftHip",   "min": 100, "max": 150, "cue": "Hips low — weight forward" },
+      { "joint": "leftElbow", "min": 70,  "max": 120, "cue": "Arms forward — ready to shoot" }
+    ]
+  },
+  "wrestling_single_leg": {
+    "exercise": "wrestling_single_leg_takedown",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",  "min": 70,  "max": 110, "cue": "Drive into opponent — penetration step" },
+      { "joint": "leftHip",   "min": 60,  "max": 100, "cue": "Level change — hips below target" },
+      { "joint": "leftElbow", "min": 60,  "max": 100, "cue": "Secure the leg — elbows in" }
+    ]
+  },
+  "mma_striking": {
+    "exercise": "mma_striking_combo",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 60,  "max": 130, "cue": "Mix punches and elbows" },
+      { "joint": "rightElbow", "min": 60,  "max": 130, "cue": "Protect chin between strikes" },
+      { "joint": "leftKnee",   "min": 120, "max": 165, "cue": "Low stance — ready for takedown" },
+      { "joint": "leftHip",    "min": 130, "max": 175, "cue": "Fluid hip rotation for power" }
+    ]
+  },
+  "capoeira_ginga": {
+    "exercise": "capoeira_ginga",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",   "min": 110, "max": 155, "cue": "Fluid ginga — constant motion" },
+      { "joint": "rightKnee",  "min": 110, "max": 155, "cue": "Sway weight side to side" },
+      { "joint": "leftShoulder","min": 40, "max": 110, "cue": "Arms flow with the movement" },
+      { "joint": "leftHip",    "min": 120, "max": 165, "cue": "Keep hips moving — dodge and flow" }
+    ]
+  },
+  "capoeira_au": {
+    "exercise": "capoeira_au_cartwheel",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftShoulder",  "min": 145, "max": 180, "cue": "Full arm extension overhead" },
+      { "joint": "rightShoulder", "min": 145, "max": 180, "cue": "Press through both arms" },
+      { "joint": "leftKnee",      "min": 155, "max": 180, "cue": "Straight legs during cartwheel" }
+    ]
+  },
+  "judo_ippon_seoi_nage": {
+    "exercise": "judo_seoi_nage",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 70,  "max": 110, "cue": "Deep bend — get under uke" },
+      { "joint": "leftHip",   "min": 70,  "max": 110, "cue": "Drive hips into opponent" },
+      { "joint": "leftElbow", "min": 100, "max": 155, "cue": "Secure grip on sleeve" }
+    ]
+  },
+  "yoga_warrior": {
+    "exercise": "yoga_warrior_1",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 80,  "max": 100, "cue": "Bend front knee to 90°" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Straighten back leg fully" },
+      { "joint": "leftHip",   "min": 85,  "max": 110, "cue": "Square your hips forward" },
+      { "joint": "leftShoulder","min": 155,"max": 180, "cue": "Reach arms overhead — palms together" }
+    ]
+  },
+  "yoga_warrior_2": {
+    "exercise": "yoga_warrior_2",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",     "min": 80,  "max": 100, "cue": "Front knee over ankle — 90°" },
+      { "joint": "rightKnee",    "min": 155, "max": 180, "cue": "Extend back leg straight" },
+      { "joint": "leftShoulder", "min": 80,  "max": 100, "cue": "Arms parallel to floor — T-shape" },
+      { "joint": "leftHip",      "min": 155, "max": 180, "cue": "Open hips to the side" }
+    ]
+  },
+  "yoga_fold": {
+    "exercise": "yoga_standing_forward_fold",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 155, "max": 180, "cue": "Straighten your legs" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Press heels toward the floor" },
+      { "joint": "leftHip",   "min": 45,  "max": 85,  "cue": "Hinge deeper from your hips" }
+    ]
+  },
+  "yoga_tree": {
+    "exercise": "yoga_tree_pose",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "rightKnee",    "min": 70,  "max": 110, "cue": "Foot higher on inner thigh — not knee" },
+      { "joint": "leftKnee",     "min": 160, "max": 180, "cue": "Standing leg strong and tall" },
+      { "joint": "leftShoulder", "min": 145, "max": 180, "cue": "Hands at heart or overhead" }
+    ]
+  },
+  "yoga_downdog": {
+    "exercise": "yoga_downward_dog",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",   "min": 155, "max": 180, "cue": "Press heels toward the floor" },
+      { "joint": "rightKnee",  "min": 155, "max": 180, "cue": "Straighten both legs" },
+      { "joint": "leftHip",    "min": 45,  "max": 85,  "cue": "Hips high — inverted V shape" },
+      { "joint": "leftElbow",  "min": 155, "max": 180, "cue": "Arms straight — press the mat" }
+    ]
+  },
+  "yoga_bridge": {
+    "exercise": "yoga_bridge_pose",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",  "min": 80,  "max": 100, "cue": "Knees over ankles at 90°" },
+      { "joint": "rightKnee", "min": 80,  "max": 100, "cue": "Feet flat — knees apart" },
+      { "joint": "leftHip",   "min": 140, "max": 175, "cue": "Drive hips higher — squeeze glutes" }
+    ]
+  },
+  "yoga_cobra": {
+    "exercise": "yoga_cobra_pose",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftElbow",  "min": 140, "max": 180, "cue": "Straighten arms — lift chest high" },
+      { "joint": "rightElbow", "min": 140, "max": 180, "cue": "Press palms down firmly" },
+      { "joint": "leftHip",    "min": 155, "max": 180, "cue": "Legs engaged — press tops of feet" }
+    ]
+  },
+  "yoga_pigeon": {
+    "exercise": "yoga_pigeon_pose",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",  "min": 60,  "max": 100, "cue": "Front leg horizontal — square hip" },
+      { "joint": "leftHip",   "min": 50,  "max": 90,  "cue": "Sink deeper into hip flexor" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Back leg fully extended" }
+    ]
+  },
+  "yoga_child": {
+    "exercise": "yoga_child_pose",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftKnee",  "min": 30,  "max": 70,  "cue": "Sink hips to heels" },
+      { "joint": "leftHip",   "min": 30,  "max": 70,  "cue": "Round forward — surrender" },
+      { "joint": "leftElbow", "min": 155, "max": 180, "cue": "Reach arms long overhead" }
+    ]
+  },
+  "squat": {
+    "exercise": "squat",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 75, "max": 110, "cue": "Squat deeper — aim for 90° at the knees" },
+      { "joint": "rightKnee", "min": 75, "max": 110, "cue": "Depth looks uneven — check your stance" },
+      { "joint": "leftHip",   "min": 70, "max": 110, "cue": "Chest up — lean forward less" }
+    ]
+  },
+  "barbell_squat": {
+    "exercise": "barbell_back_squat",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 70,  "max": 105, "cue": "Break parallel — drive depth" },
+      { "joint": "rightKnee", "min": 70,  "max": 105, "cue": "Knees track over toes — no caving" },
+      { "joint": "leftHip",   "min": 65,  "max": 105, "cue": "Bar over midfoot — chest tall" },
+      { "joint": "leftElbow", "min": 60,  "max": 110, "cue": "High elbows — elbows under bar" }
+    ]
+  },
+  "deadlift": {
+    "exercise": "conventional_deadlift",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 100, "max": 155, "cue": "Start with more knee bend — bar over laces" },
+      { "joint": "leftHip",   "min": 55,  "max": 95,  "cue": "Hips hinge — flat back, not rounded" },
+      { "joint": "leftElbow", "min": 155, "max": 180, "cue": "Arms straight — no early curl" }
+    ]
+  },
+  "romanian_deadlift": {
+    "exercise": "romanian_deadlift",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 140, "max": 175, "cue": "Soft knee bend throughout" },
+      { "joint": "leftHip",   "min": 55,  "max": 100, "cue": "Push hips back — feel hamstring stretch" },
+      { "joint": "leftElbow", "min": 155, "max": 180, "cue": "Bar close to body — straight arms" }
+    ]
+  },
+  "bench_press": {
+    "exercise": "bench_press",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftElbow",  "min": 70,  "max": 100, "cue": "Lower to 90° — elbows 45° to body" },
+      { "joint": "rightElbow", "min": 70,  "max": 100, "cue": "Even depth on both sides" },
+      { "joint": "leftShoulder","min": 55, "max": 100, "cue": "Retract scapula — arch slightly" }
+    ]
+  },
+  "overhead_press": {
+    "exercise": "overhead_press",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",   "min": 155, "max": 180, "cue": "Fully lock out overhead" },
+      { "joint": "rightElbow",  "min": 155, "max": 180, "cue": "Press evenly — no lean" },
+      { "joint": "leftHip",     "min": 155, "max": 180, "cue": "Brace core — no lumbar arch" }
+    ]
+  },
+  "hip_thrust": {
+    "exercise": "hip_thrust",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",  "min": 80,  "max": 100, "cue": "Knees at 90° at top" },
+      { "joint": "rightKnee", "min": 80,  "max": 100, "cue": "Feet flat — push through heels" },
+      { "joint": "leftHip",   "min": 155, "max": 180, "cue": "Full hip extension — squeeze glutes" }
+    ]
+  },
+  "lunge": {
+    "exercise": "lunge",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 80,  "max": 100, "cue": "Front knee at 90° — track over toes" },
+      { "joint": "rightKnee", "min": 80,  "max": 100, "cue": "Lower back knee toward the floor" },
+      { "joint": "leftHip",   "min": 85,  "max": 110, "cue": "Keep torso upright — tall spine" }
+    ]
+  },
+  "pushup": {
+    "exercise": "pushup",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 75,  "max": 100, "cue": "Lower to 90° at the elbows" },
+      { "joint": "rightElbow", "min": 75,  "max": 100, "cue": "Keep elbows close to body" },
+      { "joint": "leftHip",    "min": 155, "max": 180, "cue": "Body in a straight plank — don't sag" }
+    ]
+  },
+  "pullup": {
+    "exercise": "pullup",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 30,  "max": 80,  "cue": "Pull higher — chin over bar" },
+      { "joint": "rightElbow", "min": 30,  "max": 80,  "cue": "Full range of motion" },
+      { "joint": "leftHip",    "min": 155, "max": 180, "cue": "Hollow body — no swinging" }
+    ]
+  },
+  "dips": {
+    "exercise": "parallel_bar_dips",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 75,  "max": 100, "cue": "Lower to 90° at elbows" },
+      { "joint": "rightElbow", "min": 75,  "max": 100, "cue": "Elbows slightly flared — chest dip" },
+      { "joint": "leftHip",    "min": 145, "max": 180, "cue": "Lean forward — target chest" }
+    ]
+  },
+  "plank": {
+    "exercise": "plank",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftHip",   "min": 155, "max": 180, "cue": "Level hips — no sag or pike" },
+      { "joint": "rightHip",  "min": 155, "max": 180, "cue": "Core tight — hold the line" },
+      { "joint": "leftElbow", "min": 80,  "max": 100, "cue": "Elbows under shoulders" }
+    ]
+  },
+  "muscle_up": {
+    "exercise": "muscle_up",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",   "min": 20,  "max": 60,  "cue": "Explosive pull — elbows above bar" },
+      { "joint": "leftShoulder","min": 140, "max": 180, "cue": "Press up into lockout" },
+      { "joint": "leftHip",     "min": 145, "max": 180, "cue": "Hollow core throughout" }
+    ]
+  },
+  "handstand_calisthenics": {
+    "exercise": "handstand",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftElbow",   "min": 155, "max": 180, "cue": "Arms locked — active shoulders" },
+      { "joint": "rightElbow",  "min": 155, "max": 180, "cue": "Stack wrists, elbows, shoulders" },
+      { "joint": "leftHip",     "min": 155, "max": 180, "cue": "Hollow body — core braced" }
+    ]
+  },
+  "pistol_squat": {
+    "exercise": "pistol_squat",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 30,  "max": 70,  "cue": "Deeper — aim for full ROM" },
+      { "joint": "leftHip",   "min": 30,  "max": 70,  "cue": "Stay upright — reach arms forward" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Hover leg extended and straight" }
+    ]
+  },
+  "l_sit": {
+    "exercise": "l_sit",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftHip",   "min": 80,  "max": 100, "cue": "Hold perfect L — hips at 90°" },
+      { "joint": "leftKnee",  "min": 155, "max": 180, "cue": "Straight legs parallel to floor" },
+      { "joint": "leftElbow", "min": 155, "max": 180, "cue": "Push down — depress scapula" }
+    ]
+  },
+  "gymnastics": {
+    "exercise": "gymnastics_extension",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 155, "max": 180, "cue": "Point your toes — full extension" },
+      { "joint": "rightKnee",     "min": 155, "max": 180, "cue": "Legs together and straight" },
+      { "joint": "leftShoulder",  "min": 155, "max": 180, "cue": "Arms fully overhead" },
+      { "joint": "rightShoulder", "min": 155, "max": 180, "cue": "Reach up — full stretch" }
+    ]
+  },
+  "gymnastics_floor": {
+    "exercise": "gymnastics_floor_tumbling",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",      "min": 155, "max": 180, "cue": "Point toes throughout pass" },
+      { "joint": "rightKnee",     "min": 155, "max": 180, "cue": "Legs tight together" },
+      { "joint": "leftShoulder",  "min": 140, "max": 180, "cue": "Block from shoulders — not arms" }
+    ]
+  },
+  "gymnastics_handstand": {
+    "exercise": "gymnastics_handstand",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftElbow",   "min": 160, "max": 180, "cue": "Straight arms — no elbow bend" },
+      { "joint": "rightElbow",  "min": 160, "max": 180, "cue": "Lock elbows — push through hands" },
+      { "joint": "leftHip",     "min": 160, "max": 180, "cue": "Hollow body — no arch" },
+      { "joint": "leftShoulder","min": 155, "max": 180, "cue": "Open shoulder angle fully" }
+    ]
+  },
+  "gymnastics_back_walkover": {
+    "exercise": "gymnastics_back_walkover",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftShoulder",  "min": 130, "max": 180, "cue": "Push through shoulders — full bridge" },
+      { "joint": "leftHip",       "min": 30,  "max": 80,  "cue": "Deep back flexibility — open hip angle" },
+      { "joint": "leftKnee",      "min": 155, "max": 180, "cue": "Extend split leg fully" }
+    ]
+  },
+  "gymnastics_beam": {
+    "exercise": "gymnastics_balance_beam",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 155, "max": 180, "cue": "Point toes on beam — full extension" },
+      { "joint": "leftShoulder",  "min": 75,  "max": 125, "cue": "Arms out for balance" },
+      { "joint": "rightShoulder", "min": 75,  "max": 125, "cue": "Square shoulders over beam" }
+    ]
+  },
+  "pilates": {
+    "exercise": "pilates_tabletop",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftHip",  "min": 80,  "max": 110, "cue": "Neutral spine — engage your core" },
+      { "joint": "rightHip", "min": 80,  "max": 110, "cue": "Level hips — no rotation" },
+      { "joint": "leftKnee", "min": 85,  "max": 100, "cue": "Tabletop position — 90° at the knees" }
+    ]
+  },
+  "pilates_hundred": {
+    "exercise": "pilates_hundred",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftHip",     "min": 50,  "max": 90,  "cue": "Legs at 45° — lower if core allows" },
+      { "joint": "leftShoulder","min": 30,  "max": 70,  "cue": "Curl head and shoulders off mat" },
+      { "joint": "leftElbow",   "min": 155, "max": 180, "cue": "Arms parallel to floor — pump steadily" }
+    ]
+  },
+  "pilates_roll_up": {
+    "exercise": "pilates_roll_up",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftHip",   "min": 60,  "max": 100, "cue": "Peel spine off mat — articulate each vertebra" },
+      { "joint": "leftKnee",  "min": 155, "max": 180, "cue": "Legs long and together" },
+      { "joint": "leftElbow", "min": 155, "max": 180, "cue": "Reach arms past feet — C-curve" }
+    ]
+  },
+  "pilates_teaser": {
+    "exercise": "pilates_teaser",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftHip",     "min": 60,  "max": 90,  "cue": "V-shape — legs at 45°" },
+      { "joint": "leftKnee",    "min": 155, "max": 180, "cue": "Straight legs — toes pointed" },
+      { "joint": "leftShoulder","min": 60,  "max": 100, "cue": "Arms parallel to legs — reach long" }
+    ]
+  },
+  "dance": {
+    "exercise": "dance_form",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftShoulder",  "min": 75,  "max": 155, "cue": "Extend arms for expression" },
+      { "joint": "rightShoulder", "min": 75,  "max": 155, "cue": "Match arm levels on both sides" },
+      { "joint": "leftKnee",      "min": 130, "max": 180, "cue": "Extend through your legs" }
+    ]
+  },
+  "bharatanatyam_aramandi": {
+    "exercise": "bharatanatyam_aramandi",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 80,  "max": 110, "cue": "Demi-plié — knees opening over toes" },
+      { "joint": "rightKnee",     "min": 80,  "max": 110, "cue": "Equal turnout on both sides" },
+      { "joint": "leftHip",       "min": 130, "max": 170, "cue": "Hips square — half squat position" },
+      { "joint": "leftShoulder",  "min": 60,  "max": 120, "cue": "Hands in hasta mudra — precise form" }
+    ]
+  },
+  "bharatanatyam_araimandi": {
+    "exercise": "bharatanatyam_tribhangi",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 100, "max": 145, "cue": "Triple bend: neck, torso, hip" },
+      { "joint": "leftHip",       "min": 110, "max": 155, "cue": "Shift weight — S-curve torso" },
+      { "joint": "leftShoulder",  "min": 55,  "max": 110, "cue": "One arm raised — hasta mudra" }
+    ]
+  },
+  "kathak_chakkars": {
+    "exercise": "kathak_spin_chakkars",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftKnee",      "min": 145, "max": 180, "cue": "Straight standing leg — spin on heel" },
+      { "joint": "leftShoulder",  "min": 80,  "max": 120, "cue": "Arms framing body — controlled spin" },
+      { "joint": "rightShoulder", "min": 80,  "max": 120, "cue": "Spot your spin — eyes fixed point" }
+    ]
+  },
+  "kathak_tatkaar": {
+    "exercise": "kathak_tatkaar_footwork",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 140, "max": 175, "cue": "Light on your feet — crisp tatkaar" },
+      { "joint": "rightKnee",     "min": 140, "max": 175, "cue": "Even rhythmic footwork both sides" },
+      { "joint": "leftShoulder",  "min": 50,  "max": 100, "cue": "Arms extended — mudra held throughout" }
+    ]
+  },
+  "kuchipudi_stance": {
+    "exercise": "kuchipudi_basic_stance",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 85,  "max": 115, "cue": "Lower aramandi — knees wide" },
+      { "joint": "rightKnee",     "min": 85,  "max": 115, "cue": "Demi-plié — toes turned out" },
+      { "joint": "leftShoulder",  "min": 60,  "max": 120, "cue": "Expressive hasta mudra" },
+      { "joint": "leftHip",       "min": 125, "max": 165, "cue": "Fluid hip movement — tribhangi" }
+    ]
+  },
+  "breakdance_toprock": {
+    "exercise": "breakdance_toprock",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",      "min": 120, "max": 160, "cue": "Bouncy top rock — knees bent" },
+      { "joint": "rightKnee",     "min": 120, "max": 160, "cue": "Step to the rhythm" },
+      { "joint": "leftShoulder",  "min": 50,  "max": 120, "cue": "Arms loose — hit the beat" },
+      { "joint": "leftHip",       "min": 130, "max": 175, "cue": "Hip groove — feel the music" }
+    ]
+  },
+  "breakdance_footwork": {
+    "exercise": "breakdance_6step",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftKnee",  "min": 60,  "max": 130, "cue": "Fluid 6-step — low to ground" },
+      { "joint": "leftHip",   "min": 60,  "max": 130, "cue": "Low center of gravity" },
+      { "joint": "leftElbow", "min": 100, "max": 160, "cue": "Support weight on arms smoothly" }
+    ]
+  },
+  "breakdance_freeze": {
+    "exercise": "breakdance_freeze",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftElbow",   "min": 60,  "max": 100, "cue": "Solid freeze — no shaking" },
+      { "joint": "rightElbow",  "min": 60,  "max": 100, "cue": "Lock in the freeze position" },
+      { "joint": "leftHip",     "min": 40,  "max": 90,  "cue": "Hips above shoulder line" }
+    ]
+  },
+  "breakdance_windmill": {
+    "exercise": "breakdance_windmill",
+    "visibilityMin": 0.30,
+    "checks": [
+      { "joint": "leftShoulder",  "min": 100, "max": 155, "cue": "Continuous circular flow" },
+      { "joint": "rightShoulder", "min": 100, "max": 155, "cue": "Equal force each rotation" },
+      { "joint": "leftHip",       "min": 45,  "max": 130, "cue": "Legs generate rotation power" }
+    ]
+  },
+  "hiphop_bounce": {
+    "exercise": "hiphop_bounce_groove",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",      "min": 130, "max": 165, "cue": "Bounce in the knees — feel the beat" },
+      { "joint": "rightKnee",     "min": 130, "max": 165, "cue": "Even bounce both legs" },
+      { "joint": "leftShoulder",  "min": 50,  "max": 130, "cue": "Relaxed shoulders — natural groove" }
+    ]
+  },
+  "hiphop_popping": {
+    "exercise": "hiphop_popping",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftElbow",     "min": 100, "max": 155, "cue": "Sharp isolated pops — crisp hits" },
+      { "joint": "leftShoulder",  "min": 55,  "max": 115, "cue": "Isolate each body part" },
+      { "joint": "leftHip",       "min": 130, "max": 175, "cue": "Pop from the chest or legs" }
+    ]
+  },
+  "hiphop_locking": {
+    "exercise": "hiphop_locking",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftElbow",     "min": 100, "max": 155, "cue": "Lock it — freeze the pose" },
+      { "joint": "leftKnee",      "min": 120, "max": 165, "cue": "Point toes out — funky stance" },
+      { "joint": "leftShoulder",  "min": 60,  "max": 130, "cue": "Big expressive movements" }
+    ]
+  },
+  "contemporary_flow": {
+    "exercise": "contemporary_floor_flow",
+    "visibilityMin": 0.35,
+    "checks": [
+      { "joint": "leftShoulder",  "min": 60,  "max": 170, "cue": "Free expressive arms — follow breath" },
+      { "joint": "rightShoulder", "min": 60,  "max": 170, "cue": "Continuous fluid movement" },
+      { "joint": "leftKnee",      "min": 100, "max": 180, "cue": "Use full range — floor to standing" }
+    ]
+  },
+  "ballet_plie": {
+    "exercise": "ballet_grand_plie",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",     "min": 70,  "max": 100, "cue": "Track knees over toes — turnout" },
+      { "joint": "rightKnee",    "min": 70,  "max": 100, "cue": "Even depth both sides" },
+      { "joint": "leftHip",      "min": 130, "max": 165, "cue": "Hips square — no tilting" },
+      { "joint": "leftShoulder", "min": 80,  "max": 120, "cue": "Port de bras — soft arms" }
+    ]
+  },
+  "ballet_arabesque": {
+    "exercise": "ballet_arabesque",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftKnee",      "min": 155, "max": 180, "cue": "Lift leg straight — full extension" },
+      { "joint": "leftHip",       "min": 100, "max": 145, "cue": "Extend working leg behind" },
+      { "joint": "leftShoulder",  "min": 80,  "max": 120, "cue": "Open arabesque line — arms frame" },
+      { "joint": "rightShoulder", "min": 130, "max": 165, "cue": "Leading arm forward and up" }
+    ]
+  },
+  "ballet_releve": {
+    "exercise": "ballet_releve",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 155, "max": 180, "cue": "Straight knees on demi-pointe" },
+      { "joint": "rightKnee", "min": 155, "max": 180, "cue": "Rise through the full foot" },
+      { "joint": "leftHip",   "min": 155, "max": 180, "cue": "Stack hips — no sway" }
+    ]
+  },
+  "salsa_basic": {
+    "exercise": "salsa_basic_step",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftHip",   "min": 140, "max": 175, "cue": "Hip motion on each step — sabor!" },
+      { "joint": "rightHip",  "min": 140, "max": 175, "cue": "Transfer weight smoothly" },
+      { "joint": "leftKnee",  "min": 140, "max": 175, "cue": "Light footwork — on the beat" }
+    ]
+  },
+  "martialarts": {
+    "exercise": "martial_stance",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",      "min": 100, "max": 150, "cue": "Drop your stance — bend knees deeper" },
+      { "joint": "rightKnee",     "min": 100, "max": 150, "cue": "Both knees bent equally" },
+      { "joint": "leftShoulder",  "min": 55,  "max": 120, "cue": "Raise your guard — hands up" },
+      { "joint": "rightShoulder", "min": 55,  "max": 120, "cue": "Keep hands at chin level" }
+    ]
+  },
+  "parkour_precision": {
+    "exercise": "parkour_precision_jump",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftKnee",  "min": 70,  "max": 120, "cue": "Deep landing absorption" },
+      { "joint": "rightKnee", "min": 70,  "max": 120, "cue": "Soft landing — knees track toes" },
+      { "joint": "leftHip",   "min": 80,  "max": 120, "cue": "Absorb impact through hips" }
+    ]
+  },
+  "parkour_vault": {
+    "exercise": "parkour_kong_vault",
+    "visibilityMin": 0.40,
+    "checks": [
+      { "joint": "leftElbow",  "min": 145, "max": 180, "cue": "Drive through straight arms" },
+      { "joint": "rightElbow", "min": 145, "max": 180, "cue": "Push off — hands first" },
+      { "joint": "leftKnee",   "min": 60,  "max": 120, "cue": "Tuck tight — clear the obstacle" }
+    ]
+  },
+  "bodybuilding_curl": {
+    "exercise": "bicep_curl",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftElbow",  "min": 30,  "max": 80,  "cue": "Full curl — peak contraction" },
+      { "joint": "rightElbow", "min": 30,  "max": 80,  "cue": "Elbows pinned at sides" },
+      { "joint": "leftHip",    "min": 155, "max": 180, "cue": "No swinging — strict form" }
+    ]
+  },
+  "bodybuilding_lateral_raise": {
+    "exercise": "lateral_raise",
+    "visibilityMin": 0.45,
+    "checks": [
+      { "joint": "leftShoulder",  "min": 75,  "max": 100, "cue": "Arms parallel to floor at top" },
+      { "joint": "rightShoulder", "min": 75,  "max": 100, "cue": "Slight elbow bend — lead with elbows" },
+      { "joint": "leftHip",       "min": 155, "max": 180, "cue": "Stable base — no body sway" }
+    ]
+  }
+}

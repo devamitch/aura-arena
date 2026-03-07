@@ -8,8 +8,13 @@ import { OnboardingGate } from "@features/auth/components/OnboardingGate";
 import { AppShell } from "@shared/components/AppShell";
 import { FullScreenLoader } from "@shared/components/ui/FullScreenLoader";
 import { AnimatePresence, motion } from "framer-motion";
-import { lazy, Suspense } from "react";
-import { createBrowserRouter, Outlet, RouterProvider, useLocation } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import {
+  Outlet,
+  RouterProvider,
+  createBrowserRouter,
+  useLocation,
+} from "react-router-dom";
 
 const lazy_ = (factory: () => Promise<{ default: React.ComponentType }>) => {
   const C = lazy(factory);
@@ -34,10 +39,10 @@ const AnimatedOutlet = () => {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+        initial={{ opacity: 0, scale: 0.98, filter: "blur(5px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        exit={{ opacity: 0, scale: 1.02, filter: "blur(5px)" }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="flex-1 flex flex-col min-h-0"
       >
         <Outlet />
@@ -179,6 +184,10 @@ const router = createBrowserRouter([
       {
         path: "/arena/lab",
         element: lazy_(() => import("@app/pages/arena/DetectionLabPage")),
+      },
+      {
+        path: "/chat",
+        element: lazy_(() => import("@app/pages/chat/AIChatPage")),
       },
     ],
   },

@@ -1,16 +1,14 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { VRM, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useAvatarConfig } from "@store";
+import { MODELS } from "@utils/assets";
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 
-export function AvatarModel({
-  url = "/assets/models/Xbot.glb",
-}: {
-  url?: string;
-}) {
+export function AvatarModel({ url = MODELS.XBOT }: { url?: string }) {
   const config = useAvatarConfig();
   const [modelType, setModelType] = useState<"vrm" | "glb">("glb");
   const [vrm, setVrm] = useState<VRM | null>(null);
