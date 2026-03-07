@@ -39,7 +39,7 @@ export async function subscribeToPush(
   try {
     const sub = await _swReg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey).buffer as ArrayBuffer,
     });
 
     // Save subscription to Supabase

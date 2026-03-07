@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { bus } from '@/lib/eventBus';
 import { useVisionWorker } from './useVisionWorker';
 import { useScoringWorker } from './useScoringWorker';
+import { useSupabaseSync } from './useSupabaseSync';
 import { renderFrameToCanvas } from '@/lib/mediapipe/canvas';
 import type { FrameScore } from '@/types';
 import type { PoseCorrectness } from '@/lib/poseCorrectness';
@@ -18,11 +19,13 @@ export interface GameEngineState {
 }
 
 export function useGameEngine(
-  videoRef:    React.RefObject<HTMLVideoElement | null>,
-  canvasRef:   React.RefObject<HTMLCanvasElement | null>,
-  discipline:  string,
+  videoRef:      React.RefObject<HTMLVideoElement | null>,
+  canvasRef:     React.RefObject<HTMLCanvasElement | null>,
+  discipline:    string,
   subDiscipline?: string,
-  accentColor = '#00f0ff',
+  accentColor    = '#00f0ff',
+  userId?:       string,
+  sessionId?:    string,
 ): GameEngineState & {
   startLoop:         () => void;
   stopLoop:          () => void;
@@ -30,8 +33,10 @@ export function useGameEngine(
   resetSession:      () => void;
   getSessionSummary: () => Promise<unknown>;
 } {
-  const vision  = useVisionWorker(discipline);
-  const scoring = useScoringWorker(discipline, subDiscipline);
+  const vision   = useVisionWorker(discipline);
+  const scoring  = useScoringWorker(discipline, subDiscipline);
+  const sync     = useSupabaseSync();
+  const lastSyncSecRef = useRef(-1); // throttle: 1 frame/second saved
 
   const [score,       setScore]       = useState<FrameScore>(zeroScore());
   const [correctness, setCorrectness] = useState<PoseCorrectness>({ isCorrect: true, score: 100, feedback: [], jointAngles: [], exercise: 'idle' });
@@ -58,6 +63,20 @@ export function useGameEngine(
     const unPose = bus.on('pose:result', ({ poseLandmarks }) => {
       const lms = (poseLandmarks as unknown[][])[0] ?? [];
       if (!lms.length) return;
+
+      // ── Throttled Supabase sync (1 frame/sec) ─────────────────────────────
+      if (userId && sessionId) {
+        const second = Math.floor((performance.now() - sessionStartRef.current) / 1000);
+        if (second !== lastSyncSecRef.current && second >= 0) {
+          lastSyncSecRef.current = second;
+          sync.queueFrames(userId, sessionId, discipline, [{
+            second,
+            landmarks: lms,
+            score: scoreRef.current.overall,
+          }], subDiscipline);
+        }
+      }
+
       scoring.scoreFrame({
         landmarks:     lms,
         prevLandmarks: prevLmRef.current,

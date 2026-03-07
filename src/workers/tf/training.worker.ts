@@ -115,8 +115,8 @@ async function handleTrain(msg: TrainRequest) {
       stage: `Building dataset (${rawSamples.length} samples, ${uniqueLabels.length} labels)…`,
     });
 
-    // 3. Import TF.js
-    const tf = await import("@tensorflow/tfjs");
+    // 3. Import TF.js core — cast to any since full layers API loaded at runtime
+    const tf: any = await import("@tensorflow/tfjs-core");
 
     // 4. Prepare tensors
     const keypointArrays = rawSamples.map((s: any) => {
@@ -204,7 +204,7 @@ async function handleTrain(msg: TrainRequest) {
     } as any);
 
     // Get final accuracy
-    const evalResult = model.evaluate(xs, ys) as tf.Tensor[];
+    const evalResult = model.evaluate(xs, ys) as any[];
     const finalAccuracy = (await evalResult[1].data())[0];
 
     // Cleanup

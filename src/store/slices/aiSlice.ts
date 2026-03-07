@@ -10,12 +10,15 @@ export interface AiSlice {
   geminiApiKey: string;
   /** Whether to use Gemini Vision for video analysis */
   useGeminiVision: boolean;
+  /** Whether to fall back to Cloud Gemini when On-Device/Nano fail (Privacy toggle) */
+  allowCloudAi: boolean;
   /** Number of training samples collected from Gemini feedback */
   feedbackDataCount: number;
 
   setGeminiApiKey: (key: string) => void;
   clearGeminiApiKey: () => void;
   toggleGeminiVision: () => void;
+  toggleCloudAi: () => void;
   incrementFeedbackData: (count: number) => void;
 }
 
@@ -25,6 +28,7 @@ export const createAiSlice: StateCreator<
 > = (set) => ({
   geminiApiKey: "",
   useGeminiVision: true,
+  allowCloudAi: true,
   feedbackDataCount: 0,
 
   setGeminiApiKey: (key: string) =>
@@ -40,6 +44,11 @@ export const createAiSlice: StateCreator<
   toggleGeminiVision: () =>
     set((s) => {
       s.useGeminiVision = !s.useGeminiVision;
+    }),
+
+  toggleCloudAi: () =>
+    set((s) => {
+      s.allowCloudAi = !s.allowCloudAi;
     }),
 
   incrementFeedbackData: (count: number) =>

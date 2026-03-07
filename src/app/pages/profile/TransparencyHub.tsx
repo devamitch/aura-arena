@@ -29,7 +29,7 @@ export const TransparencyHub: React.FC = () => {
     onSuccess: async (tokenResponse) => {
       await performExport(tokenResponse.access_token);
     },
-    onError: (error) => {
+    onError: (_error) => {
       setExportError("Google Drive authentication failed.");
       setIsExporting(false);
     },

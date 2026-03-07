@@ -7,6 +7,13 @@ import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
 import { useVideoRecorder } from "@hooks/useVideoRecorder";
 import { analytics } from "@lib/analytics";
+import {
+  recordAction,
+  recordPose,
+  recordScore,
+  startMonitoring,
+  stopMonitoring,
+} from "@services/activityMonitor";
 import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
 import { PREMIUM_ASSETS, pickImage } from "@utils/assets";
@@ -119,8 +126,21 @@ export default function PveBattlePage() {
   const camera = useCamera({
     discipline: disc.id,
     onFrame: useCallback(
-      (_res: any, s: any) => {
-        if (phase === "battle") setPlayerScore(s.overall);
+      (res: any, s: any) => {
+        if (phase === "battle") {
+          setPlayerScore(s.overall);
+          // Stream to activity monitor for TF.js training
+          if (res.poseLandmarks && res.poseLandmarks.length > 0) {
+            recordPose({
+              timestamp: Date.now(),
+              keypoints: res.poseLandmarks.map((lm: any) => [lm.x, lm.y, lm.z]),
+              confidence: 1.0,
+              exercise: "battle",
+              score: s.overall,
+            });
+            recordScore(s.overall, s.accuracy, s.stability, 0);
+          }
+        }
       },
       [phase],
     ),
@@ -143,6 +163,8 @@ export default function PveBattlePage() {
   const handleStart = useCallback(() => {
     analytics.pveBattleStarted(opp.id, opp.difficulty);
     setPhase("battle");
+    if (user) startMonitoring(`battle_${Date.now()}`, user.id, disc.id);
+    recordAction("battle_start", { opponent: opp.id });
     setPlayerScore(0);
     setOppScore(0);
     setTimeLeft(BATTLE_DURATION);
@@ -182,7 +204,15 @@ export default function PveBattlePage() {
         return next;
       });
     }, 600);
-  }, [camera, opp.targetScore, opp.difficulty, opp.id]);
+  }, [
+    camera,
+    opp.targetScore,
+    opp.difficulty,
+    opp.id,
+    disc.id,
+    startRecording,
+    user,
+  ]);
 
   // Combo flash effect
   useEffect(() => {
@@ -212,6 +242,8 @@ export default function PveBattlePage() {
       /* ignored, no recording active */
     }
 
+    recordAction("battle_end");
+    stopMonitoring();
     camera.stopCamera();
 
     setPlayerScore((ps) => {

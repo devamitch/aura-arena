@@ -43,7 +43,7 @@ export const useDeviceAIStatus = (): DeviceAIStatus => {
         hasWebNN: caps.hasWebNN,
         gpuName: caps.gpuAdapterName,
         estimatedVRAM: caps.estimatedVRAMGB,
-        canRunOnDevice: caps.canRunGemma2B_INT4,
+        canRunOnDevice: caps.canRunGemma3_1B,
         recommendedModel: caps.recommendedModel,
       }));
     });

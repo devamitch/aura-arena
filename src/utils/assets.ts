@@ -134,6 +134,8 @@ export const BANNER_FITNESS = [`${G}/banner_fitness.png`];
 export const BANNER_WRESTLING = [`${G}/banner_wrestling.png`];
 export const BANNER_PILATES = [`${G}/banner_pilates.png`];
 export const BANNER_PARKOUR = [`${G}/banner_parkour.png`];
+export const BANNER_CAPOEIRA = [`${G}/banner_capoeira.png`];
+export const BANNER_SATTRIYA = [`${G}/banner_sattriya.png`];
 export const ALL_BANNERS = [
   ...BANNER_BOXING,
   ...BANNER_YOGA,
@@ -146,6 +148,8 @@ export const ALL_BANNERS = [
   ...BANNER_WRESTLING,
   ...BANNER_PILATES,
   ...BANNER_PARKOUR,
+  ...BANNER_CAPOEIRA,
+  ...BANNER_SATTRIYA,
 ];
 
 // ─── Currency ─────────────────────────────────────────────────────────────────
@@ -380,6 +384,8 @@ export const DISCIPLINE_BANNERS: Record<string, string[]> = {
   calisthenics: BANNER_CALISTHENICS,
   pilates: BANNER_PILATES,
   wrestling: BANNER_WRESTLING,
+  capoeira: BANNER_CAPOEIRA,
+  sattriya: BANNER_SATTRIYA,
 };
 
 /** Map of discipline id → all athlete portrait variants */

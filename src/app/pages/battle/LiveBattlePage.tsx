@@ -8,6 +8,13 @@ import { useLiveBattle } from "@hooks/useLiveBattle";
 import { usePersonalization } from "@hooks/usePersonalization";
 import { useVideoRecorder } from "@hooks/useVideoRecorder";
 import { analytics } from "@lib/analytics";
+import {
+  recordAction,
+  recordPose,
+  recordScore,
+  startMonitoring,
+  stopMonitoring,
+} from "@services/activityMonitor";
 import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
 import {
@@ -86,7 +93,30 @@ export default function LiveBattlePage() {
     " ",
   )[0];
   const { discipline: disc, accentColor } = usePersonalization();
-  const camera = useCamera({ discipline: disc.id, autoStart: false });
+  const camera = useCamera({
+    discipline: disc.id,
+    autoStart: false,
+    onFrame: useCallback(
+      (res: any, s: any) => {
+        // Stream to activity monitor for TF.js training
+        if (
+          uiPhase === "battle" &&
+          res.poseLandmarks &&
+          res.poseLandmarks.length > 0
+        ) {
+          recordPose({
+            timestamp: Date.now(),
+            keypoints: res.poseLandmarks.map((lm: any) => [lm.x, lm.y, lm.z]),
+            confidence: 1.0,
+            exercise: "live_battle",
+            score: s.overall,
+          });
+          recordScore(s.overall, s.accuracy, s.stability, 0);
+        }
+      },
+      [uiPhase],
+    ),
+  });
 
   // Setup video recorder
   const { startRecording, stopRecording } = useVideoRecorder(
@@ -136,8 +166,18 @@ export default function LiveBattlePage() {
         setTimeout(startRecording, 1000);
       });
       setUiPhase("battle");
+      if (user) startMonitoring(`live_battle_${Date.now()}`, user.id, disc.id);
+      recordAction("battle_start", { opponent: liveBattle.oppName });
     }
-  }, [liveBattle.phase, uiPhase, camera, startRecording]);
+  }, [
+    liveBattle.phase,
+    uiPhase,
+    camera,
+    startRecording,
+    user,
+    disc.id,
+    liveBattle.oppName,
+  ]);
 
   // Battle countdown + score broadcast
   useEffect(() => {
@@ -188,6 +228,8 @@ export default function LiveBattlePage() {
     }
 
     camera.stopCamera();
+    recordAction("battle_end");
+    stopMonitoring();
     liveBattle.cleanup();
     const ps = playerScoreRef.current;
     const os = oppScoreRef.current;
@@ -213,7 +255,7 @@ export default function LiveBattlePage() {
     analytics.xpGained(xpGained, won ? "live_win" : "live_loss");
     setResult({ won, xpGained });
     setUiPhase("result");
-  }, [camera, liveBattle, addXP, addPoints, stopRecording]);
+  }, [camera, liveBattle, addXP, addPoints, stopRecording, user, disc.id]);
 
   const fmtTime = (s: number) =>
     `${Math.floor(s / 60)
