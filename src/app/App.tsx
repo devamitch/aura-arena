@@ -12,30 +12,34 @@ initAnalytics();
 export default function App() {
   return (
     <ErrorBoundary scope="App">
-    <GoogleOAuthProvider clientId={process.env.VITE_GOOGLE_CLIENT_ID ?? ""}>
-      <QueryClientProvider client={queryClient}>
-        <AppRouter />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: "#0d0f1f",
-              color: "#e4e5f0",
-              border: "1px solid #1e2035",
-              borderRadius: "12px",
-              fontSize: "14px",
-            },
-            success: {
-              iconTheme: {
-                primary: "var(--ac)",
-                secondary: "var(--background)",
+      <GoogleOAuthProvider
+        clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ""}
+      >
+        <QueryClientProvider client={queryClient}>
+          <AppRouter />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              style: {
+                background: "#0d0f1f",
+                color: "#e4e5f0",
+                border: "1px solid #1e2035",
+                borderRadius: "12px",
+                fontSize: "14px",
               },
-            },
-            error: { iconTheme: { primary: "#ef4444", secondary: "#04060f" } },
-          }}
-        />
-      </QueryClientProvider>
-    </GoogleOAuthProvider>
+              success: {
+                iconTheme: {
+                  primary: "var(--ac)",
+                  secondary: "var(--background)",
+                },
+              },
+              error: {
+                iconTheme: { primary: "#ef4444", secondary: "#04060f" },
+              },
+            }}
+          />
+        </QueryClientProvider>
+      </GoogleOAuthProvider>
     </ErrorBoundary>
   );
 }

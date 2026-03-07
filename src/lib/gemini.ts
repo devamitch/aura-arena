@@ -11,7 +11,11 @@ import { getDiscipline, getSubDiscipline } from "@utils/constants/disciplines";
 
 // ─── CLIENT (user-key-only) ──────────────────────────────────────────────────
 
-const MODELS = ["gemini-2.5-flash", "gemini-1.5-flash-8b"] as const;
+const MODELS = [
+  "gemini-3-flash-preview", // Gemini 3 Flash — fast + cheap
+  "gemini-3-pro-preview", // Gemini 3 Pro — highest quality
+  "gemini-2.5-flash", // Gemini 2.5 Flash — stable fallback
+] as const;
 const _cache = new Map<string, { value: string; ts: number }>();
 const CACHE_TTL = 5 * 60_000;
 

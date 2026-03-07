@@ -504,3 +504,188 @@ export function createImageCycler(images: string[]) {
 export function pickImage(images: string[], index: number): string {
   return images[index % images.length];
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SUB-DISCIPLINE BANNERS
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const SUB_BANNER_BHARATNATYAM = [`${G}/banner_bharatnatyam.png`];
+export const SUB_BANNER_KATHAK = [`${G}/banner_kathak.png`];
+export const SUB_BANNER_ODISSI = [`${G}/banner_odissi.png`];
+export const SUB_BANNER_KUCHIPUDI = [`${G}/banner_kuchipudi.png`];
+export const SUB_BANNER_MANIPURI = [`${G}/banner_manipuri.png`];
+export const SUB_BANNER_MOHINIYATTAM = [`${G}/banner_mohiniyattam.png`];
+export const SUB_BANNER_BHANGRA = [`${G}/banner_bhangra.png`];
+export const SUB_BANNER_BALLET = [`${G}/banner_ballet.png`];
+export const SUB_BANNER_HIPHOP = [`${G}/banner_hiphop.png`];
+export const SUB_BANNER_SALSA = [`${G}/banner_salsa.png`];
+export const SUB_BANNER_FLAMENCO = [`${G}/banner_flamenco.png`];
+export const SUB_BANNER_KALARIPAYATTU = [`${G}/banner_kalaripayattu.png`];
+export const SUB_BANNER_MUAY_THAI = [`${G}/banner_muay_thai.png`];
+
+/** Map of sub-discipline id → banner images (with fallbacks) */
+export const SUB_DISCIPLINE_BANNERS: Record<string, string[]> = {
+  // ─── Indian Classical Dance ────────────────────────────────────────────
+  bharatnatyam: SUB_BANNER_BHARATNATYAM,
+  bharatanatyam_varnam: SUB_BANNER_BHARATNATYAM,
+  kathak: SUB_BANNER_KATHAK,
+  odissi: SUB_BANNER_ODISSI,
+  kuchipudi: SUB_BANNER_KUCHIPUDI,
+  manipuri: SUB_BANNER_MANIPURI,
+  mohiniyattam: SUB_BANNER_MOHINIYATTAM,
+  sattriya: SUB_BANNER_ODISSI, // fallback: closest classical style
+
+  // ─── Indian Folk Dance ─────────────────────────────────────────────────
+  bhangra: SUB_BANNER_BHANGRA,
+  garba: SUB_BANNER_BHANGRA, // folk energy fallback
+  lavani: SUB_BANNER_BHARATNATYAM, // Indian classical fallback
+  dandiya: SUB_BANNER_BHANGRA,
+  bihu: SUB_BANNER_BHANGRA,
+  ghoomar: SUB_BANNER_MANIPURI,
+
+  // ─── Western Classical ─────────────────────────────────────────────────
+  ballet: SUB_BANNER_BALLET,
+  contemporary: SUB_BANNER_BALLET,
+  modern: SUB_BANNER_BALLET,
+
+  // ─── Street / Urban ────────────────────────────────────────────────────
+  hiphop: SUB_BANNER_HIPHOP,
+  breakdance: SUB_BANNER_HIPHOP,
+  popping: SUB_BANNER_HIPHOP,
+  locking: SUB_BANNER_HIPHOP,
+  waacking: SUB_BANNER_HIPHOP,
+  krump: SUB_BANNER_HIPHOP,
+  house: SUB_BANNER_HIPHOP,
+  voguing: SUB_BANNER_HIPHOP,
+  tutting: SUB_BANNER_HIPHOP,
+  boogaloo: SUB_BANNER_HIPHOP,
+
+  // ─── Latin ─────────────────────────────────────────────────────────────
+  salsa: SUB_BANNER_SALSA,
+  bachata: SUB_BANNER_SALSA,
+  merengue: SUB_BANNER_SALSA,
+  cumbia: SUB_BANNER_SALSA,
+  samba: SUB_BANNER_SALSA,
+  tango: SUB_BANNER_FLAMENCO,
+  flamenco: SUB_BANNER_FLAMENCO,
+
+  // ─── East Asian ────────────────────────────────────────────────────────
+  kpop: SUB_BANNER_HIPHOP,
+  japanese_bon: SUB_BANNER_MANIPURI,
+  chinese_fan: SUB_BANNER_ODISSI,
+
+  // ─── Other Dance ───────────────────────────────────────────────────────
+  belly_dance: SUB_BANNER_MOHINIYATTAM,
+  afrobeats: SUB_BANNER_BHANGRA,
+  jazz: SUB_BANNER_BALLET,
+  tap: SUB_BANNER_KATHAK, // rhythm-heavy like Kathak
+  irish: SUB_BANNER_KATHAK,
+  freestyle: SUB_BANNER_HIPHOP,
+
+  // ─── Martial Arts — Striking ───────────────────────────────────────────
+  muay_thai: SUB_BANNER_MUAY_THAI,
+  muay_thai_boxing: SUB_BANNER_MUAY_THAI,
+  kickboxing: SUB_BANNER_MUAY_THAI,
+  kickboxing_k1: SUB_BANNER_MUAY_THAI,
+  karate_shotokan: BANNER_MARTIAL,
+  karate_kyokushin: BANNER_MARTIAL,
+  karate_goju_ryu: BANNER_MARTIAL,
+  karate_wado_ryu: BANNER_MARTIAL,
+  taekwondo_wtf: BANNER_MARTIAL,
+  taekwondo_itf: BANNER_MARTIAL,
+  savate: SUB_BANNER_MUAY_THAI,
+  capoeira: SUB_BANNER_KALARIPAYATTU,
+  kung_fu_shaolin: BANNER_MARTIAL,
+  kung_fu_wing_chun: BANNER_MARTIAL,
+  kung_fu_wushu: BANNER_MARTIAL,
+  kung_fu_tai_chi: BANNER_MARTIAL,
+  silat: SUB_BANNER_KALARIPAYATTU,
+  arnis: BANNER_MARTIAL,
+  kali: BANNER_MARTIAL,
+
+  // ─── Martial Arts — Grappling ──────────────────────────────────────────
+  judo: BANNER_WRESTLING,
+  bjj: BANNER_WRESTLING,
+  wrestling_freestyle: BANNER_WRESTLING,
+  wrestling_greco: BANNER_WRESTLING,
+  sambo: BANNER_WRESTLING,
+  hapkido: BANNER_MARTIAL,
+  aikido: BANNER_MARTIAL,
+
+  // ─── Martial Arts — Japanese ───────────────────────────────────────────
+  ninjutsu: BANNER_MARTIAL,
+  kendo: BANNER_MARTIAL,
+  jujutsu: BANNER_WRESTLING,
+  sumo: BANNER_WRESTLING,
+
+  // ─── Martial Arts — Indian ─────────────────────────────────────────────
+  kalaripayattu: SUB_BANNER_KALARIPAYATTU,
+  gatka: SUB_BANNER_KALARIPAYATTU,
+  malla_yuddha: BANNER_WRESTLING,
+  mma: BANNER_BOXING,
+
+  // ─── Boxing ────────────────────────────────────────────────────────────
+  orthodox: BANNER_BOXING,
+  southpaw: BANNER_BOXING,
+  switch_hitter: BANNER_BOXING,
+  swarmer: BANNER_BOXING,
+  out_boxer: BANNER_BOXING,
+  slugger: BANNER_BOXING,
+  counter_puncher: BANNER_BOXING,
+
+  // ─── Yoga ──────────────────────────────────────────────────────────────
+  hatha: BANNER_YOGA,
+  vinyasa: BANNER_YOGA,
+  ashtanga: BANNER_YOGA,
+  iyengar: BANNER_YOGA,
+  kundalini: BANNER_YOGA,
+  yin: BANNER_YOGA,
+  restorative: BANNER_YOGA,
+  power: BANNER_YOGA,
+  bikram: BANNER_YOGA,
+  sivananda: BANNER_YOGA,
+  anusara: BANNER_YOGA,
+  jivamukti: BANNER_YOGA,
+  aerial: BANNER_GYMNASTICS,
+
+  // ─── Gymnastics ────────────────────────────────────────────────────────
+  artistic_floor: BANNER_GYMNASTICS,
+  artistic_beam: BANNER_GYMNASTICS,
+  artistic_vault: BANNER_GYMNASTICS,
+  artistic_bars: BANNER_GYMNASTICS,
+  rhythmic_ribbon: BANNER_GYMNASTICS,
+  rhythmic_hoop: BANNER_GYMNASTICS,
+  rhythmic_ball: BANNER_GYMNASTICS,
+  rhythmic_clubs: BANNER_GYMNASTICS,
+  acrobatic: BANNER_GYMNASTICS,
+  trampoline: BANNER_GYMNASTICS,
+  power_tumbling: BANNER_GYMNASTICS,
+  parkour_gym: BANNER_PARKOUR,
+
+  // ─── Fitness ───────────────────────────────────────────────────────────
+  hiit: BANNER_FITNESS,
+  crossfit: BANNER_FITNESS,
+  functional: BANNER_FITNESS,
+  cardio_kickbox: BANNER_FITNESS,
+  zumba: BANNER_FITNESS,
+  aerobics: BANNER_FITNESS,
+  tabata: BANNER_FITNESS,
+  circuit: BANNER_FITNESS,
+  athletic: BANNER_FITNESS,
+};
+
+/** Sub-discipline id → first banner image */
+export const SUB_DISCIPLINE_BANNER: Record<string, string> = Object.fromEntries(
+  Object.entries(SUB_DISCIPLINE_BANNERS).map(([k, v]) => [k, v[0]]),
+);
+
+/** Get banner for any level — tries sub-discipline first, then discipline */
+export function getBanner(discipline?: string, subDiscipline?: string): string {
+  if (subDiscipline && SUB_DISCIPLINE_BANNER[subDiscipline]) {
+    return SUB_DISCIPLINE_BANNER[subDiscipline];
+  }
+  if (discipline && DISCIPLINE_BANNER[discipline]) {
+    return DISCIPLINE_BANNER[discipline];
+  }
+  return BANNER_BOXING[0]; // ultimate fallback
+}

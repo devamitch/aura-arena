@@ -4,6 +4,7 @@
 
 import { useDailyTip, useTrainingPlan } from "@hooks/useAI";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { analytics } from "@lib/analytics";
 import { Skeleton } from "@shared/components/ui/Skeleton";
 import { TierBadge } from "@shared/components/ui/TierBadge";
 import { Slider } from "@shared/components/ui/slider";
@@ -45,7 +46,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { analytics } from "@lib/analytics";
 import {
   Line,
   LineChart,
@@ -697,7 +697,7 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
       analytics.upgradeViewed("premium_monthly");
       upgradeTracked.current = true;
     }
-    const link = (process.env as any).VITE_STRIPE_PAYMENT_LINK as string | undefined;
+    const link = import.meta.env.VITE_STRIPE_PAYMENT_LINK as string | undefined;
     if (link) {
       window.open(link, "_blank", "noopener");
     } else {
@@ -713,19 +713,25 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
         <div
           className="rounded-2xl p-4 flex items-center gap-3"
           style={{
-            background: "linear-gradient(135deg, rgba(250,204,21,0.08), rgba(234,179,8,0.04))",
+            background:
+              "linear-gradient(135deg, rgba(250,204,21,0.08), rgba(234,179,8,0.04))",
             border: "1px solid rgba(250,204,21,0.2)",
           }}
         >
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(250,204,21,0.12)", border: "1px solid rgba(250,204,21,0.25)" }}
+            style={{
+              background: "rgba(250,204,21,0.12)",
+              border: "1px solid rgba(250,204,21,0.25)",
+            }}
           >
             <Crown className="w-5 h-5 text-yellow-400" />
           </div>
           <div className="flex-1">
             <p className="text-sm font-black text-yellow-300">Premium Member</p>
-            <p className="text-[10px] text-white/30 font-mono">All features unlocked</p>
+            <p className="text-[10px] text-white/30 font-mono">
+              All features unlocked
+            </p>
           </div>
           <CheckCircle className="w-4 h-4 text-yellow-400" />
         </div>
@@ -735,24 +741,34 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
           onClick={handleUpgrade}
           className="w-full rounded-2xl p-5 text-left overflow-hidden relative"
           style={{
-            background: "linear-gradient(135deg, rgba(0,240,255,0.07), rgba(139,92,246,0.07))",
+            background:
+              "linear-gradient(135deg, rgba(0,240,255,0.07), rgba(139,92,246,0.07))",
             border: "1px solid rgba(0,240,255,0.2)",
             boxShadow: "0 0 30px rgba(0,240,255,0.05)",
           }}
         >
           {/* Glow streak */}
-          <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full blur-3xl opacity-15"
-            style={{ background: "var(--ac)" }} />
+          <div
+            className="absolute -top-4 -right-4 w-24 h-24 rounded-full blur-3xl opacity-15"
+            style={{ background: "var(--ac)" }}
+          />
           <div className="flex items-center gap-3 mb-3">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(0,240,255,0.1)", border: "1px solid rgba(0,240,255,0.2)" }}
+              style={{
+                background: "rgba(0,240,255,0.1)",
+                border: "1px solid rgba(0,240,255,0.2)",
+              }}
             >
               <Crown className="w-4 h-4" style={{ color: "var(--ac)" }} />
             </div>
             <div>
-              <p className="text-sm font-black text-white">Aura Arena Premium</p>
-              <p className="text-[10px] text-white/30 font-mono">$9.99 / month</p>
+              <p className="text-sm font-black text-white">
+                Aura Arena Premium
+              </p>
+              <p className="text-[10px] text-white/30 font-mono">
+                $9.99 / month
+              </p>
             </div>
             <div
               className="ml-auto px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono"
@@ -769,7 +785,10 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
               "Advanced analytics",
             ].map((f) => (
               <div key={f} className="flex items-center gap-1.5">
-                <ZapIcon className="w-3 h-3 flex-shrink-0" style={{ color: "var(--ac)" }} />
+                <ZapIcon
+                  className="w-3 h-3 flex-shrink-0"
+                  style={{ color: "var(--ac)" }}
+                />
                 <p className="text-[10px] text-white/50">{f}</p>
               </div>
             ))}

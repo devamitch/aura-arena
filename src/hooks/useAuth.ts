@@ -1,17 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — useAuth Hook (fully functional)
-// Google OAuth via @react-oauth/google + Supabase session
+// AURA ARENA — useAuth Hook
+// Google OAuth via @react-oauth/google GoogleLogin component → Supabase session
+// Gemini key is user-provided (BYOK), stored in Zustand/localStorage, NOT Supabase
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { initGemini } from "@/services/aiService";
 import { analytics, identifyUser, resetAnalytics } from "@lib/analytics";
 import { initOfflineSync } from "@lib/pwa/offlineQueue";
-import {
-  signInWithGoogle,
-  supabase,
-  signOut as supabaseSignOut,
-} from "@lib/supabase/client";
-import { useGoogleLogin } from "@react-oauth/google";
+import { supabase, signOut as supabaseSignOut } from "@lib/supabase/client";
 import { useIsLoading, useStore, useUser } from "@store";
 import { useCallback, useEffect } from "react";
 
@@ -20,13 +16,7 @@ import { useCallback, useEffect } from "react";
 export const useAuth = () => {
   const user = useUser();
   const loading = useIsLoading();
-  const {
-    setUser,
-    setLoading,
-    setAuthError,
-    signOut: storeSignOut,
-    addSavedAccount,
-  } = useStore();
+  const { setUser, setLoading, setAuthError, signOut: storeSignOut, addSavedAccount } = useStore();
 
   // ── Restore session on mount ───────────────────────────────────────────────
   useEffect(() => {
@@ -35,52 +25,53 @@ export const useAuth = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         identifyUser(session.user.id);
-        await hydrateUser(session.user.id, setUser);
+        await hydrateUser(session.user.id, session.user, setUser);
       }
-      // Auto-init Gemini from stored key (if user previously saved one)
+      // Re-init Gemini from stored key (BYOK — user provided, lives in localStorage)
       const storedKey = useStore.getState().geminiApiKey;
       if (storedKey) initGemini(storedKey);
       setLoading(false);
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        identifyUser(session.user.id);
-        await hydrateUser(session.user.id, setUser);
-      } else if (event === "SIGNED_OUT") {
-        resetAnalytics();
-        storeSignOut();
-      }
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
+          identifyUser(session.user.id);
+          await hydrateUser(session.user.id, session.user, setUser);
+        } else if (event === "SIGNED_OUT") {
+          resetAnalytics();
+          storeSignOut();
+        }
+      },
+    );
 
-    // Init offline queue sync
     const cleanupSync = initOfflineSync();
-
-    return () => {
-      subscription.unsubscribe();
-      cleanupSync();
-    };
+    return () => { subscription.unsubscribe(); cleanupSync(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Google login ──────────────────────────────────────────────────────────
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+  // ── Google login via GoogleLogin component (credential = ID token) ─────────
+  // Called from LoginPage with credentialResponse.credential (JWT id_token)
+  const loginWithGoogleCredential = useCallback(
+    async (credential: string) => {
       setLoading(true);
       setAuthError(null);
       try {
-        const { session } = await signInWithGoogle(tokenResponse.access_token);
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: credential, // This IS the ID token (JWT) from GoogleLogin component
+        });
+        if (error) throw error;
+        const session = data.session;
         if (session?.user) {
           identifyUser(session.user.id);
           analytics.signInSuccess(session.user.id, "google");
-          const profile = await hydrateUser(session.user.id, setUser);
+          const profile = await hydrateUser(session.user.id, session.user, setUser);
           if (profile) {
             addSavedAccount({
               sub: session.user.id,
               email: session.user.email ?? "",
-              displayName: profile.displayName ?? "",
-              avatarUrl: profile.avatar ?? null,
+              displayName: profile.display_name ?? profile.displayName ?? "",
+              avatarUrl: profile.avatar_url ?? null,
               lastUsed: Date.now(),
             });
           }
@@ -91,31 +82,27 @@ export const useAuth = () => {
         setLoading(false);
       }
     },
-    onError: (err) =>
-      setAuthError(err.error_description ?? "Google login failed"),
-  });
+    [setLoading, setAuthError, setUser, addSavedAccount],
+  );
 
   // ── Sign out ──────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     setLoading(true);
     analytics.signOut();
-    try {
-      await supabaseSignOut();
-    } catch {
-      /* signOut may fail if already signed out */
-    }
+    try { await supabaseSignOut(); } catch { /* already signed out */ }
     resetAnalytics();
     storeSignOut();
     setLoading(false);
   }, [storeSignOut, setLoading]);
 
-  return { user, loading, loginWithGoogle, logout };
+  return { user, loading, loginWithGoogleCredential, logout };
 };
 
-// ─── HELPER: Fetch profile from Supabase and populate store ──────────────────
+// ─── HELPER: Fetch or create profile from Supabase ────────────────────────────
 
-async function hydrateUser(
+export async function hydrateUser(
   userId: string,
+  authUser: { email?: string; user_metadata?: Record<string, string> } | null,
   setUser: (u: any) => void,
 ): Promise<any> {
   const { data: profile } = await supabase
@@ -124,33 +111,61 @@ async function hydrateUser(
     .eq("id", userId)
     .single();
 
-  if (profile) {
+  // If no profile exists (new user), the DB trigger should have created one.
+  // Upsert to fill any missing columns.
+  const meta = authUser?.user_metadata ?? {};
+  if (!profile) {
+    await supabase.from("profiles").upsert({
+      id: userId,
+      email: authUser?.email ?? "",
+      display_name: meta.full_name ?? meta.name ?? authUser?.email ?? "",
+      avatar_url: meta.avatar_url ?? meta.picture ?? "",
+      onboarding_complete: false,
+    }, { onConflict: "id" });
+  }
+
+  const { data: p } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+
+  if (p) {
     setUser({
       id: userId,
-      email: profile.email ?? "",
-      displayName: profile.display_name ?? "",
-      arenaName: profile.arena_name ?? "",
-      username: profile.username ?? "",
-      avatar: profile.avatar ?? "",
-      discipline: profile.discipline ?? "boxing",
-      subDiscipline: profile.sub_discipline,
-      experienceLevel: profile.experience_level ?? "beginner",
-      goals: profile.goals ?? [],
-      trainingFrequency: profile.training_frequency ?? 3,
-      aiCoachName: profile.ai_coach_name ?? "Coach",
-      onboardingComplete: profile.onboarding_complete ?? false,
-      xp: profile.xp ?? 0,
-      totalPoints: profile.total_points ?? 0,
-      sessionsCompleted: profile.sessions_completed ?? 0,
-      pveWins: profile.pve_wins ?? 0,
-      pveLosses: profile.pve_losses ?? 0,
-      winStreak: profile.win_streak ?? 0,
-      averageScore: profile.average_score ?? 0,
-      bestScore: profile.best_score ?? 0,
-      bio: profile.bio ?? "",
-      lastActiveDate: profile.last_active_date ?? "",
+      email: p.email ?? authUser?.email ?? "",
+      displayName: p.display_name ?? "",
+      arenaName: p.arena_name ?? "",
+      username: p.username ?? "",
+      avatar: p.avatar_url ?? p.avatar ?? "",
+      avatarUrl: p.avatar_url ?? "",
+      discipline: p.discipline ?? "boxing",
+      subDiscipline: p.sub_discipline ?? undefined,
+      experienceLevel: p.experience_level ?? "beginner",
+      goals: p.goals ?? [],
+      trainingFrequency: p.training_frequency ?? 3,
+      aiCoachName: p.ai_coach_name ?? "Aria",
+      onboardingComplete: p.onboarding_complete ?? false,
+      xp: p.xp ?? 0,
+      totalPoints: p.total_points ?? 0,
+      sessionsCompleted: p.sessions_completed ?? 0,
+      pveWins: p.pve_wins ?? 0,
+      pveLosses: p.pve_losses ?? 0,
+      winStreak: p.win_streak ?? 0,
+      dailyStreak: p.daily_streak ?? 0,
+      bestStreak: p.best_streak ?? 0,
+      streakFreezeCount: p.streak_freeze_count ?? 0,
+      averageScore: p.average_score ?? 0,
+      bestScore: p.best_score ?? 0,
+      bio: p.bio ?? "",
+      lastActiveDate: p.last_active_date ?? "",
+      tier: p.tier ?? "beginner",
+      isPremium: p.is_premium ?? false,
+      country: p.country ?? "UN",
+      createdAt: p.created_at ?? new Date().toISOString(),
+      updatedAt: p.updated_at ?? new Date().toISOString(),
     });
   }
 
-  return profile;
+  return p;
 }

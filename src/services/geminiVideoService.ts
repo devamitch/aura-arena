@@ -96,7 +96,7 @@ export async function analyzeVideoWithGemini(
       });
 
       response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: createUserContent([
           createPartFromUri(uploaded.uri!, uploaded.mimeType!),
           prompt,
@@ -106,7 +106,7 @@ export async function analyzeVideoWithGemini(
       // ── Inline: for small videos (<20MB) ──
       const base64 = await blobToBase64(videoBlob);
       response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           { inlineData: { mimeType, data: base64 } },
           { text: prompt },
@@ -128,7 +128,7 @@ export async function testGeminiKey(apiKey: string): Promise<boolean> {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: "Say 'AURA ARENA connected' in exactly those words.",
     });
     return (response.text ?? "").toLowerCase().includes("connected");

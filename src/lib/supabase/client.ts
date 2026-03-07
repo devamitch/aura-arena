@@ -2,10 +2,10 @@
 // AURA ARENA — Supabase Client (functional)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -19,7 +19,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 export const signInWithGoogle = async (accessToken: string) => {
   const { data, error } = await supabase.auth.signInWithIdToken({
-    provider: 'google',
+    provider: "google",
     token: accessToken,
   });
   if (error) throw error;
@@ -32,4 +32,4 @@ export const signOut = async () => {
 };
 
 export const getCurrentSession = () => supabase.auth.getSession();
-export const getCurrentUser    = () => supabase.auth.getUser();
+export const getCurrentUser = () => supabase.auth.getUser();

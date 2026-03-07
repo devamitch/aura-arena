@@ -329,3 +329,208 @@ export const useGeminiAnalysisHistory = (userId: string) =>
     enabled: !!userId,
     staleTime: 60_000,
   });
+
+// ─── DAILY PLANS ──────────────────────────────────────────────────────────────
+
+export const useSaveDailyPlan = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      userId: string;
+      discipline: string;
+      subDiscipline?: string;
+      plan: Record<string, unknown>;
+    }) => {
+      const { error } = await supabase.from("daily_plans").upsert(
+        {
+          user_id: payload.userId,
+          date: new Date().toISOString().split("T")[0],
+          discipline: payload.discipline,
+          sub_discipline: payload.subDiscipline,
+          plan_data: payload.plan,
+        },
+        { onConflict: "user_id,date" },
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["daily-plans"] }),
+  });
+};
+
+export const useTodayPlan = (userId: string) =>
+  useQuery({
+    queryKey: ["daily-plans", userId, new Date().toISOString().split("T")[0]],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("daily_plans")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("date", new Date().toISOString().split("T")[0])
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 120_000,
+  });
+
+export const usePlanHistory = (userId: string, limit = 14) =>
+  useQuery({
+    queryKey: ["daily-plans", userId, "history"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("daily_plans")
+        .select("*")
+        .eq("user_id", userId)
+        .order("date", { ascending: false })
+        .limit(limit);
+      if (error) return [];
+      return data ?? [];
+    },
+    enabled: !!userId,
+  });
+
+// ─── POSE FRAME HISTORY ──────────────────────────────────────────────────────
+
+export const useSavePoseFrames = () =>
+  useMutation({
+    mutationFn: async (payload: {
+      sessionId: string;
+      userId: string;
+      frames: Array<{
+        frameIndex: number;
+        timestamp: number;
+        keypoints: number[][];
+        score: number;
+        accuracy: number;
+        stability: number;
+        actionLabel?: string;
+      }>;
+    }) => {
+      // Batch insert in chunks of 50 to avoid payload limits
+      const chunkSize = 50;
+      for (let i = 0; i < payload.frames.length; i += chunkSize) {
+        const chunk = payload.frames.slice(i, i + chunkSize).map((f) => ({
+          session_id: payload.sessionId,
+          user_id: payload.userId,
+          frame_index: f.frameIndex,
+          timestamp_ms: f.timestamp,
+          keypoints: f.keypoints,
+          score: f.score,
+          accuracy: f.accuracy,
+          stability: f.stability,
+          action_label: f.actionLabel,
+        }));
+        const { error } = await supabase.from("pose_frames").insert(chunk);
+        if (error) throw error;
+      }
+      return payload.frames.length;
+    },
+  });
+
+export const useSessionPoseFrames = (sessionId: string) =>
+  useQuery({
+    queryKey: ["pose-frames", sessionId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pose_frames")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("frame_index", { ascending: true });
+      if (error) return [];
+      return data ?? [];
+    },
+    enabled: !!sessionId,
+  });
+
+// ─── SESSION → REEL SHARING ─────────────────────────────────────────────────
+
+export const useShareSessionAsReel = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      userId: string;
+      sessionId: string;
+      discipline: string;
+      subDiscipline?: string;
+      drillName: string;
+      score: number;
+      accuracy: number;
+      caption: string;
+      videoUrl?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from("reels")
+        .insert({
+          user_id: payload.userId,
+          session_id: payload.sessionId,
+          discipline: payload.discipline,
+          sub_discipline: payload.subDiscipline,
+          drill_name: payload.drillName,
+          score: payload.score,
+          accuracy: payload.accuracy,
+          caption: payload.caption,
+          video_url: payload.videoUrl,
+          is_public: true,
+          likes_count: 0,
+          comments_count: 0,
+          visibility_score: payload.score,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reels"] }),
+  });
+};
+
+// ─── WEEKLY GOALS ────────────────────────────────────────────────────────────
+
+export const useSaveWeeklyGoals = () =>
+  useMutation({
+    mutationFn: async (payload: {
+      userId: string;
+      goals: Array<{
+        title: string;
+        metric: string;
+        target: number;
+        current: number;
+      }>;
+      weekStart: string;
+    }) => {
+      const { error } = await supabase.from("weekly_goals").upsert(
+        {
+          user_id: payload.userId,
+          week_start: payload.weekStart,
+          goals: payload.goals,
+        },
+        { onConflict: "user_id,week_start" },
+      );
+      if (error) throw error;
+    },
+  });
+
+export const useCurrentWeekGoals = (userId: string) => {
+  const weekStart = getWeekStart();
+  return useQuery({
+    queryKey: ["weekly-goals", userId, weekStart],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_goals")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("week_start", weekStart)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!userId,
+  });
+};
+
+function getWeekStart(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay());
+  return d.toISOString().split("T")[0];
+}
