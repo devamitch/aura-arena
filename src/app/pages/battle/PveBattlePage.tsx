@@ -5,6 +5,7 @@
 import { CameraView } from "@features/arena/components/CameraView";
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { useVideoRecorder } from "@hooks/useVideoRecorder";
 import { analytics } from "@lib/analytics";
 import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
@@ -17,7 +18,7 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { Globe, Swords, Timer, Trophy, X, Zap } from "lucide-react";
+import { Download, Globe, Swords, Timer, Trophy, X, Zap } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -102,12 +103,14 @@ export default function PveBattlePage() {
     won: boolean;
     xpGained: number;
     pointsGained: number;
+    aiFeedback: string | null;
   } | null>(null);
   const [oppCombo, setOppCombo] = useState(0);
   const [oppMomentum, setOppMomentum] = useState<
     "rising" | "falling" | "steady"
   >("steady");
   const [showComboFlash, setShowComboFlash] = useState(false);
+  const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const aiRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -123,6 +126,14 @@ export default function PveBattlePage() {
     ),
   });
 
+  // Setup video recorder
+  const { startRecording, stopRecording } = useVideoRecorder(
+    camera.videoRef,
+    camera.canvasRef,
+    firstName,
+    accentColor,
+  );
+
   const clearTimers = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (aiRef.current) clearInterval(aiRef.current);
@@ -137,7 +148,10 @@ export default function PveBattlePage() {
     setTimeLeft(BATTLE_DURATION);
     setResult(null);
     prevOppScore.current = 0;
-    camera.requestCamera();
+    camera.requestCamera().then(() => {
+      // Start recording only after camera begins streaming
+      setTimeout(startRecording, 1000);
+    });
 
     // 60-second countdown
     timerRef.current = setInterval(() => {
@@ -168,7 +182,7 @@ export default function PveBattlePage() {
         return next;
       });
     }, 600);
-  }, [camera, opp.targetScore, opp.difficulty]);
+  }, [camera, opp.targetScore, opp.difficulty, opp.id]);
 
   // Combo flash effect
   useEffect(() => {
@@ -187,8 +201,17 @@ export default function PveBattlePage() {
   }, [timeLeft, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── End Battle ──────────────────────────────────────────────────────────────
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback(async () => {
     clearTimers();
+    let videoUrl = null;
+    try {
+      const rec = await stopRecording();
+      videoUrl = rec.url;
+      setRecordedVideoUrl(videoUrl);
+    } catch {
+      /* ignored, no recording active */
+    }
+
     camera.stopCamera();
 
     setPlayerScore((ps) => {
@@ -224,7 +247,7 @@ export default function PveBattlePage() {
         }
         analytics.pveBattleEnded(won, ps, xpGained);
         analytics.xpGained(xpGained, won ? "pve_win" : "pve_loss");
-        setResult({ won, xpGained, pointsGained });
+        setResult({ won, xpGained, pointsGained, aiFeedback: null });
         return os;
       });
       return ps;
@@ -239,6 +262,7 @@ export default function PveBattlePage() {
     opp.name,
     user,
     disc.id,
+    stopRecording,
   ]);
 
   const fmtTime = (s: number) =>
@@ -353,6 +377,39 @@ export default function PveBattlePage() {
                 </div>
               </>
             )}
+          </div>
+
+          {/* AI Feedback Box */}
+          <div className="mt-4 w-full">
+            <div className="w-full rounded-[18px] p-4 bg-white/5 border border-white/10 relative overflow-hidden">
+              <div
+                className="absolute top-0 left-0 w-1 h-full"
+                style={{ background: accentColor }}
+              />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/10">
+                  <span
+                    className="w-3 h-3 block bg-current rounded-full"
+                    style={{ color: accentColor }}
+                  />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/50">
+                  Gemini AI Coach
+                </span>
+              </div>
+              {result.aiFeedback ? (
+                <p className="text-sm text-white/90 leading-relaxed font-medium">
+                  "{result.aiFeedback}"
+                </p>
+              ) : (
+                <div className="flex items-center gap-2 mt-2 opacity-50">
+                  <div className="w-4 h-4 rounded-full border-2 border-t-white animate-spin" />
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white/70">
+                    Analyzing Biometrics...
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Buttons */}
@@ -481,6 +538,23 @@ export default function PveBattlePage() {
             showScore
           />
         </div>
+
+        {/* Video Download Action */}
+        {recordedVideoUrl && (
+          <div className="flex-shrink-0 px-4 pt-4 pb-2">
+            <a
+              href={recordedVideoUrl}
+              download={`AuraArena_${disc.id}_Vs_${opp.name.replace(/\s+/g, "")}.webm`}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[18px] border transition-colors hover:bg-white/5 active:bg-white/10"
+              style={{ borderColor: "rgba(255,255,255,0.1)", color: "white" }}
+            >
+              <Download className="w-4 h-4" />
+              <span className="text-sm font-bold tracking-wide">
+                Save Watermarked Video
+              </span>
+            </a>
+          </div>
+        )}
 
         {/* End button */}
         <div className="flex-shrink-0 px-4 pb-safe pb-5">

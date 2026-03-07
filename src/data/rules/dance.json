@@ -1,0 +1,518 @@
+{
+  "dance": {
+    "exercise": "dance_form",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftShoulder",
+        "min": 75,
+        "max": 155,
+        "cue": "Extend arms for expression"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 75,
+        "max": 155,
+        "cue": "Match arm levels on both sides"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 130,
+        "max": 180,
+        "cue": "Extend through your legs"
+      }
+    ]
+  },
+  "bharatanatyam_aramandi": {
+    "exercise": "bharatanatyam_aramandi",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 80,
+        "max": 110,
+        "cue": "Demi-plié — knees opening over toes"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 80,
+        "max": 110,
+        "cue": "Equal turnout on both sides"
+      },
+      {
+        "joint": "leftHip",
+        "min": 130,
+        "max": 170,
+        "cue": "Hips square — half squat position"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 60,
+        "max": 120,
+        "cue": "Hands in hasta mudra — precise form"
+      }
+    ]
+  },
+  "bharatanatyam_araimandi": {
+    "exercise": "bharatanatyam_tribhangi",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 100,
+        "max": 145,
+        "cue": "Triple bend: neck, torso, hip"
+      },
+      {
+        "joint": "leftHip",
+        "min": 110,
+        "max": 155,
+        "cue": "Shift weight — S-curve torso"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 55,
+        "max": 110,
+        "cue": "One arm raised — hasta mudra"
+      }
+    ]
+  },
+  "kathak_chakkars": {
+    "exercise": "kathak_spin_chakkars",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 145,
+        "max": 180,
+        "cue": "Straight standing leg — spin on heel"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 80,
+        "max": 120,
+        "cue": "Arms framing body — controlled spin"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 80,
+        "max": 120,
+        "cue": "Spot your spin — eyes fixed point"
+      }
+    ]
+  },
+  "kathak_tatkaar": {
+    "exercise": "kathak_tatkaar_footwork",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 140,
+        "max": 175,
+        "cue": "Light on your feet — crisp tatkaar"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 140,
+        "max": 175,
+        "cue": "Even rhythmic footwork both sides"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 50,
+        "max": 100,
+        "cue": "Arms extended — mudra held throughout"
+      }
+    ]
+  },
+  "kuchipudi_stance": {
+    "exercise": "kuchipudi_basic_stance",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 85,
+        "max": 115,
+        "cue": "Lower aramandi — knees wide"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 85,
+        "max": 115,
+        "cue": "Demi-plié — toes turned out"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 60,
+        "max": 120,
+        "cue": "Expressive hasta mudra"
+      },
+      {
+        "joint": "leftHip",
+        "min": 125,
+        "max": 165,
+        "cue": "Fluid hip movement — tribhangi"
+      }
+    ]
+  },
+  "breakdance_toprock": {
+    "exercise": "breakdance_toprock",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 120,
+        "max": 160,
+        "cue": "Bouncy top rock — knees bent"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 120,
+        "max": 160,
+        "cue": "Step to the rhythm"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 50,
+        "max": 120,
+        "cue": "Arms loose — hit the beat"
+      },
+      {
+        "joint": "leftHip",
+        "min": 130,
+        "max": 175,
+        "cue": "Hip groove — feel the music"
+      }
+    ]
+  },
+  "breakdance_footwork": {
+    "exercise": "breakdance_6step",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 60,
+        "max": 130,
+        "cue": "Fluid 6-step — low to ground"
+      },
+      {
+        "joint": "leftHip",
+        "min": 60,
+        "max": 130,
+        "cue": "Low center of gravity"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 100,
+        "max": 160,
+        "cue": "Support weight on arms smoothly"
+      }
+    ]
+  },
+  "breakdance_freeze": {
+    "exercise": "breakdance_freeze",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 60,
+        "max": 100,
+        "cue": "Solid freeze — no shaking"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 60,
+        "max": 100,
+        "cue": "Lock in the freeze position"
+      },
+      {
+        "joint": "leftHip",
+        "min": 40,
+        "max": 90,
+        "cue": "Hips above shoulder line"
+      }
+    ]
+  },
+  "breakdance_windmill": {
+    "exercise": "breakdance_windmill",
+    "visibilityMin": 0.3,
+    "checks": [
+      {
+        "joint": "leftShoulder",
+        "min": 100,
+        "max": 155,
+        "cue": "Continuous circular flow"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 100,
+        "max": 155,
+        "cue": "Equal force each rotation"
+      },
+      {
+        "joint": "leftHip",
+        "min": 45,
+        "max": 130,
+        "cue": "Legs generate rotation power"
+      }
+    ]
+  },
+  "hiphop_bounce": {
+    "exercise": "hiphop_bounce_groove",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 130,
+        "max": 165,
+        "cue": "Bounce in the knees — feel the beat"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 130,
+        "max": 165,
+        "cue": "Even bounce both legs"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 50,
+        "max": 130,
+        "cue": "Relaxed shoulders — natural groove"
+      }
+    ]
+  },
+  "hiphop_popping": {
+    "exercise": "hiphop_popping",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 100,
+        "max": 155,
+        "cue": "Sharp isolated pops — crisp hits"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 55,
+        "max": 115,
+        "cue": "Isolate each body part"
+      },
+      {
+        "joint": "leftHip",
+        "min": 130,
+        "max": 175,
+        "cue": "Pop from the chest or legs"
+      }
+    ]
+  },
+  "hiphop_locking": {
+    "exercise": "hiphop_locking",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 100,
+        "max": 155,
+        "cue": "Lock it — freeze the pose"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 120,
+        "max": 165,
+        "cue": "Point toes out — funky stance"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 60,
+        "max": 130,
+        "cue": "Big expressive movements"
+      }
+    ]
+  },
+  "contemporary_flow": {
+    "exercise": "contemporary_floor_flow",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftShoulder",
+        "min": 60,
+        "max": 170,
+        "cue": "Free expressive arms — follow breath"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 60,
+        "max": 170,
+        "cue": "Continuous fluid movement"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 100,
+        "max": 180,
+        "cue": "Use full range — floor to standing"
+      }
+    ]
+  },
+  "ballet_plie": {
+    "exercise": "ballet_grand_plie",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 70,
+        "max": 100,
+        "cue": "Track knees over toes — turnout"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 70,
+        "max": 100,
+        "cue": "Even depth both sides"
+      },
+      {
+        "joint": "leftHip",
+        "min": 130,
+        "max": 165,
+        "cue": "Hips square — no tilting"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 80,
+        "max": 120,
+        "cue": "Port de bras — soft arms"
+      }
+    ]
+  },
+  "ballet_arabesque": {
+    "exercise": "ballet_arabesque",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Lift leg straight — full extension"
+      },
+      {
+        "joint": "leftHip",
+        "min": 100,
+        "max": 145,
+        "cue": "Extend working leg behind"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 80,
+        "max": 120,
+        "cue": "Open arabesque line — arms frame"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 130,
+        "max": 165,
+        "cue": "Leading arm forward and up"
+      }
+    ]
+  },
+  "ballet_releve": {
+    "exercise": "ballet_releve",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Straight knees on demi-pointe"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Rise through the full foot"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Stack hips — no sway"
+      }
+    ]
+  },
+  "salsa_basic": {
+    "exercise": "salsa_basic_step",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftHip",
+        "min": 140,
+        "max": 175,
+        "cue": "Hip motion on each step — sabor!"
+      },
+      {
+        "joint": "rightHip",
+        "min": 140,
+        "max": 175,
+        "cue": "Transfer weight smoothly"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 140,
+        "max": 175,
+        "cue": "Light footwork — on the beat"
+      }
+    ]
+  },
+  "capoeira_ginga": {
+    "exercise": "capoeira_ginga",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 110,
+        "max": 155,
+        "cue": "Fluid ginga — constant motion"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 110,
+        "max": 155,
+        "cue": "Sway weight side to side"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 40,
+        "max": 110,
+        "cue": "Arms flow with the movement"
+      },
+      {
+        "joint": "leftHip",
+        "min": 120,
+        "max": 165,
+        "cue": "Keep hips moving — dodge and flow"
+      }
+    ]
+  },
+  "capoeira_au": {
+    "exercise": "capoeira_au_cartwheel",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftShoulder",
+        "min": 145,
+        "max": 180,
+        "cue": "Full arm extension overhead"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 145,
+        "max": 180,
+        "cue": "Press through both arms"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Straight legs during cartwheel"
+      }
+    ]
+  }
+}

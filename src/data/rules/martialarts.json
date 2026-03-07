@@ -1,0 +1,134 @@
+{
+  "karate_kata": {
+    "exercise": "karate_kata",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 100,
+        "max": 150,
+        "cue": "Deep zenkutsu-dachi stance"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 100,
+        "max": 150,
+        "cue": "Back leg drives power"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 60,
+        "max": 120,
+        "cue": "Kiai — commit to the technique"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 60,
+        "max": 120,
+        "cue": "Chamber hand at hip, hikite"
+      }
+    ]
+  },
+  "karate_front_kick": {
+    "exercise": "karate_front_kick",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 50,
+        "max": 90,
+        "cue": "Chamber knee to hip height"
+      },
+      {
+        "joint": "leftHip",
+        "min": 50,
+        "max": 90,
+        "cue": "Snap kick from the hip"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Support leg locked out"
+      }
+    ]
+  },
+  "taekwondo_axe": {
+    "exercise": "taekwondo_axe_kick",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Lift leg high — straight kick path"
+      },
+      {
+        "joint": "leftHip",
+        "min": 30,
+        "max": 70,
+        "cue": "Raise hip above shoulder height"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Standing leg fully extended"
+      }
+    ]
+  },
+  "taekwondo_sidekick": {
+    "exercise": "taekwondo_side_kick",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 145,
+        "max": 180,
+        "cue": "Extend leg fully sideways"
+      },
+      {
+        "joint": "leftHip",
+        "min": 60,
+        "max": 100,
+        "cue": "Drive hip into the kick"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 140,
+        "max": 175,
+        "cue": "Pivot base foot 90°"
+      }
+    ]
+  },
+  "martialarts": {
+    "exercise": "martial_stance",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 100,
+        "max": 150,
+        "cue": "Drop your stance — bend knees deeper"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 100,
+        "max": 150,
+        "cue": "Both knees bent equally"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 55,
+        "max": 120,
+        "cue": "Raise your guard — hands up"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 55,
+        "max": 120,
+        "cue": "Keep hands at chin level"
+      }
+    ]
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "yoga_warrior": {
+    "exercise": "yoga_warrior_1",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Bend front knee to 90°"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Straighten back leg fully"
+      },
+      {
+        "joint": "leftHip",
+        "min": 85,
+        "max": 110,
+        "cue": "Square your hips forward"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 155,
+        "max": 180,
+        "cue": "Reach arms overhead — palms together"
+      }
+    ]
+  },
+  "yoga_warrior_2": {
+    "exercise": "yoga_warrior_2",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Front knee over ankle — 90°"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Extend back leg straight"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 80,
+        "max": 100,
+        "cue": "Arms parallel to floor — T-shape"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Open hips to the side"
+      }
+    ]
+  },
+  "yoga_fold": {
+    "exercise": "yoga_standing_forward_fold",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Straighten your legs"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Press heels toward the floor"
+      },
+      {
+        "joint": "leftHip",
+        "min": 45,
+        "max": 85,
+        "cue": "Hinge deeper from your hips"
+      }
+    ]
+  },
+  "yoga_tree": {
+    "exercise": "yoga_tree_pose",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "rightKnee",
+        "min": 70,
+        "max": 110,
+        "cue": "Foot higher on inner thigh — not knee"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 160,
+        "max": 180,
+        "cue": "Standing leg strong and tall"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 145,
+        "max": 180,
+        "cue": "Hands at heart or overhead"
+      }
+    ]
+  },
+  "yoga_downdog": {
+    "exercise": "yoga_downward_dog",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Press heels toward the floor"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Straighten both legs"
+      },
+      {
+        "joint": "leftHip",
+        "min": 45,
+        "max": 85,
+        "cue": "Hips high — inverted V shape"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Arms straight — press the mat"
+      }
+    ]
+  },
+  "yoga_bridge": {
+    "exercise": "yoga_bridge_pose",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Knees over ankles at 90°"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Feet flat — knees apart"
+      },
+      {
+        "joint": "leftHip",
+        "min": 140,
+        "max": 175,
+        "cue": "Drive hips higher — squeeze glutes"
+      }
+    ]
+  },
+  "yoga_cobra": {
+    "exercise": "yoga_cobra_pose",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 140,
+        "max": 180,
+        "cue": "Straighten arms — lift chest high"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 140,
+        "max": 180,
+        "cue": "Press palms down firmly"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Legs engaged — press tops of feet"
+      }
+    ]
+  },
+  "yoga_pigeon": {
+    "exercise": "yoga_pigeon_pose",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 60,
+        "max": 100,
+        "cue": "Front leg horizontal — square hip"
+      },
+      {
+        "joint": "leftHip",
+        "min": 50,
+        "max": 90,
+        "cue": "Sink deeper into hip flexor"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Back leg fully extended"
+      }
+    ]
+  },
+  "yoga_child": {
+    "exercise": "yoga_child_pose",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 30,
+        "max": 70,
+        "cue": "Sink hips to heels"
+      },
+      {
+        "joint": "leftHip",
+        "min": 30,
+        "max": 70,
+        "cue": "Round forward — surrender"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Reach arms long overhead"
+      }
+    ]
+  }
+}

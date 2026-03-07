@@ -1,39 +1,25 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — Gemini AI Client (fully functional, zero classes)
-// Model waterfall: gemini-2.0-flash → gemini-1.5-flash → gemini-1.5-flash-8b
-// Integrates with on-device LLM fallback via onDeviceLLM.ts
+// AURA ARENA — Gemini Domain Generators
+// Text generation for coaching, tips, plans, captions, etc.
+// Uses the user-provided Gemini key from aiService.ts (no env fallback).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { getDiscipline, getSubDiscipline } from "@utils/constants/disciplines";
-import type { DisciplineId, SubDisciplineId } from "@types";
 import { GoogleGenAI } from "@google/genai";
+import { useStore } from "@store";
+import type { DisciplineId, SubDisciplineId } from "@types";
+import { getDiscipline, getSubDiscipline } from "@utils/constants/disciplines";
 
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// ─── CLIENT (user-key-only) ──────────────────────────────────────────────────
 
-const API_KEY = process.env.VITE_GEMINI_API_KEY ?? "";
+const MODELS = ["gemini-2.5-flash", "gemini-1.5-flash-8b"] as const;
+const _cache = new Map<string, { value: string; ts: number }>();
+const CACHE_TTL = 5 * 60_000;
 
-const MODELS = [
-  "gemini-3-flash-preview",
-  "gemini-2.5-flash",
-  "gemini-1.5-flash-8b",
-] as const;
-
-type GeminiModel = (typeof MODELS)[number];
-
-// ─── MODULE STATE ─────────────────────────────────────────────────────────────
-
-let _client: GoogleGenAI | null = null;
-const _cache: Map<string, { value: string; ts: number }> = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 min
-
-// ─── CLIENT ACCESS ────────────────────────────────────────────────────────────
-
-const getClient = (): GoogleGenAI => {
-  if (!_client) {
-    _client = new GoogleGenAI({ apiKey: API_KEY });
-  }
-  return _client;
-};
+function getClient(): GoogleGenAI | null {
+  const key = useStore.getState().geminiApiKey;
+  if (!key) return null;
+  return new GoogleGenAI({ apiKey: key });
+}
 
 // ─── CORE GENERATE (waterfall with retry) ────────────────────────────────────
 
@@ -44,26 +30,20 @@ export interface GeminiOptions {
   cacheKey?: string;
 }
 
-export const generateText = async (
+export async function generateText(
   prompt: string,
   opts: GeminiOptions = {},
-): Promise<string> => {
+): Promise<string> {
   const { maxTokens = 256, temperature = 0.8, systemPrompt, cacheKey } = opts;
-
-  // Cache check
-  const key = cacheKey ?? `${prompt.slice(0, 150)}`;
+  const key = cacheKey ?? prompt.slice(0, 150);
   const cached = _cache.get(key);
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.value;
 
-  if (!API_KEY) {
-    return _fallbackResponse(prompt);
-  }
-
-  let lastErr: Error | null = null;
+  const client = getClient();
+  if (!client) return _fallback(prompt);
 
   for (const model of MODELS) {
     try {
-      const client = getClient();
       const result = await client.models.generateContent({
         model,
         contents: prompt,
@@ -74,43 +54,35 @@ export const generateText = async (
         },
       });
       const text = (result.text ?? "").trim();
-
       if (text) {
         _cache.set(key, { value: text, ts: Date.now() });
         return text;
       }
     } catch (err: any) {
-      lastErr = err;
-      // 429 rate limit → try next model
       if (err?.status === 429 || err?.message?.includes("quota")) continue;
-      // Other errors → don't retry
       break;
     }
   }
-
-  console.warn("[Gemini] All models failed:", lastErr?.message);
-  return _fallbackResponse(prompt);
-};
+  return _fallback(prompt);
+}
 
 // ─── STREAMING ────────────────────────────────────────────────────────────────
 
-export const generateTextStream = async (
+export async function generateTextStream(
   prompt: string,
-  onChunk: (chunk: string) => void,
+  onChunk: (c: string) => void,
   opts: GeminiOptions = {},
-): Promise<string> => {
-  if (!API_KEY) {
-    const text = _fallbackResponse(prompt);
-    onChunk(text);
-    return text;
+): Promise<string> {
+  const client = getClient();
+  if (!client) {
+    const t = _fallback(prompt);
+    onChunk(t);
+    return t;
   }
-
   const { maxTokens = 256, temperature = 0.8, systemPrompt } = opts;
   let full = "";
-
   for (const model of MODELS) {
     try {
-      const client = getClient();
       const stream = client.models.generateContentStream({
         model,
         contents: prompt,
@@ -121,9 +93,9 @@ export const generateTextStream = async (
         },
       });
       for await (const chunk of await stream) {
-        const text = chunk.text ?? "";
-        full += text;
-        if (text) onChunk(text);
+        const t = chunk.text ?? "";
+        full += t;
+        if (t) onChunk(t);
       }
       return full;
     } catch (err: any) {
@@ -131,77 +103,72 @@ export const generateTextStream = async (
       break;
     }
   }
-
-  const fb = _fallbackResponse(prompt);
+  const fb = _fallback(prompt);
   onChunk(fb);
   return fb;
-};
+}
 
-// ─── DOMAIN-SPECIFIC GENERATORS ───────────────────────────────────────────────
+// ─── DOMAIN GENERATORS ───────────────────────────────────────────────────────
 
-export const generateCoachFeedback = async (
-  discipline: DisciplineId,
-  subDiscipline: SubDisciplineId | undefined,
+function styleName(d: DisciplineId, s?: SubDisciplineId) {
+  const sub = s ? getSubDiscipline(s) : undefined;
+  return sub?.name ?? getDiscipline(d).name;
+}
+
+function coachPrompt(disc: string, tone: string) {
+  return `You are an elite ${disc} performance coach, 20+ years. Style: ${tone}. Give specific, actionable, sport-specific feedback. Never generic.`;
+}
+
+export const generateCoachFeedback = (
+  d: DisciplineId,
+  s: SubDisciplineId | undefined,
   score: number,
   accuracy: number,
   stability: number,
   timing: number,
   expressiveness: number,
   combo: number,
-): Promise<string> => {
-  const disc = getDiscipline(discipline);
-  const subDisc = subDiscipline ? getSubDiscipline(subDiscipline) : undefined;
-  const styleName = subDisc?.name ?? disc.name;
-  const tone = disc.coachingTone;
-
-  const system = buildCoachSystemPrompt(disc.name, tone);
-  const prompt = `Athlete just completed a ${styleName} session.
-Scores — Overall: ${score}/100 | Accuracy: ${accuracy}% | Stability: ${stability}% | Timing: ${timing}% | Expressiveness: ${expressiveness}% | Combo: ${combo}x
-Write 2 motivating sentences + 2 specific technical improvements for ${styleName}. Be concise and ${tone}.`;
-
-  return generateText(prompt, {
-    systemPrompt: system,
-    maxTokens: 180,
-    temperature: 0.85,
-    cacheKey: `coach_${discipline}_${subDiscipline}_${Math.floor(score / 10)}`,
-  });
-};
-
-export const generateDailyTip = async (
-  discipline: DisciplineId,
-  subDiscipline: SubDisciplineId | undefined,
-  streak: number,
-  avgScore: number,
-): Promise<string> => {
-  const disc = getDiscipline(discipline);
-  const subDisc = subDiscipline ? getSubDiscipline(subDiscipline) : undefined;
-  const styleName = subDisc?.name ?? disc.name;
-
+) => {
+  const disc = getDiscipline(d);
+  const name = styleName(d, s);
   return generateText(
-    `You are a ${styleName} coach. ${streak}-day streak athlete, avg ${avgScore}/100. One punchy motivational training tip. Max 20 words. No emojis.`,
+    `Athlete completed ${name}. Overall:${score} Acc:${accuracy}% Stab:${stability}% Tim:${timing}% Expr:${expressiveness}% Combo:${combo}x. 2 motivating sentences + 2 specific improvements.`,
     {
-      maxTokens: 60,
-      temperature: 0.9,
-      cacheKey: `tip_${discipline}_${subDiscipline}_${streak}_${Math.floor(avgScore / 5)}`,
+      systemPrompt: coachPrompt(disc.name, disc.coachingTone),
+      maxTokens: 180,
+      temperature: 0.85,
+      cacheKey: `coach_${d}_${s}_${Math.floor(score / 10)}`,
     },
   );
 };
 
-export const generateWelcomeMessage = async (
-  discipline: DisciplineId,
-  subDiscipline: SubDisciplineId | undefined,
+export const generateDailyTip = (
+  d: DisciplineId,
+  s: SubDisciplineId | undefined,
+  streak: number,
+  avgScore: number,
+) =>
+  generateText(
+    `You are a ${styleName(d, s)} coach. ${streak}-day streak, avg ${avgScore}/100. One punchy training tip under 20 words. No emojis.`,
+    {
+      maxTokens: 60,
+      temperature: 0.9,
+      cacheKey: `tip_${d}_${s}_${streak}_${Math.floor(avgScore / 5)}`,
+    },
+  );
+
+export const generateWelcomeMessage = (
+  d: DisciplineId,
+  s: SubDisciplineId | undefined,
   level: string,
   goals: string[],
   name: string,
-): Promise<string> => {
-  const disc = getDiscipline(discipline);
-  const subDisc = subDiscipline ? getSubDiscipline(subDiscipline) : undefined;
-  const styleName = subDisc?.name ?? disc.name;
-
+) => {
+  const disc = getDiscipline(d);
   return generateText(
-    `Welcome ${name} to AURA ARENA as a ${level} ${styleName} athlete. Goals: ${goals.join(", ")}. 2 warm sentences of welcome + one motivating phrase. Personal and sport-specific.`,
+    `Welcome ${name} as ${level} ${styleName(d, s)} athlete. Goals: ${goals.join(", ")}. 2 warm sentences + motivating phrase.`,
     {
-      systemPrompt: buildCoachSystemPrompt(styleName, disc.coachingTone),
+      systemPrompt: coachPrompt(styleName(d, s), disc.coachingTone),
       maxTokens: 120,
       temperature: 0.9,
     },
@@ -209,127 +176,90 @@ export const generateWelcomeMessage = async (
 };
 
 export const generateTrainingPlan = async (
-  discipline: DisciplineId,
-  subDiscipline: SubDisciplineId | undefined,
+  d: DisciplineId,
+  s: SubDisciplineId | undefined,
   level: string,
-  daysPerWeek: number,
-  avgScore: number,
+  days: number,
+  avg: number,
 ): Promise<{ day: number; goal: string; drills: string[] }[]> => {
-  const disc = getDiscipline(discipline);
-  const subDisc = subDiscipline ? getSubDiscipline(subDiscipline) : undefined;
-  const styleName = subDisc?.name ?? disc.name;
-
-  const prompt = `Create a ${daysPerWeek}-day ${styleName} training plan for a ${level} athlete (avg score ${avgScore}/100).
-Return ONLY valid JSON array: [{"day":1,"goal":"string","drills":["string","string","string"]}].
-Keep drills specific to ${styleName} technique. No markdown. No explanation.`;
-
-  const raw = await generateText(prompt, {
-    maxTokens: 500,
-    temperature: 0.7,
-    cacheKey: `plan_${discipline}_${subDiscipline}_${level}_${daysPerWeek}`,
-  });
-
+  const name = styleName(d, s);
+  const raw = await generateText(
+    `Create ${days}-day ${name} plan for ${level} (avg ${avg}/100). Return ONLY JSON: [{"day":1,"goal":"...","drills":["..."]}]. No markdown.`,
+    {
+      maxTokens: 500,
+      temperature: 0.7,
+      cacheKey: `plan_${d}_${s}_${level}_${days}`,
+    },
+  );
   try {
-    const clean = raw.replace(/```json|```/gi, "").trim();
-    return JSON.parse(clean);
+    return JSON.parse(raw.replace(/```json|```/gi, "").trim());
   } catch {
-    // Default plan on parse failure
-    return Array.from({ length: daysPerWeek }, (_, i) => ({
+    return Array.from({ length: days }, (_, i) => ({
       day: i + 1,
-      goal: `${styleName} fundamentals — Day ${i + 1}`,
-      drills: [
-        "Warm-up sequence",
-        `${styleName} basic technique`,
-        "Cool-down stretch",
-      ],
+      goal: `${name} Day ${i + 1}`,
+      drills: ["Warm-up", `${name} basics`, "Cool-down"],
     }));
   }
 };
 
-export const generateBattleCoachNote = async (
-  discipline: DisciplineId,
-  subDiscipline: SubDisciplineId | undefined,
-  playerScore: number,
-  opponentScore: number,
+export const generateBattleCoachNote = (
+  d: DisciplineId,
+  s: SubDisciplineId | undefined,
+  ps: number,
+  os: number,
   won: boolean,
-): Promise<string> => {
-  const disc = getDiscipline(discipline);
-  const subDisc = subDiscipline ? getSubDiscipline(subDiscipline) : undefined;
-  const styleName = subDisc?.name ?? disc.name;
-
-  return generateText(
-    `${styleName} battle coach. Player scored ${playerScore}, opponent ${opponentScore}. ${won ? "Player won!" : "Player lost."} One sentence: honest, specific to ${styleName}, both acknowledging result and giving improvement tip.`,
+) =>
+  generateText(
+    `${styleName(d, s)} battle. Player ${ps}, opponent ${os}. ${won ? "Won!" : "Lost."} One honest sentence with improvement tip.`,
     { maxTokens: 80, temperature: 0.85 },
   );
-};
 
-export const generateImportInsight = async (
+export const generateImportInsight = (
   source: string,
-  activities: number,
-  discipline: DisciplineId,
-  dateRange: string,
-): Promise<string> => {
-  const disc = getDiscipline(discipline);
-  return generateText(
-    `As a ${disc.name} coach reviewing imported ${source} data: ${activities} activities over ${dateRange}. 2-sentence training history insight relevant to ${disc.name} performance improvement.`,
+  count: number,
+  d: DisciplineId,
+  range: string,
+) =>
+  generateText(
+    `${getDiscipline(d).name} coach reviewing ${source}: ${count} activities over ${range}. 2-sentence insight.`,
     { maxTokens: 120, temperature: 0.8 },
   );
-};
 
-export const generateReelCaption = async (
-  discipline: DisciplineId,
-  subDiscipline: SubDisciplineId | undefined,
+export const generateReelCaption = (
+  d: DisciplineId,
+  s: SubDisciplineId | undefined,
   score: number,
-  drillName: string,
-): Promise<string> => {
-  const disc = getDiscipline(discipline);
-  const subDisc = subDiscipline ? getSubDiscipline(subDiscipline) : undefined;
-  const styleName = subDisc?.name ?? disc.name;
-
-  return generateText(
-    `Write a short Instagram-style caption for a ${styleName} training reel. Drill: "${drillName}". Score: ${score}/100. Engaging, with 2-3 relevant hashtags. Under 100 chars.`,
+  drill: string,
+) =>
+  generateText(
+    `Short caption for ${styleName(d, s)} reel. Drill: "${drill}". Score: ${score}/100. Under 100 chars with 2-3 hashtags.`,
     { maxTokens: 80, temperature: 1.0 },
   );
-};
 
-export const generateSubDisciplineDescription = async (
-  subDisciplineId: SubDisciplineId,
-): Promise<string> => {
-  const subDisc = getSubDiscipline(subDisciplineId);
-  if (!subDisc) return "";
-
+export const generateSubDisciplineDescription = (sub: SubDisciplineId) => {
+  const info = getSubDiscipline(sub);
+  if (!info) return Promise.resolve("");
   return generateText(
-    `In 2 sentences, describe ${subDisc.name}${subDisc.origin ? ` (from ${subDisc.origin})` : ""} as a training discipline. Include one unique characteristic that sets it apart. Enthusiastic but factual.`,
-    {
-      maxTokens: 100,
-      temperature: 0.8,
-      cacheKey: `subdesc_${subDisciplineId}`,
-    },
+    `2 sentences about ${info.name}${info.origin ? ` (${info.origin})` : ""}. One unique characteristic. Enthusiastic but factual.`,
+    { maxTokens: 100, temperature: 0.8, cacheKey: `subdesc_${sub}` },
   );
 };
 
-// ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
+// ─── FALLBACK ──────────────────────────────────────────────────────────────────
 
-const buildCoachSystemPrompt = (discipline: string, tone: string): string =>
-  `You are an elite ${discipline} performance coach with 20+ years experience. Your coaching style is ${tone}. You give specific, actionable, sport-specific feedback. You never use generic phrases like "great job" or "keep it up". You always reference specific technical aspects of ${discipline}.`;
-
-// ─── FALLBACK (no API key or all models failed) ────────────────────────────────
-
-const FALLBACK_TIPS = [
-  "Focus on your breathing — it controls everything else.",
-  "Every rep you complete is a deposit in your performance account.",
+const TIPS = [
+  "Focus on breathing — it controls everything.",
+  "Every rep is a deposit in your performance account.",
   "Perfect practice makes perfect performance.",
-  "Today's discomfort is tomorrow's strength.",
-  "Consistency beats intensity every single day.",
+  "Consistency beats intensity every day.",
 ];
 
-const _fallbackResponse = (prompt: string): string => {
-  // Return a contextually-reasonable fallback
+function _fallback(prompt: string): string {
   if (prompt.includes("tip"))
-    return FALLBACK_TIPS[Math.floor(Math.random() * FALLBACK_TIPS.length)];
+    return TIPS[Math.floor(Math.random() * TIPS.length)];
   if (prompt.includes("welcome"))
-    return "Welcome to AURA ARENA! Your journey to mastery starts here.";
+    return "Welcome to AURA ARENA! Your mastery journey starts here.";
   if (prompt.includes("caption"))
     return "Training hard every day. #AuraArena #Performance";
-  return "Keep training consistently and your scores will improve. Focus on form before speed.";
-};
+  return "Keep training consistently. Focus on form before speed.";
+}

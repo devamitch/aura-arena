@@ -7,6 +7,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { createAiSlice, type AiSlice } from "./slices/aiSlice";
 import { createAvatarSlice, type AvatarSlice } from "./slices/avatarSlice";
 import {
   createDetectionSlice,
@@ -22,11 +23,11 @@ export type AppStore = GameSlice &
   FeedSlice &
   DetectionSlice &
   UserSlice &
-  AvatarSlice;
+  AvatarSlice &
+  AiSlice;
 
 export const useStore = create<AppStore>()(
   persist(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     immer((set, get, api) => ({
       ...createGameSlice(set as any, get as any, api as any),
       ...createLeagueSlice(set as any, get as any, api as any),
@@ -34,6 +35,7 @@ export const useStore = create<AppStore>()(
       ...createDetectionSlice(set as any, get as any, api as any),
       ...createUserSlice(set as any, get as any, api as any),
       ...createAvatarSlice(set as any, get as any, api as any),
+      ...createAiSlice(set as any, get as any, api as any),
     })),
     {
       name: "aura-arena-v4",
@@ -64,6 +66,9 @@ export const useStore = create<AppStore>()(
         likedReels: [...s.likedReels],
         savedReels: [...s.savedReels],
         avatarConfig: s.avatarConfig,
+        geminiApiKey: s.geminiApiKey,
+        useGeminiVision: s.useGeminiVision,
+        feedbackDataCount: s.feedbackDataCount,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
@@ -137,6 +142,10 @@ export const useActiveReelIndex = () => useStore((s) => s.activeReelIndex);
 
 // AvatarSlice
 export const useAvatarConfig = () => useStore((s) => s.avatarConfig);
+// AiSlice
+export const useGeminiApiKey = () => useStore((s) => s.geminiApiKey);
+export const useGeminiVisionEnabled = () => useStore((s) => s.useGeminiVision);
+export const useFeedbackDataCount = () => useStore((s) => s.feedbackDataCount);
 
 // ─── Action shortcuts (for components that prefer direct destructuring) ───────
 export const useMarkNotificationRead = () =>

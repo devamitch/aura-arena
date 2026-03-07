@@ -1,0 +1,440 @@
+{
+  "squat": {
+    "exercise": "squat",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 75,
+        "max": 110,
+        "cue": "Squat deeper — aim for 90° at the knees"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 75,
+        "max": 110,
+        "cue": "Depth looks uneven — check your stance"
+      },
+      {
+        "joint": "leftHip",
+        "min": 70,
+        "max": 110,
+        "cue": "Chest up — lean forward less"
+      }
+    ]
+  },
+  "barbell_squat": {
+    "exercise": "barbell_back_squat",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 70,
+        "max": 105,
+        "cue": "Break parallel — drive depth"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 70,
+        "max": 105,
+        "cue": "Knees track over toes — no caving"
+      },
+      {
+        "joint": "leftHip",
+        "min": 65,
+        "max": 105,
+        "cue": "Bar over midfoot — chest tall"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 60,
+        "max": 110,
+        "cue": "High elbows — elbows under bar"
+      }
+    ]
+  },
+  "deadlift": {
+    "exercise": "conventional_deadlift",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 100,
+        "max": 155,
+        "cue": "Start with more knee bend — bar over laces"
+      },
+      {
+        "joint": "leftHip",
+        "min": 55,
+        "max": 95,
+        "cue": "Hips hinge — flat back, not rounded"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Arms straight — no early curl"
+      }
+    ]
+  },
+  "romanian_deadlift": {
+    "exercise": "romanian_deadlift",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 140,
+        "max": 175,
+        "cue": "Soft knee bend throughout"
+      },
+      {
+        "joint": "leftHip",
+        "min": 55,
+        "max": 100,
+        "cue": "Push hips back — feel hamstring stretch"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Bar close to body — straight arms"
+      }
+    ]
+  },
+  "bench_press": {
+    "exercise": "bench_press",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 70,
+        "max": 100,
+        "cue": "Lower to 90° — elbows 45° to body"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 70,
+        "max": 100,
+        "cue": "Even depth on both sides"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 55,
+        "max": 100,
+        "cue": "Retract scapula — arch slightly"
+      }
+    ]
+  },
+  "overhead_press": {
+    "exercise": "overhead_press",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Fully lock out overhead"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Press evenly — no lean"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Brace core — no lumbar arch"
+      }
+    ]
+  },
+  "hip_thrust": {
+    "exercise": "hip_thrust",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Knees at 90° at top"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Feet flat — push through heels"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Full hip extension — squeeze glutes"
+      }
+    ]
+  },
+  "lunge": {
+    "exercise": "lunge",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Front knee at 90° — track over toes"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 80,
+        "max": 100,
+        "cue": "Lower back knee toward the floor"
+      },
+      {
+        "joint": "leftHip",
+        "min": 85,
+        "max": 110,
+        "cue": "Keep torso upright — tall spine"
+      }
+    ]
+  },
+  "pushup": {
+    "exercise": "pushup",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 75,
+        "max": 100,
+        "cue": "Lower to 90° at the elbows"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 75,
+        "max": 100,
+        "cue": "Keep elbows close to body"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Body in a straight plank — don't sag"
+      }
+    ]
+  },
+  "pullup": {
+    "exercise": "pullup",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 30,
+        "max": 80,
+        "cue": "Pull higher — chin over bar"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 30,
+        "max": 80,
+        "cue": "Full range of motion"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Hollow body — no swinging"
+      }
+    ]
+  },
+  "dips": {
+    "exercise": "parallel_bar_dips",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 75,
+        "max": 100,
+        "cue": "Lower to 90° at elbows"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 75,
+        "max": 100,
+        "cue": "Elbows slightly flared — chest dip"
+      },
+      {
+        "joint": "leftHip",
+        "min": 145,
+        "max": 180,
+        "cue": "Lean forward — target chest"
+      }
+    ]
+  },
+  "plank": {
+    "exercise": "plank",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Level hips — no sag or pike"
+      },
+      {
+        "joint": "rightHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Core tight — hold the line"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 80,
+        "max": 100,
+        "cue": "Elbows under shoulders"
+      }
+    ]
+  },
+  "muscle_up": {
+    "exercise": "muscle_up",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 20,
+        "max": 60,
+        "cue": "Explosive pull — elbows above bar"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 140,
+        "max": 180,
+        "cue": "Press up into lockout"
+      },
+      {
+        "joint": "leftHip",
+        "min": 145,
+        "max": 180,
+        "cue": "Hollow core throughout"
+      }
+    ]
+  },
+  "handstand_calisthenics": {
+    "exercise": "handstand",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Arms locked — active shoulders"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Stack wrists, elbows, shoulders"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Hollow body — core braced"
+      }
+    ]
+  },
+  "pistol_squat": {
+    "exercise": "pistol_squat",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 30,
+        "max": 70,
+        "cue": "Deeper — aim for full ROM"
+      },
+      {
+        "joint": "leftHip",
+        "min": 30,
+        "max": 70,
+        "cue": "Stay upright — reach arms forward"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Hover leg extended and straight"
+      }
+    ]
+  },
+  "l_sit": {
+    "exercise": "l_sit",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftHip",
+        "min": 80,
+        "max": 100,
+        "cue": "Hold perfect L — hips at 90°"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Straight legs parallel to floor"
+      },
+      {
+        "joint": "leftElbow",
+        "min": 155,
+        "max": 180,
+        "cue": "Push down — depress scapula"
+      }
+    ]
+  },
+  "bodybuilding_curl": {
+    "exercise": "bicep_curl",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 30,
+        "max": 80,
+        "cue": "Full curl — peak contraction"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 30,
+        "max": 80,
+        "cue": "Elbows pinned at sides"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "No swinging — strict form"
+      }
+    ]
+  },
+  "bodybuilding_lateral_raise": {
+    "exercise": "lateral_raise",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftShoulder",
+        "min": 75,
+        "max": 100,
+        "cue": "Arms parallel to floor at top"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 75,
+        "max": 100,
+        "cue": "Slight elbow bend — lead with elbows"
+      },
+      {
+        "joint": "leftHip",
+        "min": 155,
+        "max": 180,
+        "cue": "Stable base — no body sway"
+      }
+    ]
+  }
+}

@@ -1,181 +1,111 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — Video Recorder Hook
-// Captures camera + MediaPipe overlay onto a compositor canvas with watermark.
-// Uses MediaRecorder API → returns WebM blob URL for download.
-// ═══════════════════════════════════════════════════════════════════════════════
-
-import { createLogger } from "@lib/logger";
 import { useCallback, useRef, useState } from "react";
 
-const log = createLogger("VideoRecorder");
-
-export interface UseVideoRecorderReturn {
-  isRecording: boolean;
-  recordingUrl: string | null;
-  startRecording: (
-    videoEl: HTMLVideoElement,
-    overlayCanvas?: HTMLCanvasElement | null,
-    watermark?: string,
-  ) => void;
-  stopRecording: () => void;
-  downloadRecording: (filename?: string) => void;
-  clearRecording: () => void;
+interface RecordResult {
+  blob: Blob;
+  url: string;
 }
 
-export function useVideoRecorder(): UseVideoRecorderReturn {
+export function useVideoRecorder(
+  videoRef: React.RefObject<HTMLVideoElement | null>,
+  aiCanvasRef: React.RefObject<HTMLCanvasElement | null>,
+  playerName: string,
+  accentColor: string,
+) {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const compositeCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
 
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const rafRef = useRef<number>(0);
-  const chunksRef = useRef<Blob[]>([]);
+  // Hidden canvas to join video + AI canvas + Watermark
+  const getCompositeCanvas = () => {
+    if (!compositeCanvasRef.current) {
+      const c = document.createElement("canvas");
+      c.width = 1280; // Standard 720p HD capture
+      c.height = 720;
+      compositeCanvasRef.current = c;
+    }
+    return compositeCanvasRef.current;
+  };
 
-  const startRecording = useCallback(
-    (
-      videoEl: HTMLVideoElement,
-      overlayCanvas?: HTMLCanvasElement | null,
-      watermark = "AURA ARENA",
-    ) => {
-      if (isRecording) return;
+  const drawCompositeFrame = () => {
+    const video = videoRef.current;
+    const aiCanvas = aiCanvasRef.current;
+    const compCanvas = getCompositeCanvas();
+    const ctx = compCanvas.getContext("2d");
 
-      // Compositor canvas — matches the video dimensions
-      const canvas = document.createElement("canvas");
-      canvas.width = videoEl.videoWidth || 640;
-      canvas.height = videoEl.videoHeight || 480;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        log.error("Canvas 2D context unavailable");
+    if (!video || !ctx) return;
+
+    // Draw Video layer (mirrored handled by context scale if needed, but assuming direct feed)
+    ctx.save();
+    ctx.translate(compCanvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, compCanvas.width, compCanvas.height);
+    ctx.restore();
+
+    // Draw AI landmarks layer
+    if (aiCanvas) {
+      ctx.drawImage(aiCanvas, 0, 0, compCanvas.width, compCanvas.height);
+    }
+
+    // Draw AURA ARENA Watermark
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.fillRect(compCanvas.width - 260, compCanvas.height - 70, 240, 50);
+
+    ctx.fillStyle = accentColor;
+    ctx.font = "bold 20px monospace";
+    ctx.fillText("AURA ARENA", compCanvas.width - 240, compCanvas.height - 48);
+
+    ctx.fillStyle = "white";
+    ctx.font = "14px monospace";
+    ctx.fillText(
+      playerName.toUpperCase(),
+      compCanvas.width - 240,
+      compCanvas.height - 28,
+    );
+
+    animationFrameRef.current = requestAnimationFrame(drawCompositeFrame);
+  };
+
+  const startRecording = useCallback(() => {
+    chunksRef.current = [];
+    const canvas = getCompositeCanvas();
+    const stream = canvas.captureStream(30); // 30 FPS
+
+    const mr = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+    mediaRecorderRef.current = mr;
+
+    mr.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
+
+    setIsRecording(true);
+    mr.start(1000); // chunk every second
+    drawCompositeFrame(); // Start loop
+  }, []);
+
+  const stopRecording = useCallback((): Promise<RecordResult> => {
+    return new Promise((resolve, reject) => {
+      const mr = mediaRecorderRef.current;
+      if (!mr || mr.state === "inactive") {
+        reject(new Error("No active recording"));
         return;
       }
 
-      // ── Draw loop: video + overlay + watermark ──
-      const draw = () => {
-        if (!videoEl.paused && !videoEl.ended) {
-          // Mirror the video (front camera is naturally mirrored in display)
-          ctx.save();
-          ctx.scale(-1, 1);
-          ctx.drawImage(videoEl, -canvas.width, 0, canvas.width, canvas.height);
-          ctx.restore();
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
 
-          // Overlay (MediaPipe skeleton canvas) — also mirrored
-          if (overlayCanvas) {
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(
-              overlayCanvas,
-              -canvas.width,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-            ctx.restore();
-          }
-
-          // ── Watermark ──
-          const pad = 12;
-          const lineH = 18;
-
-          // Bottom-right: brand
-          ctx.font = "bold 14px system-ui, sans-serif";
-          ctx.fillStyle = "rgba(255,255,255,0.55)";
-          ctx.textAlign = "right";
-          ctx.fillText(
-            `⚡ ${watermark}`,
-            canvas.width - pad,
-            canvas.height - pad,
-          );
-
-          // Bottom-left: timestamp
-          const now = new Date();
-          const ts = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
-          ctx.font = "11px monospace";
-          ctx.fillStyle = "rgba(0,240,255,0.5)";
-          ctx.textAlign = "left";
-          ctx.fillText(ts, pad, canvas.height - pad);
-
-          // Top-right: REC indicator
-          ctx.fillStyle = "rgba(239,68,68,0.85)";
-          ctx.beginPath();
-          ctx.arc(canvas.width - pad - 4, pad + 6, 5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.font = "bold 11px monospace";
-          ctx.fillStyle = "rgba(255,255,255,0.7)";
-          ctx.textAlign = "right";
-          ctx.fillText("REC", canvas.width - pad - lineH, pad + lineH / 2 + 4);
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
         }
-
-        rafRef.current = requestAnimationFrame(draw);
+        setIsRecording(false);
+        resolve({ blob, url });
       };
 
-      draw();
-
-      // Try best codecs in order
-      const mimeType = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"]
-        .find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
-
-      try {
-        const stream = canvas.captureStream(30);
-        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-        chunksRef.current = [];
-
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) chunksRef.current.push(e.data);
-        };
-
-        recorder.onstop = () => {
-          cancelAnimationFrame(rafRef.current);
-          const blob = new Blob(chunksRef.current, { type: "video/webm" });
-          const url = URL.createObjectURL(blob);
-          setRecordingUrl(url);
-          log.info("Recording saved", { size: blob.size });
-        };
-
-        recorderRef.current = recorder;
-        recorder.start(500); // collect data every 500 ms
-        setIsRecording(true);
-        log.info("Recording started");
-      } catch (err) {
-        cancelAnimationFrame(rafRef.current);
-        log.error("MediaRecorder failed to start", err);
-      }
-    },
-    [isRecording],
-  );
-
-  const stopRecording = useCallback(() => {
-    const rec = recorderRef.current;
-    if (!rec || rec.state === "inactive") return;
-    rec.stop();
-    setIsRecording(false);
-    log.info("Recording stopped");
+      mr.stop();
+    });
   }, []);
 
-  const downloadRecording = useCallback(
-    (filename?: string) => {
-      if (!recordingUrl) return;
-      const name = filename ?? `aura-arena-${Date.now()}.webm`;
-      const a = document.createElement("a");
-      a.href = recordingUrl;
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    },
-    [recordingUrl],
-  );
-
-  const clearRecording = useCallback(() => {
-    if (recordingUrl) URL.revokeObjectURL(recordingUrl);
-    setRecordingUrl(null);
-    chunksRef.current = [];
-  }, [recordingUrl]);
-
-  return {
-    isRecording,
-    recordingUrl,
-    startRecording,
-    stopRecording,
-    downloadRecording,
-    clearRecording,
-  };
+  return { isRecording, startRecording, stopRecording };
 }

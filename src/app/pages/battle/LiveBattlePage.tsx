@@ -6,11 +6,28 @@ import { CameraView } from "@features/arena/components/CameraView";
 import { useCamera } from "@hooks/useCamera";
 import { useLiveBattle } from "@hooks/useLiveBattle";
 import { usePersonalization } from "@hooks/usePersonalization";
+import { useVideoRecorder } from "@hooks/useVideoRecorder";
 import { analytics } from "@lib/analytics";
 import { saveBattle } from "@services/gameService";
 import { useStore, useUser } from "@store";
-import { AnimatePresence, animate, motion, useMotionValue, useSpring } from "framer-motion";
-import { Globe, Radio, Trophy, Users, Wifi, WifiOff, X, Zap } from "lucide-react";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
+import {
+  Download,
+  Globe,
+  Radio,
+  Trophy,
+  Users,
+  Wifi,
+  WifiOff,
+  X,
+  Zap,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,17 +35,32 @@ type UIPhase = "matchmaking" | "battle" | "result";
 
 const BATTLE_DURATION = 60;
 
-function AnimatedScore({ value, color = "white", size = "text-3xl" }: {
-  value: number; color?: string; size?: string;
+function AnimatedScore({
+  value,
+  color = "white",
+  size = "text-3xl",
+}: {
+  value: number;
+  color?: string;
+  size?: string;
 }) {
   const mv = useMotionValue(value);
   const spring = useSpring(mv, { stiffness: 80, damping: 18 });
   const [display, setDisplay] = useState(value);
 
-  useEffect(() => spring.on("change", (v) => setDisplay(Math.round(v))), [spring]);
-  useEffect(() => { animate(mv, value, { duration: 0.4 }); }, [value, mv]);
+  useEffect(
+    () => spring.on("change", (v) => setDisplay(Math.round(v))),
+    [spring],
+  );
+  useEffect(() => {
+    animate(mv, value, { duration: 0.4 });
+  }, [value, mv]);
 
-  return <span className={`${size} font-black tabular-nums`} style={{ color }}>{display}</span>;
+  return (
+    <span className={`${size} font-black tabular-nums`} style={{ color }}>
+      {display}
+    </span>
+  );
 }
 
 export default function LiveBattlePage() {
@@ -39,16 +71,30 @@ export default function LiveBattlePage() {
   const [uiPhase, setUiPhase] = useState<UIPhase>("matchmaking");
   const [dots, setDots] = useState("");
   const [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
-  const [result, setResult] = useState<{ won: boolean; xpGained: number } | null>(null);
+  const [result, setResult] = useState<{
+    won: boolean;
+    xpGained: number;
+  } | null>(null);
+  const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const broadcastTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playerScoreRef = useRef(0);
   const oppScoreRef = useRef(50);
 
-  const firstName = (user?.arenaName || user?.displayName || "You").split(" ")[0];
+  const firstName = (user?.arenaName || user?.displayName || "You").split(
+    " ",
+  )[0];
   const { discipline: disc, accentColor } = usePersonalization();
   const camera = useCamera({ discipline: disc.id, autoStart: false });
+
+  // Setup video recorder
+  const { startRecording, stopRecording } = useVideoRecorder(
+    camera.videoRef,
+    camera.canvasRef,
+    firstName,
+    accentColor,
+  );
 
   // Track matchmaking start once
   useEffect(() => {
@@ -73,7 +119,10 @@ export default function LiveBattlePage() {
   // Dot animation during search
   useEffect(() => {
     if (uiPhase !== "matchmaking") return;
-    const t = setInterval(() => setDots((d) => (d.length >= 3 ? "" : d + ".")), 500);
+    const t = setInterval(
+      () => setDots((d) => (d.length >= 3 ? "" : d + ".")),
+      500,
+    );
     return () => clearInterval(t);
   }, [uiPhase]);
 
@@ -82,10 +131,13 @@ export default function LiveBattlePage() {
     if (uiPhase !== "matchmaking") return;
     if (liveBattle.phase === "battling" || liveBattle.phase === "ai_fallback") {
       analytics.liveMatchFound(liveBattle.isRealOpponent);
-      camera.requestCamera();
+      camera.requestCamera().then(() => {
+        // Start recording only after camera begins streaming
+        setTimeout(startRecording, 1000);
+      });
       setUiPhase("battle");
     }
-  }, [liveBattle.phase, uiPhase, camera]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [liveBattle.phase, uiPhase, camera, startRecording]);
 
   // Battle countdown + score broadcast
   useEffect(() => {
@@ -124,8 +176,17 @@ export default function LiveBattlePage() {
     if (broadcastTimerRef.current) clearInterval(broadcastTimerRef.current);
   };
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback(async () => {
     clearTimers();
+    let videoUrl = null;
+    try {
+      const rec = await stopRecording();
+      videoUrl = rec.url;
+      setRecordedVideoUrl(videoUrl);
+    } catch (e) {
+      /* ignored, no recording active */
+    }
+
     camera.stopCamera();
     liveBattle.cleanup();
     const ps = playerScoreRef.current;
@@ -152,31 +213,48 @@ export default function LiveBattlePage() {
     analytics.xpGained(xpGained, won ? "live_win" : "live_loss");
     setResult({ won, xpGained });
     setUiPhase("result");
-  }, [camera, liveBattle, addXP, addPoints]);
+  }, [camera, liveBattle, addXP, addPoints, stopRecording]);
 
   const fmtTime = (s: number) =>
-    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+    `${Math.floor(s / 60)
+      .toString()
+      .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const timePercent = (timeLeft / BATTLE_DURATION) * 100;
-  const timeColor = timeLeft <= 10 ? "#ef4444" : timeLeft <= 20 ? "#f97316" : accentColor;
+  const timeColor =
+    timeLeft <= 10 ? "#ef4444" : timeLeft <= 20 ? "#f97316" : accentColor;
 
   return (
-    <div className="fixed inset-0 flex flex-col" style={{ background: "var(--background)" }}>
+    <div
+      className="fixed inset-0 flex flex-col"
+      style={{ background: "var(--background)" }}
+    >
       {/* Header */}
       <div
         className="flex items-center justify-between px-5 pt-safe pt-4 pb-3 flex-shrink-0"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
       >
         <button
-          onClick={() => { camera.stopCamera(); clearTimers(); liveBattle.cleanup(); navigate(-1); }}
+          onClick={() => {
+            camera.stopCamera();
+            clearTimers();
+            liveBattle.cleanup();
+            navigate(-1);
+          }}
           className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
         >
           <X className="w-4 h-4 text-white/60" />
         </button>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: accentColor }}>
+          <p
+            className="text-[10px] font-mono uppercase tracking-[0.2em]"
+            style={{ color: accentColor }}
+          >
             Live Battle
           </p>
         </div>
@@ -202,17 +280,28 @@ export default function LiveBattlePage() {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 rounded-full"
-                style={{ border: "3px solid transparent", borderTopColor: accentColor, borderRightColor: `${accentColor}40` }}
+                style={{
+                  border: "3px solid transparent",
+                  borderTopColor: accentColor,
+                  borderRightColor: `${accentColor}40`,
+                }}
               />
               <motion.div
                 animate={{ rotate: -360 }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-3 rounded-full"
-                style={{ border: "2px solid transparent", borderTopColor: `${accentColor}60`, borderLeftColor: `${accentColor}25` }}
+                style={{
+                  border: "2px solid transparent",
+                  borderTopColor: `${accentColor}60`,
+                  borderLeftColor: `${accentColor}25`,
+                }}
               />
               <div
                 className="absolute inset-0 m-auto w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ background: `${accentColor}10`, border: `1px solid ${accentColor}30` }}
+                style={{
+                  background: `${accentColor}10`,
+                  border: `1px solid ${accentColor}30`,
+                }}
               >
                 <Radio className="w-5 h-5" style={{ color: accentColor }} />
               </div>
@@ -224,7 +313,10 @@ export default function LiveBattlePage() {
                   <h2 className="font-black text-white text-2xl tracking-tight mb-2">
                     Opponent Found!
                   </h2>
-                  <p className="text-sm font-bold mb-1" style={{ color: accentColor }}>
+                  <p
+                    className="text-sm font-bold mb-1"
+                    style={{ color: accentColor }}
+                  >
                     {liveBattle.oppName}
                   </p>
                   <p className="text-xs text-white/30">Get ready to battle…</p>
@@ -234,7 +326,9 @@ export default function LiveBattlePage() {
                   <h2 className="font-black text-white text-2xl tracking-tight mb-2">
                     Finding Opponent{dots}
                   </h2>
-                  <p className="text-sm text-white/30 mb-4">Searching global {disc.name} players</p>
+                  <p className="text-sm text-white/30 mb-4">
+                    Searching global {disc.name} players
+                  </p>
                   <div className="flex items-center justify-center gap-2">
                     {["Global", "1v1", "Ranked"].map((tag) => (
                       <span
@@ -255,7 +349,10 @@ export default function LiveBattlePage() {
             </div>
 
             <button
-              onClick={() => { liveBattle.cleanup(); navigate(-1); }}
+              onClick={() => {
+                liveBattle.cleanup();
+                navigate(-1);
+              }}
               className="text-xs text-white/20 underline underline-offset-4"
             >
               Cancel Search
@@ -290,19 +387,30 @@ export default function LiveBattlePage() {
               }}
             >
               <div className="text-center flex-1">
-                <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">{firstName}</p>
-                <AnimatedScore value={camera.currentScore.overall} color={accentColor} />
+                <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/30 mb-0.5">
+                  {firstName}
+                </p>
+                <AnimatedScore
+                  value={camera.currentScore.overall}
+                  color={accentColor}
+                />
               </div>
               <div className="flex flex-col items-center px-4">
                 <Zap className="w-3 h-3 mb-0.5" style={{ color: timeColor }} />
-                <span className="font-mono text-sm font-bold tabular-nums" style={{ color: timeColor }}>
+                <span
+                  className="font-mono text-sm font-bold tabular-nums"
+                  style={{ color: timeColor }}
+                >
                   {fmtTime(timeLeft)}
                 </span>
               </div>
               <div className="text-center flex-1">
                 <div className="flex items-center justify-center gap-1 mb-0.5">
                   {liveBattle.isRealOpponent ? (
-                    <Wifi className="w-2.5 h-2.5" style={{ color: accentColor }} />
+                    <Wifi
+                      className="w-2.5 h-2.5"
+                      style={{ color: accentColor }}
+                    />
                   ) : (
                     <WifiOff className="w-2.5 h-2.5 text-white/20" />
                   )}
@@ -310,7 +418,10 @@ export default function LiveBattlePage() {
                     {liveBattle.oppName}
                   </p>
                 </div>
-                <AnimatedScore value={liveBattle.oppScore} color="rgba(255,255,255,0.5)" />
+                <AnimatedScore
+                  value={liveBattle.oppScore}
+                  color="rgba(255,255,255,0.5)"
+                />
               </div>
             </div>
 
@@ -351,10 +462,17 @@ export default function LiveBattlePage() {
             <motion.div
               initial={{ scale: 0, rotate: -15 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 20,
+                delay: 0.1,
+              }}
               className="w-24 h-24 rounded-full flex items-center justify-center"
               style={{
-                background: result.won ? `${accentColor}10` : "rgba(239,68,68,0.08)",
+                background: result.won
+                  ? `${accentColor}10`
+                  : "rgba(239,68,68,0.08)",
                 border: `2px solid ${result.won ? accentColor : "#ef4444"}30`,
                 boxShadow: `0 0 40px ${result.won ? accentColor : "#ef4444"}20`,
               }}
@@ -384,7 +502,8 @@ export default function LiveBattlePage() {
                 </p>
               </div>
               <p className="text-white/30 font-mono text-sm">
-                You: {camera.currentScore.overall} · {liveBattle.oppName}: {oppScoreRef.current}
+                You: {camera.currentScore.overall} · {liveBattle.oppName}:{" "}
+                {oppScoreRef.current}
               </p>
             </div>
 
@@ -398,10 +517,32 @@ export default function LiveBattlePage() {
             >
               <Zap className="w-5 h-5" style={{ color: accentColor }} />
               <div className="text-center">
-                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25">XP Gained</p>
-                <p className="text-2xl font-black" style={{ color: accentColor }}>+{result.xpGained}</p>
+                <p className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/25">
+                  XP Gained
+                </p>
+                <p
+                  className="text-2xl font-black"
+                  style={{ color: accentColor }}
+                >
+                  +{result.xpGained}
+                </p>
               </div>
             </div>
+
+            {/* Video Download Action */}
+            {recordedVideoUrl && (
+              <a
+                href={recordedVideoUrl}
+                download={`AuraArena_${disc.id}_Match.webm`}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border transition-colors hover:bg-white/5 active:bg-white/10"
+                style={{ borderColor: "rgba(255,255,255,0.1)", color: "white" }}
+              >
+                <Download className="w-4 h-4" />
+                <span className="text-sm font-bold tracking-wide">
+                  Save Watermarked Video
+                </span>
+              </a>
+            )}
 
             <div className="flex gap-3 w-full">
               <button
@@ -411,7 +552,11 @@ export default function LiveBattlePage() {
                   setResult(null);
                 }}
                 className="flex-1 py-4 rounded-2xl font-bold text-sm"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white" }}
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "white",
+                }}
               >
                 Rematch
               </button>

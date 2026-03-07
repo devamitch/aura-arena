@@ -1,0 +1,182 @@
+{
+  "gymnastics": {
+    "exercise": "gymnastics_extension",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Point your toes — full extension"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Legs together and straight"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 155,
+        "max": 180,
+        "cue": "Arms fully overhead"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 155,
+        "max": 180,
+        "cue": "Reach up — full stretch"
+      }
+    ]
+  },
+  "gymnastics_floor": {
+    "exercise": "gymnastics_floor_tumbling",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Point toes throughout pass"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Legs tight together"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 140,
+        "max": 180,
+        "cue": "Block from shoulders — not arms"
+      }
+    ]
+  },
+  "gymnastics_handstand": {
+    "exercise": "gymnastics_handstand",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 160,
+        "max": 180,
+        "cue": "Straight arms — no elbow bend"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 160,
+        "max": 180,
+        "cue": "Lock elbows — push through hands"
+      },
+      {
+        "joint": "leftHip",
+        "min": 160,
+        "max": 180,
+        "cue": "Hollow body — no arch"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 155,
+        "max": 180,
+        "cue": "Open shoulder angle fully"
+      }
+    ]
+  },
+  "gymnastics_back_walkover": {
+    "exercise": "gymnastics_back_walkover",
+    "visibilityMin": 0.35,
+    "checks": [
+      {
+        "joint": "leftShoulder",
+        "min": 130,
+        "max": 180,
+        "cue": "Push through shoulders — full bridge"
+      },
+      {
+        "joint": "leftHip",
+        "min": 30,
+        "max": 80,
+        "cue": "Deep back flexibility — open hip angle"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Extend split leg fully"
+      }
+    ]
+  },
+  "gymnastics_beam": {
+    "exercise": "gymnastics_balance_beam",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 155,
+        "max": 180,
+        "cue": "Point toes on beam — full extension"
+      },
+      {
+        "joint": "leftShoulder",
+        "min": 75,
+        "max": 125,
+        "cue": "Arms out for balance"
+      },
+      {
+        "joint": "rightShoulder",
+        "min": 75,
+        "max": 125,
+        "cue": "Square shoulders over beam"
+      }
+    ]
+  },
+  "parkour_precision": {
+    "exercise": "parkour_precision_jump",
+    "visibilityMin": 0.45,
+    "checks": [
+      {
+        "joint": "leftKnee",
+        "min": 70,
+        "max": 120,
+        "cue": "Deep landing absorption"
+      },
+      {
+        "joint": "rightKnee",
+        "min": 70,
+        "max": 120,
+        "cue": "Soft landing — knees track toes"
+      },
+      {
+        "joint": "leftHip",
+        "min": 80,
+        "max": 120,
+        "cue": "Absorb impact through hips"
+      }
+    ]
+  },
+  "parkour_vault": {
+    "exercise": "parkour_kong_vault",
+    "visibilityMin": 0.4,
+    "checks": [
+      {
+        "joint": "leftElbow",
+        "min": 145,
+        "max": 180,
+        "cue": "Drive through straight arms"
+      },
+      {
+        "joint": "rightElbow",
+        "min": 145,
+        "max": 180,
+        "cue": "Push off — hands first"
+      },
+      {
+        "joint": "leftKnee",
+        "min": 60,
+        "max": 120,
+        "cue": "Tuck tight — clear the obstacle"
+      }
+    ]
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "discipline": "calisthenics",
+  "exercises": {
+    "planche": {
+      "angles": {
+        "leftElbow": [160, 180],
+        "rightElbow": [160, 180],
+        "leftShoulder": [70, 110],
+        "rightShoulder": [70, 110],
+        "leftHip": [170, 180],
+        "rightHip": [170, 180]
+      },
+      "cues": {
+        "leftElbow": "Lock out your elbows — full extension",
+        "leftShoulder": "Lean forward more — shoulders over wrists",
+        "leftHip": "Keep hips level — no piking"
+      }
+    },
+    "front_lever": {
+      "angles": {
+        "leftShoulder": [150, 180],
+        "rightShoulder": [150, 180],
+        "leftHip": [170, 180],
+        "rightHip": [170, 180],
+        "leftKnee": [170, 180],
+        "rightKnee": [170, 180]
+      },
+      "cues": {
+        "leftShoulder": "Pull shoulders down and back",
+        "leftHip": "Hips in line with shoulders",
+        "leftKnee": "Keep legs straight and together"
+      }
+    },
+    "handstand": {
+      "angles": {
+        "leftElbow": [170, 180],
+        "rightElbow": [170, 180],
+        "leftShoulder": [170, 180],
+        "rightShoulder": [170, 180],
+        "leftHip": [170, 180],
+        "rightHip": [170, 180]
+      },
+      "cues": {
+        "leftElbow": "Lock elbows — push through the floor",
+        "leftShoulder": "Open shoulders fully",
+        "leftHip": "Squeeze glutes — straight line"
+      }
+    },
+    "muscle_up": {
+      "phases": {
+        "pull": {
+          "angles": { "leftElbow": [40, 90], "rightElbow": [40, 90] },
+          "cues": { "leftElbow": "Pull explosively — chest to bar" }
+        },
+        "transition": {
+          "angles": { "leftElbow": [80, 120] },
+          "cues": { "leftElbow": "Lean forward over the bar" }
+        },
+        "push": {
+          "angles": { "leftElbow": [150, 180], "rightElbow": [150, 180] },
+          "cues": { "leftElbow": "Press to full lockout" }
+        }
+      }
+    },
+    "l_sit": {
+      "angles": {
+        "leftHip": [80, 100],
+        "rightHip": [80, 100],
+        "leftKnee": [170, 180],
+        "rightKnee": [170, 180],
+        "leftElbow": [170, 180],
+        "rightElbow": [170, 180]
+      },
+      "cues": {
+        "leftHip": "Lift legs to 90° — compress hard",
+        "leftKnee": "Lock knees — point toes",
+        "leftElbow": "Lock arms — push down through parallettes"
+      }
+    },
+    "human_flag": {
+      "angles": {
+        "leftShoulder": [170, 180],
+        "rightShoulder": [170, 180],
+        "leftHip": [170, 180],
+        "rightHip": [170, 180]
+      },
+      "cues": {
+        "leftShoulder": "Top arm pushes, bottom arm pulls",
+        "leftHip": "Keep body rigid — no sagging"
+      }
+    },
+    "pistol_squat": {
+      "angles": {
+        "leftKnee": [40, 90],
+        "leftHip": [60, 100],
+        "rightKnee": [170, 180]
+      },
+      "cues": {
+        "leftKnee": "Control the descent — don't collapse",
+        "leftHip": "Sit deep into the squat",
+        "rightKnee": "Extend free leg straight ahead"
+      }
+    }
+  }
+}

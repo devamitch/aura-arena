@@ -1,0 +1,96 @@
+{
+  "discipline": "bodybuilding",
+  "poses": {
+    "front_double_biceps": {
+      "angles": {
+        "leftElbow": [70, 110],
+        "rightElbow": [70, 110],
+        "leftShoulder": [80, 100],
+        "rightShoulder": [80, 100]
+      },
+      "cues": {
+        "leftElbow": "Flex hard — peak the biceps",
+        "leftShoulder": "Arms at 90 degrees — elbows at shoulder height"
+      },
+      "symmetry": "critical"
+    },
+    "front_lat_spread": {
+      "angles": {
+        "leftElbow": [80, 120],
+        "rightElbow": [80, 120],
+        "leftShoulder": [60, 90],
+        "rightShoulder": [60, 90]
+      },
+      "cues": {
+        "leftElbow": "Hands on hips — elbows forward",
+        "leftShoulder": "Spread lats wide — expand your frame"
+      },
+      "symmetry": "critical"
+    },
+    "side_chest": {
+      "angles": {
+        "leftElbow": [60, 100],
+        "leftKnee": [20, 50],
+        "leftShoulder": [30, 70]
+      },
+      "cues": {
+        "leftElbow": "Grip wrist — squeeze chest",
+        "leftKnee": "Bend front knee — flex calf",
+        "leftShoulder": "Turn chest toward judges"
+      },
+      "symmetry": "optional"
+    },
+    "rear_double_biceps": {
+      "angles": {
+        "leftElbow": [70, 110],
+        "rightElbow": [70, 110],
+        "leftShoulder": [80, 110],
+        "rightShoulder": [80, 110],
+        "leftKnee": [160, 180]
+      },
+      "cues": {
+        "leftElbow": "Flex biceps — show peak",
+        "leftShoulder": "Squeeze shoulder blades — show back detail",
+        "leftKnee": "Push one calf back — show hamstring"
+      },
+      "symmetry": "critical"
+    },
+    "most_muscular": {
+      "angles": {
+        "leftElbow": [40, 80],
+        "rightElbow": [40, 80],
+        "leftShoulder": [20, 60],
+        "rightShoulder": [20, 60]
+      },
+      "cues": {
+        "leftElbow": "Bring fists together — crush the pose",
+        "leftShoulder": "Round shoulders forward — show traps and chest"
+      },
+      "symmetry": "optional"
+    },
+    "side_triceps": {
+      "angles": {
+        "leftElbow": [150, 180],
+        "leftShoulder": [10, 40]
+      },
+      "cues": {
+        "leftElbow": "Lock out arm behind — show tricep horseshoe",
+        "leftShoulder": "Keep arm tight to body"
+      },
+      "symmetry": "optional"
+    },
+    "abdominal_and_thigh": {
+      "angles": {
+        "leftElbow": [60, 100],
+        "leftHip": [150, 170],
+        "leftKnee": [160, 180]
+      },
+      "cues": {
+        "leftElbow": "Hands behind head — crunch abs",
+        "leftHip": "Extend one leg forward — flex quad",
+        "leftKnee": "Lock front knee — show definition"
+      },
+      "symmetry": "optional"
+    }
+  }
+}

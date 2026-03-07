@@ -1,0 +1,90 @@
+{
+  "discipline": "wrestling",
+  "techniques": {
+    "stance": {
+      "angles": {
+        "leftKnee": [70, 120],
+        "rightKnee": [70, 120],
+        "leftHip": [80, 130],
+        "rightHip": [80, 130]
+      },
+      "cues": {
+        "leftKnee": "Bend knees — stay low and ready",
+        "leftHip": "Hips low — weight forward"
+      }
+    },
+    "double_leg_takedown": {
+      "phases": {
+        "penetration": {
+          "angles": { "leftKnee": [60, 90], "leftHip": [60, 90] },
+          "cues": {
+            "leftKnee": "Drive knee forward — level change",
+            "leftHip": "Drop hips fast"
+          }
+        },
+        "finish": {
+          "angles": { "leftKnee": [80, 120], "leftHip": [100, 140] },
+          "cues": { "leftKnee": "Drive through — turn the corner" }
+        }
+      }
+    },
+    "single_leg_takedown": {
+      "phases": {
+        "entry": {
+          "angles": { "leftKnee": [60, 90], "leftHip": [60, 100] },
+          "cues": { "leftKnee": "Snap to the leg — head inside" }
+        },
+        "finish": {
+          "angles": { "leftKnee": [80, 130] },
+          "cues": { "leftKnee": "Run the pipe or trip" }
+        }
+      }
+    },
+    "sprawl": {
+      "angles": {
+        "leftHip": [140, 175],
+        "rightHip": [140, 175],
+        "leftKnee": [150, 180],
+        "rightKnee": [150, 180]
+      },
+      "cues": {
+        "leftHip": "Throw hips back FAST",
+        "leftKnee": "Straighten legs — heavy hips on opponent"
+      }
+    },
+    "fireman_carry": {
+      "angles": {
+        "leftKnee": [60, 100],
+        "leftShoulder": [60, 120],
+        "leftHip": [60, 100]
+      },
+      "cues": {
+        "leftKnee": "Deep level change",
+        "leftShoulder": "Thread the arm — load on shoulders",
+        "leftHip": "Pop hips and rotate"
+      }
+    },
+    "underhook": {
+      "angles": {
+        "leftElbow": [50, 90],
+        "leftShoulder": [40, 80]
+      },
+      "cues": {
+        "leftElbow": "Swim inside — elbow tight",
+        "leftShoulder": "Drive shoulder up and forward"
+      }
+    },
+    "bridge_escape": {
+      "angles": {
+        "leftKnee": [60, 100],
+        "leftHip": [80, 140],
+        "leftShoulder": [60, 120]
+      },
+      "cues": {
+        "leftKnee": "Plant feet — explosive bridge",
+        "leftHip": "Bump hips high — create space",
+        "leftShoulder": "Turn to belly — turtle up"
+      }
+    }
+  }
+}

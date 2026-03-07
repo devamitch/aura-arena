@@ -18,31 +18,31 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import {
-  FilesetResolver,
-  HandLandmarker,
-  PoseLandmarker,
-} from '@mediapipe/tasks-vision';
-import {
   checkExerciseForm,
   ensureTF,
   type PoseCorrectness,
-} from '@lib/poseCorrectness';
+} from "@lib/poseCorrectness";
 import {
   createRhythmState,
   scoreFrame,
   type RhythmState,
   type ScoreFrameInput,
-} from '@lib/scoreEngine';
-import type { FrameScore, Landmark } from '@types';
+} from "@lib/score";
+import {
+  FilesetResolver,
+  HandLandmarker,
+  PoseLandmarker,
+} from "@mediapipe/tasks-vision";
+import type { FrameScore, Landmark } from "@types";
 
 // ─── CDN URLs ─────────────────────────────────────────────────────────────────
 
 const WASM_URL =
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
+  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
 const POSE_MODEL =
-  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+  "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
 const HAND_MODEL =
-  'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
 // ─── Worker-local state ───────────────────────────────────────────────────────
 
@@ -54,14 +54,14 @@ let rhythmState: RhythmState | null = null;
 // ─── Message types ────────────────────────────────────────────────────────────
 
 type InitMsg = {
-  type: 'INIT';
+  type: "INIT";
   discipline: string;
   subDiscipline?: string;
   bpm: number;
 };
 
 type FrameMsg = {
-  type: 'PROCESS_FRAME';
+  type: "PROCESS_FRAME";
   bitmap: ImageBitmap;
   timestamp: number;
   elapsedMs: number;
@@ -74,10 +74,10 @@ type FrameMsg = {
   lastComboTime: number;
 };
 
-type InMsg = InitMsg | FrameMsg | { type: 'DESTROY' };
+type InMsg = InitMsg | FrameMsg | { type: "DESTROY" };
 
 export type WorkerFrameResult = {
-  type: 'FRAME_RESULT';
+  type: "FRAME_RESULT";
   poseLandmarks: Landmark[][];
   handLandmarks: Landmark[][];
   gestures: unknown[][];
@@ -91,7 +91,10 @@ export type WorkerFrameResult = {
 // ─── Initialise ───────────────────────────────────────────────────────────────
 
 const HAND_DISCIPLINES = new Set([
-  'boxing', 'martialarts', 'dance', 'gymnastics',
+  "boxing",
+  "martialarts",
+  "dance",
+  "gymnastics",
 ]);
 
 async function init(msg: InitMsg): Promise<void> {
@@ -104,8 +107,8 @@ async function init(msg: InitMsg): Promise<void> {
   const vision = await FilesetResolver.forVisionTasks(WASM_URL);
 
   poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
-    baseOptions: { modelAssetPath: POSE_MODEL, delegate: 'CPU' },
-    runningMode: 'VIDEO',
+    baseOptions: { modelAssetPath: POSE_MODEL, delegate: "CPU" },
+    runningMode: "VIDEO",
     numPoses: 1,
     minPoseDetectionConfidence: 0.5,
     minPosePresenceConfidence: 0.5,
@@ -115,8 +118,8 @@ async function init(msg: InitMsg): Promise<void> {
 
   if (HAND_DISCIPLINES.has(msg.discipline)) {
     handLandmarker = await HandLandmarker.createFromOptions(vision, {
-      baseOptions: { modelAssetPath: HAND_MODEL, delegate: 'CPU' },
-      runningMode: 'VIDEO',
+      baseOptions: { modelAssetPath: HAND_MODEL, delegate: "CPU" },
+      runningMode: "VIDEO",
       numHands: 2,
       minHandDetectionConfidence: 0.5,
       minHandPresenceConfidence: 0.5,
@@ -127,7 +130,7 @@ async function init(msg: InitMsg): Promise<void> {
   rhythmState = createRhythmState(msg.bpm);
   initialized = true;
 
-  (self as unknown as Worker).postMessage({ type: 'READY' });
+  (self as unknown as Worker).postMessage({ type: "READY" });
 }
 
 // ─── Process one frame ────────────────────────────────────────────────────────
@@ -136,7 +139,7 @@ async function processFrame(msg: FrameMsg): Promise<void> {
   if (!poseLandmarker) return;
 
   // ── 1. MediaPipe inference ────────────────────────────────────────────────
-  let rawPose: ReturnType<PoseLandmarker['detectForVideo']>;
+  let rawPose: ReturnType<PoseLandmarker["detectForVideo"]>;
   try {
     rawPose = poseLandmarker.detectForVideo(msg.bitmap, msg.timestamp);
   } catch {
@@ -168,23 +171,20 @@ async function processFrame(msg: FrameMsg): Promise<void> {
   const input: ScoreFrameInput = {
     landmarks,
     previousLandmarks: msg.prevLandmarks,
-    frameWindow:       msg.frameWindow,
-    discipline:        msg.discipline as import('@types').DisciplineId,
-    subDiscipline:     msg.subDiscipline as import('@types').SubDisciplineId | undefined,
-    elapsedMs:         msg.elapsedMs,
-    rhythmState:       msg.rhythmState ?? rhythmState ?? createRhythmState(80),
-    currentCombo:      msg.combo,
-    lastComboTime:     msg.lastComboTime,
-    gestures:          gestures as any,
-    drill:             undefined,
+    frameWindow: msg.frameWindow,
+    discipline: msg.discipline as import("@types").DisciplineId,
+    subDiscipline: msg.subDiscipline as
+      | import("@types").SubDisciplineId
+      | undefined,
+    elapsedMs: msg.elapsedMs,
+    rhythmState: msg.rhythmState ?? rhythmState ?? createRhythmState(80),
+    currentCombo: msg.combo,
+    lastComboTime: msg.lastComboTime,
+    gestures: gestures as any,
   };
 
-  const {
-    frameScore,
-    updatedRhythmState,
-    newCombo,
-    newLastComboTime,
-  } = scoreFrame(input);
+  const { frameScore, updatedRhythmState, newCombo, newLastComboTime } =
+    scoreFrame(input);
 
   // Update local rhythm state for next frame
   rhythmState = updatedRhythmState;
@@ -198,7 +198,7 @@ async function processFrame(msg: FrameMsg): Promise<void> {
 
   // ── 4. Send results to main thread (plain JSON — no transferables) ────────
   const result: WorkerFrameResult = {
-    type: 'FRAME_RESULT',
+    type: "FRAME_RESULT",
     poseLandmarks,
     handLandmarks,
     gestures,
@@ -214,29 +214,29 @@ async function processFrame(msg: FrameMsg): Promise<void> {
 
 // ─── Message handler ──────────────────────────────────────────────────────────
 
-self.addEventListener('message', async (e: MessageEvent<InMsg>) => {
+self.addEventListener("message", async (e: MessageEvent<InMsg>) => {
   const msg = e.data;
 
-  if (msg.type === 'INIT') {
+  if (msg.type === "INIT") {
     try {
       await init(msg);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      (self as unknown as Worker).postMessage({ type: 'ERROR', message });
+      (self as unknown as Worker).postMessage({ type: "ERROR", message });
     }
     return;
   }
 
-  if (msg.type === 'PROCESS_FRAME') {
+  if (msg.type === "PROCESS_FRAME") {
     await processFrame(msg);
     return;
   }
 
-  if (msg.type === 'DESTROY') {
+  if (msg.type === "DESTROY") {
     poseLandmarker?.close();
     handLandmarker?.close();
     poseLandmarker = null;
     handLandmarker = null;
-    initialized    = false;
+    initialized = false;
   }
 });

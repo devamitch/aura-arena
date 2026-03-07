@@ -3,19 +3,30 @@
 // Google OAuth via @react-oauth/google + Supabase session
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useCallback, useEffect } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
-import { analytics, identifyUser, resetAnalytics } from '@lib/analytics';
-import { useStore, useUser, useIsLoading } from '@store';
-import { signInWithGoogle, signOut as supabaseSignOut, supabase } from '@lib/supabase/client';
-import { initOfflineSync } from '@lib/pwa/offlineQueue';
+import { initGemini } from "@/services/aiService";
+import { analytics, identifyUser, resetAnalytics } from "@lib/analytics";
+import { initOfflineSync } from "@lib/pwa/offlineQueue";
+import {
+  signInWithGoogle,
+  supabase,
+  signOut as supabaseSignOut,
+} from "@lib/supabase/client";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useIsLoading, useStore, useUser } from "@store";
+import { useCallback, useEffect } from "react";
 
 // ─── HOOK ─────────────────────────────────────────────────────────────────────
 
 export const useAuth = () => {
-  const user    = useUser();
+  const user = useUser();
   const loading = useIsLoading();
-  const { setUser, setLoading, setAuthError, signOut: storeSignOut, addSavedAccount } = useStore();
+  const {
+    setUser,
+    setLoading,
+    setAuthError,
+    signOut: storeSignOut,
+    addSavedAccount,
+  } = useStore();
 
   // ── Restore session on mount ───────────────────────────────────────────────
   useEffect(() => {
@@ -26,14 +37,19 @@ export const useAuth = () => {
         identifyUser(session.user.id);
         await hydrateUser(session.user.id, setUser);
       }
+      // Auto-init Gemini from stored key (if user previously saved one)
+      const storedKey = useStore.getState().geminiApiKey;
+      if (storedKey) initGemini(storedKey);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
         identifyUser(session.user.id);
         await hydrateUser(session.user.id, setUser);
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === "SIGNED_OUT") {
         resetAnalytics();
         storeSignOut();
       }
@@ -57,25 +73,26 @@ export const useAuth = () => {
         const { session } = await signInWithGoogle(tokenResponse.access_token);
         if (session?.user) {
           identifyUser(session.user.id);
-          analytics.signInSuccess(session.user.id, 'google');
+          analytics.signInSuccess(session.user.id, "google");
           const profile = await hydrateUser(session.user.id, setUser);
           if (profile) {
             addSavedAccount({
               sub: session.user.id,
-              email: session.user.email ?? '',
-              displayName: profile.displayName ?? '',
+              email: session.user.email ?? "",
+              displayName: profile.displayName ?? "",
               avatarUrl: profile.avatar ?? null,
               lastUsed: Date.now(),
             });
           }
         }
       } catch (err: any) {
-        setAuthError(err.message ?? 'Login failed');
+        setAuthError(err.message ?? "Login failed");
       } finally {
         setLoading(false);
       }
     },
-    onError: (err) => setAuthError(err.error_description ?? 'Google login failed'),
+    onError: (err) =>
+      setAuthError(err.error_description ?? "Google login failed"),
   });
 
   // ── Sign out ──────────────────────────────────────────────────────────────
@@ -84,7 +101,9 @@ export const useAuth = () => {
     analytics.signOut();
     try {
       await supabaseSignOut();
-    } catch {}
+    } catch {
+      /* signOut may fail if already signed out */
+    }
     resetAnalytics();
     storeSignOut();
     setLoading(false);
@@ -97,28 +116,28 @@ export const useAuth = () => {
 
 async function hydrateUser(
   userId: string,
-  setUser: (u: any) => void
+  setUser: (u: any) => void,
 ): Promise<any> {
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
     .single();
 
   if (profile) {
     setUser({
       id: userId,
-      email: profile.email ?? '',
-      displayName: profile.display_name ?? '',
-      arenaName: profile.arena_name ?? '',
-      username: profile.username ?? '',
-      avatar: profile.avatar ?? '',
-      discipline: profile.discipline ?? 'boxing',
+      email: profile.email ?? "",
+      displayName: profile.display_name ?? "",
+      arenaName: profile.arena_name ?? "",
+      username: profile.username ?? "",
+      avatar: profile.avatar ?? "",
+      discipline: profile.discipline ?? "boxing",
       subDiscipline: profile.sub_discipline,
-      experienceLevel: profile.experience_level ?? 'beginner',
+      experienceLevel: profile.experience_level ?? "beginner",
       goals: profile.goals ?? [],
       trainingFrequency: profile.training_frequency ?? 3,
-      aiCoachName: profile.ai_coach_name ?? 'Coach',
+      aiCoachName: profile.ai_coach_name ?? "Coach",
       onboardingComplete: profile.onboarding_complete ?? false,
       xp: profile.xp ?? 0,
       totalPoints: profile.total_points ?? 0,
@@ -128,8 +147,8 @@ async function hydrateUser(
       winStreak: profile.win_streak ?? 0,
       averageScore: profile.average_score ?? 0,
       bestScore: profile.best_score ?? 0,
-      bio: profile.bio ?? '',
-      lastActiveDate: profile.last_active_date ?? '',
+      bio: profile.bio ?? "",
+      lastActiveDate: profile.last_active_date ?? "",
     });
   }
 
