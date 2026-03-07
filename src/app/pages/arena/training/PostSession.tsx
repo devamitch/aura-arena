@@ -2,9 +2,9 @@ import { MetricsPanel } from "@features/arena/components/MetricsPanel";
 import type { AICallState as CoachFeedback } from "@hooks/useAI";
 import type { PersonalizationConfig as Personalization } from "@hooks/usePersonalization";
 import { ArcGauge } from "@shared/components/ui/ArcGauge";
+import { AuraCoin } from "@shared/components/ui/aura-coin";
 import { useSelectedDifficulty, useSelectedDrill, useStore } from "@store";
 import type { FrameScore as Score } from "@types";
-import { PREMIUM_ASSETS } from "@utils/assets";
 import { motion } from "framer-motion";
 import { RotateCcw, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -61,10 +61,9 @@ export function PostSession({
               strokeWidth={12}
               color="#00f0ff"
             />
-            <img
-              src={PREMIUM_ASSETS.CURRENCY.AURA_COIN}
-              alt=""
-              className="absolute -top-2 -right-2 w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]"
+            <AuraCoin
+              size={32}
+              className="absolute -top-2 -right-2 drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]"
             />
           </div>
           <p className="text-[14px] font-bold text-white mt-6 tracking-wide drop-shadow-md">

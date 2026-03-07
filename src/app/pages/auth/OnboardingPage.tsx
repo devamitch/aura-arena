@@ -6,12 +6,12 @@ import { SubDisciplineSelector } from "@features/arena/components/SubDisciplineS
 import { generateWelcomeMessage } from "@lib/gemini";
 import { cn } from "@lib/utils";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
+import { AuraLogoText } from "@shared/components/ui/aura-logo-text";
 import { useStore, useUser } from "@store";
 import type { DisciplineId, SubDisciplineId } from "@types";
 import {
   DISCIPLINE_ATHLETE,
   DISCIPLINE_BANNER,
-  MODELS,
   PREMIUM_ASSETS,
 } from "@utils/assets";
 import { DISCIPLINES, getDiscipline } from "@utils/constants/disciplines";
@@ -27,8 +27,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AvatarCanvas } from "../../../components/3d/AvatarCanvas";
-
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const EXPERIENCE_LEVELS = [
@@ -151,13 +149,17 @@ const CardGlass = ({
     style={
       selected
         ? {
-            background: "rgba(0,240,255,0.06)",
-            border: "1px solid rgba(0,240,255,0.30)",
-            boxShadow: "0 0 20px rgba(0,240,255,0.08)",
+            background:
+              "linear-gradient(145deg, rgba(12, 16, 30, 0.95), rgba(6, 8, 16, 0.98))",
+            border: "1px solid rgba(0,240,255,0.50)",
+            boxShadow:
+              "0 10px 30px rgba(0,240,255,0.15), inset 0 0 20px rgba(0,240,255,0.1)",
           }
         : {
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.07)",
+            background:
+              "linear-gradient(145deg, rgba(20, 26, 45, 0.85), rgba(12, 16, 28, 0.9))",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
           }
     }
   >
@@ -166,7 +168,16 @@ const CardGlass = ({
 );
 
 const GradientLabel = ({ children }: { children: React.ReactNode }) => (
-  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--ac)] to-[#a855f7]">
+  <span
+    className="text-transparent bg-clip-text font-black italic tracking-tighter"
+    style={{
+      backgroundImage: "linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      transform: "skewX(-10deg)",
+      display: "inline-block",
+    }}
+  >
     {children}
   </span>
 );
@@ -186,7 +197,9 @@ export default function OnboardingPage() {
   const [experience, setExperience] = useState<string>("beginner");
   const [goals, setGoals] = useState<string[]>([]);
   const [frequency, setFrequency] = useState(3);
-  const [avatarUrl, setAvatarUrl] = useState<string>(MODELS.AVATAR_VRM);
+  const [avatarUrl, setAvatarUrl] = useState<string>(
+    PREMIUM_ASSETS.ATHLETES.BOXER,
+  );
   const [coachName, setCoachName] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -208,7 +221,8 @@ export default function OnboardingPage() {
   const canAdvance = () => {
     if (step === 3) return !!experience;
     if (step === 4) return goals.length > 0;
-    if (step === 5) return coachName.trim().length >= 2;
+    if (step === 5) return !!avatarUrl;
+    if (step === 6) return coachName.trim().length >= 2;
     return true;
   };
 
@@ -292,15 +306,21 @@ export default function OnboardingPage() {
 
       <div className="relative z-10 flex flex-col h-full">
         {/* Progress bar */}
-        <div className="h-0.5" style={{ background: "rgba(255,255,255,0.04)" }}>
+        <div
+          className="h-1 shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        >
           <motion.div
-            className="h-full"
+            className="h-full relative overflow-hidden"
             style={{
-              background: "linear-gradient(90deg, var(--ac), var(--ac2))",
+              background: "linear-gradient(90deg, #00f0ff, #3b82f6)",
+              boxShadow: "0 0 15px rgba(0,240,255,0.6)",
             }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.4 }}
-          />
+            transition={{ duration: 0.6, ease: "circOut" }}
+          >
+            <div className="absolute inset-0 bg-white/20 blur-[2px] w-full animate-pulse" />
+          </motion.div>
         </div>
 
         {/* Header */}
@@ -319,24 +339,26 @@ export default function OnboardingPage() {
             <ChevronLeft className="w-4 h-4 text-white/60" />
           </button>
 
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {STEPS.map((_, i) => (
               <motion.div
                 key={i}
                 animate={{
-                  width: i === step ? 20 : 8,
+                  width: i === step ? 28 : 8,
                   opacity: i <= step ? 1 : 0.2,
                 }}
                 className="h-1.5 rounded-full"
                 style={{
                   background:
                     i <= step ? "var(--ac)" : "rgba(255,255,255,0.15)",
+                  boxShadow:
+                    i === step ? "0 0 10px rgba(0,240,255,0.5)" : "none",
                 }}
               />
             ))}
           </div>
 
-          <span className="text-[11px] font-mono text-white/25">
+          <span className="text-[11px] font-black text-white/40 tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10">
             {step + 1}/{STEPS.length}
           </span>
         </div>
@@ -371,8 +393,13 @@ export default function OnboardingPage() {
                   />
                 </div>
 
-                <h2 className="text-[32px] font-black text-white mb-4 leading-tight">
-                  Initialize Your <GradientLabel>AI Coach</GradientLabel>
+                <div className="mb-10 text-center">
+                  <AuraLogoText size="lg" glow={true} className="scale-125" />
+                </div>
+
+                <h2 className="text-[36px] font-black text-white mb-4 leading-[1.1] tracking-tight drop-shadow-md">
+                  Initialize Your <br />
+                  <GradientLabel>AI Coach</GradientLabel>
                 </h2>
                 <p className="text-[15px] text-white/55 leading-relaxed max-w-[300px] mb-8">
                   The Vision Engine needs to know your discipline and skill
@@ -558,13 +585,17 @@ export default function OnboardingPage() {
                         style={
                           selected
                             ? {
-                                background: "rgba(0,240,255,0.06)",
-                                border: "1px solid rgba(0,240,255,0.30)",
-                                boxShadow: "0 0 20px rgba(0,240,255,0.08)",
+                                background:
+                                  "linear-gradient(145deg, rgba(12, 16, 30, 0.95), rgba(6, 8, 16, 0.98))",
+                                border: "1px solid rgba(0,240,255,0.50)",
+                                boxShadow:
+                                  "0 10px 30px rgba(0,240,255,0.15), inset 0 0 20px rgba(0,240,255,0.1)",
                               }
                             : {
-                                background: "rgba(255,255,255,0.03)",
-                                border: "1px solid rgba(255,255,255,0.07)",
+                                background:
+                                  "linear-gradient(145deg, rgba(20, 26, 45, 0.85), rgba(12, 16, 28, 0.9))",
+                                border: "1px solid rgba(255,255,255,0.12)",
+                                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
                               }
                         }
                       >
@@ -680,7 +711,7 @@ export default function OnboardingPage() {
               </motion.div>
             )}
 
-            {/* ── Step 5: Avatar (3D R3F) ── */}
+            {/* ── Step 5: Avatar (Premium 2D) ── */}
             {step === 5 && (
               <motion.div
                 key="avatar"
@@ -689,36 +720,56 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -30 }}
                 className="flex flex-col h-full"
               >
-                <h2 className="text-2xl font-black text-white mb-1">
-                  Choose <GradientLabel>Avatar</GradientLabel>
-                </h2>
+                <div className="mb-1">
+                  <h2 className="text-[28px] font-black text-white leading-tight drop-shadow-md">
+                    Choose <GradientLabel>Avatar</GradientLabel>
+                  </h2>
+                </div>
                 <p className="text-sm text-white/35 mb-6">
                   Your representation in the Global Arena.
                 </p>
 
-                {/* 3D Preview Glass Panel */}
-                <div className="w-full h-[260px] mb-6 rounded-3xl overflow-hidden relative shadow-[0_0_30px_rgba(0,240,255,0.15)] border border-white/10 bg-black/40">
-                  <AvatarCanvas />
+                {/* 2D Preview Panel */}
+                <div
+                  className="w-full h-[260px] mb-6 rounded-[28px] overflow-hidden relative"
+                  style={{
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(0,240,255,0.2)",
+                    boxShadow: "0 0 40px rgba(0,240,255,0.08)",
+                  }}
+                >
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar Preview"
+                    className="absolute inset-0 w-full h-full object-cover opacity-90 transition-all duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#040610] via-transparent to-transparent opacity-80" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pb-8">
                   {[
                     {
-                      id: MODELS.AVATAR_VRM,
-                      title: "Standard VRM",
-                      desc: "Anime base model",
-                      icon: User,
-                    },
-                    {
-                      id: MODELS.XBOT,
-                      title: "XBot Tactical",
-                      desc: "Military grade",
+                      id: PREMIUM_ASSETS.ATHLETES.ARENA,
+                      title: "Cyber Athlete",
+                      desc: "High-tech gear",
                       icon: Target,
                     },
                     {
-                      id: MODELS.ROBOT,
-                      title: "Android",
-                      desc: "Expressive synth",
+                      id: PREMIUM_ASSETS.ATHLETES.WARRIOR,
+                      title: "Void Striker",
+                      desc: "Stealth focus",
+                      icon: User,
+                    },
+                    {
+                      id: PREMIUM_ASSETS.ATHLETES.BOXER,
+                      title: "Neon Brawler",
+                      desc: "Power focus",
+                      icon: Target,
+                    },
+                    {
+                      id: PREMIUM_ASSETS.ATHLETES.YOGI,
+                      title: "Zen Master",
+                      desc: "Fluid motion",
                       icon: Sparkles,
                     },
                   ].map((av) => {
@@ -731,27 +782,35 @@ export default function OnboardingPage() {
                           setAvatarUrl(av.id);
                           setAvatarConfig({ modelUrl: av.id });
                         }}
-                        className="flex flex-col items-center justify-center p-4 min-h-[140px] relative"
+                        className="flex flex-col items-center justify-center p-4 min-h-[140px] relative overflow-hidden"
                       >
+                        {/* Background Thumbnail preview */}
+                        <img
+                          src={av.id}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover opacity-20"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#040914] via-[#040914]/80 to-[#040914]/40" />
+
                         <av.icon
                           className={cn(
-                            "w-6 h-6 mb-3",
-                            selected ? "text-[var(--ac)]" : "text-t3",
+                            "w-6 h-6 mb-3 relative z-10",
+                            selected ? "text-[var(--ac)]" : "text-white/40",
                           )}
                         />
-                        <span className="font-bold text-sm text-center mb-1 text-white">
+                        <span className="font-black text-[13px] text-center mb-1 text-white relative z-10 tracking-wide uppercase">
                           {av.title}
                         </span>
-                        <span className="text-[10px] text-white/50 text-center">
+                        <span className="text-[10px] text-white/50 text-center font-bold tracking-widest uppercase relative z-10">
                           {av.desc}
                         </span>
 
                         {selected && (
                           <div
-                            className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center"
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center z-10 shadow-[0_0_10px_var(--ac)]"
                             style={{ background: "var(--ac)" }}
                           >
-                            <CheckCircle className="w-2.5 h-2.5 text-black" />
+                            <CheckCircle className="w-3 h-3 text-black" />
                           </div>
                         )}
                       </CardGlass>
@@ -853,9 +912,10 @@ export default function OnboardingPage() {
                 <motion.h2
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1, transition: { delay: 0.2 } }}
-                  className="text-3xl font-black text-white mb-2 text-center"
+                  className="text-[36px] font-black text-white mb-2 text-center leading-[1.1] tracking-tight drop-shadow-md"
                 >
-                  <GradientLabel>Ready</GradientLabel> for Battle
+                  <GradientLabel>Ready</GradientLabel>
+                  <br /> for Battle
                 </motion.h2>
                 <motion.p
                   initial={{ y: 20, opacity: 0 }}
@@ -868,13 +928,18 @@ export default function OnboardingPage() {
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1, transition: { delay: 0.6 } }}
-                  className="w-full rounded-[28px] overflow-hidden relative"
+                  className="w-full rounded-[28px] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
                   style={{
-                    background: "rgba(255,255,255,0.03)",
+                    background:
+                      "linear-gradient(145deg, rgba(20,24,40,0.9), rgba(10,12,20,0.95))",
+                    backdropFilter: "blur(20px)",
                     border: "1px solid rgba(0,240,255,0.2)",
-                    boxShadow: "0 0 40px rgba(0,240,255,0.08)",
+                    boxShadow:
+                      "0 0 40px rgba(0,240,255,0.08), inset 0 1px 0 rgba(255,255,255,0.1)",
                   }}
                 >
+                  {/* Subtle pulsing background glow */}
+                  <div className="absolute inset-0 bg-[var(--ac)] opacity-[0.03] animate-pulse pointer-events-none mix-blend-screen" />
                   {/* Athlete portrait (right side fade) */}
                   <div
                     className="absolute right-0 top-0 bottom-0 w-2/5 pointer-events-none"
@@ -1008,17 +1073,16 @@ export default function OnboardingPage() {
             onClick={handleNext}
             disabled={!canAdvance() || saving}
             className={cn(
-              "w-full h-16 rounded-[24px] font-black text-[16px] uppercase tracking-[0.15em] flex items-center justify-center gap-3 transition-all active:scale-[0.98]",
+              "w-full h-16 rounded-[24px] font-black text-[15px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300",
               canAdvance() && !saving
-                ? "text-[#040914]"
-                : "opacity-40 cursor-not-allowed text-white/40",
+                ? "text-[#040914] shadow-[0_10px_40px_rgba(0,240,255,0.3)] hover:shadow-[0_10px_50px_rgba(0,240,255,0.5)] hover:scale-[1.02] active:scale-[0.98]"
+                : "opacity-40 cursor-not-allowed text-white/40 shadow-none hover:scale-100",
             )}
             style={
               canAdvance() && !saving
                 ? {
                     background:
-                      "linear-gradient(135deg, var(--ac), var(--ac2))",
-                    boxShadow: "0 0 30px rgba(0,240,255,0.3)",
+                      "linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%)",
                   }
                 : {
                     background: "rgba(255,255,255,0.04)",

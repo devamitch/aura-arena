@@ -146,7 +146,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "disciplined",
     name: "Disciplined",
-    icon: "🗓️",
+    icon: PREMIUM_ASSETS.ICONS.STREAK,
     description: "Complete 50 training sessions.",
     condition: "50 sessions completed",
     rarity: "Epic",
@@ -157,7 +157,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "centurion",
     name: "Centurion",
-    icon: "💯",
+    icon: PREMIUM_ASSETS.BADGES.PROFESSIONAL,
     description: "Complete 100 training sessions.",
     condition: "100 sessions completed",
     rarity: "Epic",
@@ -168,7 +168,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "diverse",
     name: "Renaissance Athlete",
-    icon: "🌍",
+    icon: PREMIUM_ASSETS.GOALS.COMPETE,
     description: "Train in 3 different disciplines.",
     condition: "3 disciplines trained",
     rarity: "Rare",
@@ -179,7 +179,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "coachs_pet",
     name: "Coach's Favourite",
-    icon: "⭐",
+    icon: PREMIUM_ASSETS.COACHES.SENSEI,
     description: "Complete 10 AI-coached sessions.",
     condition: "10 sessions with AI coach",
     rarity: "Common",
@@ -191,7 +191,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "combo_king",
     name: "Combo King",
-    icon: "🔥",
+    icon: PREMIUM_ASSETS.ICONS.STREAK,
     description: "Achieve a 15x combo in a single session.",
     condition: "Combo ≥ 15",
     rarity: "Epic",
@@ -202,7 +202,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "combo_legend",
     name: "Combo Legend",
-    icon: "⚡",
+    icon: PREMIUM_ASSETS.CURRENCY.AURA_COIN,
     description: "Achieve a 30x combo in a single session.",
     condition: "Combo ≥ 30",
     rarity: "Legendary",
@@ -214,7 +214,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "iron_week",
     name: "Iron Week",
-    icon: "💪",
+    icon: PREMIUM_ASSETS.ICONS.STREAK,
     description: "Maintain a 7-day training streak.",
     condition: "7-day streak",
     rarity: "Rare",
@@ -225,7 +225,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "month_warrior",
     name: "Month Warrior",
-    icon: "🗡️",
+    icon: PREMIUM_ASSETS.ICONS.COMBAT,
     description: "Maintain a 30-day training streak.",
     condition: "30-day streak",
     rarity: "Epic",
@@ -237,7 +237,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "first_blood",
     name: "First Blood",
-    icon: "🩸",
+    icon: PREMIUM_ASSETS.ICONS.COMBAT,
     description: "Win your first PvE battle.",
     condition: "Win 1 PvE battle",
     rarity: "Common",
@@ -248,7 +248,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "flawless",
     name: "Flawless",
-    icon: "🛡️",
+    icon: PREMIUM_ASSETS.BADGES.ADVANCED_3D,
     description: "Win 5 PvE battles in a row.",
     condition: "5 consecutive PvE wins",
     rarity: "Epic",
@@ -259,7 +259,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "pve_veteran",
     name: "PvE Veteran",
-    icon: "⚔️",
+    icon: PREMIUM_ASSETS.ICONS.COMBAT,
     description: "Win 25 PvE battles.",
     condition: "25 PvE wins",
     rarity: "Rare",
@@ -271,7 +271,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "crowd_favorite",
     name: "Crowd Favourite",
-    icon: "👏",
+    icon: PREMIUM_ASSETS.ICONS.SOCIAL,
     description: "Receive 50 total likes on your reels.",
     condition: "50 total reel likes",
     rarity: "Rare",
@@ -282,7 +282,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "viral_reel",
     name: "Viral Reel",
-    icon: "🚀",
+    icon: PREMIUM_ASSETS.ICONS.STREAK,
     description: "Get 100 likes on a single reel.",
     condition: "100 likes on one reel",
     rarity: "Epic",
@@ -293,7 +293,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "social_athlete",
     name: "Social Athlete",
-    icon: "📱",
+    icon: PREMIUM_ASSETS.ICONS.SOCIAL,
     description: "Post 10 training reels.",
     condition: "10 reels posted",
     rarity: "Common",
@@ -305,7 +305,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "league_contender",
     name: "League Contender",
-    icon: "🏟️",
+    icon: PREMIUM_ASSETS.BADGES.BEGINNER,
     description: "Reach Silver tier.",
     condition: "Reach Silver tier",
     rarity: "Common",
@@ -316,7 +316,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "silver_ascent",
     name: "Silver Ascent",
-    icon: "🥈",
+    icon: PREMIUM_ASSETS.BADGES.INTERMEDIATE,
     description: "Achieve Silver tier ranking.",
     condition: "Silver tier",
     rarity: "Common",
@@ -327,7 +327,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "gold_warrior",
     name: "Gold Warrior",
-    icon: "🥇",
+    icon: PREMIUM_ASSETS.BADGES.ADVANCED,
     description: "Achieve Gold tier ranking.",
     condition: "Gold tier",
     rarity: "Rare",
@@ -338,7 +338,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "platinum_elite",
     name: "Platinum Elite",
-    icon: "💎",
+    icon: PREMIUM_ASSETS.BADGES.PROFESSIONAL,
     description: "Achieve Platinum tier ranking.",
     condition: "Platinum tier",
     rarity: "Epic",
@@ -349,7 +349,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "champion_tier",
     name: "Champion",
-    icon: "🏆",
+    icon: PREMIUM_ASSETS.BADGES.PROFESSIONAL_ALT,
     description: "Achieve Champion tier ranking.",
     condition: "Champion tier",
     rarity: "Legendary",
@@ -360,7 +360,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "global_elite",
     name: "Global Elite",
-    icon: "⚡",
+    icon: PREMIUM_ASSETS.BADGES.PROFESSIONAL_3D,
     description: "Achieve Elite tier — the highest rank.",
     condition: "Elite tier",
     rarity: "Legendary",
@@ -372,7 +372,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_perfect_100",
     name: "The Absolute",
-    icon: "🌟",
+    icon: PREMIUM_ASSETS.BRANDING.LOGO_PREMIUM,
     description: "Achieve a perfect score of 100.",
     condition: "Score exactly 100",
     rarity: "Legendary",
@@ -383,7 +383,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_midnight",
     name: "Night Owl",
-    icon: "🦉",
+    icon: PREMIUM_ASSETS.ICONS.SOCIAL,
     description: "Train at the stroke of midnight.",
     condition: "Train at 12:00 AM",
     rarity: "Rare",
@@ -394,7 +394,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_commentator",
     name: "Commentator",
-    icon: "🎙️",
+    icon: PREMIUM_ASSETS.ICONS.SOCIAL,
     description: "Post 20 comments on reels.",
     condition: "20 comments posted",
     rarity: "Common",
@@ -405,7 +405,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_all_disciplines",
     name: "Omnidiscipline",
-    icon: "🌐",
+    icon: PREMIUM_ASSETS.GOALS.COMPETE,
     description: "Train in all 10 disciplines.",
     condition: "All 10 disciplines trained",
     rarity: "Legendary",
@@ -416,7 +416,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_cross_discipline",
     name: "Cross-Discipline Icon",
-    icon: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=100&h=100",
+    icon: PREMIUM_ASSETS.BRANDING.INTRO_2,
     description: "Receive likes from athletes in different disciplines.",
     condition: "Liked by 10 different discipline groups",
     rarity: "Epic",
@@ -427,7 +427,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "secret_hard_mode",
     name: "No Mercy",
-    icon: "https://images.unsplash.com/photo-1633519106037-f13883a8e348?auto=format&fit=crop&q=80&w=100&h=100",
+    icon: PREMIUM_ASSETS.ATMOSPHERE.BATTLE_VICTORY,
     description: "Score 85+ on a Level 5 difficulty drill.",
     condition: "Score ≥ 85 at difficulty 5",
     rarity: "Epic",

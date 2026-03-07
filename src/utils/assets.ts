@@ -152,13 +152,16 @@ export const ALL_BANNERS = [
   ...BANNER_SATTRIYA,
 ];
 
-// ─── Currency ─────────────────────────────────────────────────────────────────
+// ─── Currency & Dynamic Icons ───────────────────────────────────────────────────
 
 export const AURA_COINS = [
   `${G}/aura_coin.png`,
   `${G}/aura_coin_1772831535038.png`,
 ];
 export const ORB_PRIMARY = [`${G}/orb_primary.png`];
+export const ICON_STREAK = [`${G}/icon_streak.png`];
+export const ICON_COMBAT = [`${G}/icon_combat.png`];
+export const ICON_SOCIAL = [`${G}/icon_social.png`];
 
 // ─── Atmosphere / Hero / Background ───────────────────────────────────────────
 
@@ -312,6 +315,12 @@ export const PREMIUM_ASSETS = {
     SKILLS: GOAL_SKILLS[0],
     SKILLS_ALT: GOAL_SKILLS[1],
     COMMUNITY: GOAL_COMMUNITY[0],
+  },
+
+  ICONS: {
+    STREAK: ICON_STREAK[0],
+    COMBAT: ICON_COMBAT[0],
+    SOCIAL: ICON_SOCIAL[0],
   },
 
   ATMOSPHERE: {

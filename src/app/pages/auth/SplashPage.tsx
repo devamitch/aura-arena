@@ -1,5 +1,5 @@
+import { AuraLogoText } from "@shared/components/ui/aura-logo-text";
 import { useIsLoading, useUser } from "@store";
-import { PREMIUM_ASSETS } from "@utils/assets";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -55,18 +55,24 @@ export default function SplashPage() {
           />
         ))}
         <div
-          className="w-40 h-40 rounded-[3rem] overflow-hidden relative z-10"
+          className="w-40 h-40 rounded-[3rem] overflow-hidden relative z-10 flex items-center justify-center"
           style={{
-            background: "rgba(var(--ac-rgb, 0,240,255), 0.04)",
-            border: "1px solid rgba(var(--ac-rgb, 0,240,255), 0.15)",
-            boxShadow: "0 0 60px rgba(var(--ac-rgb, 0,240,255), 0.15)",
+            background: "rgba(0,240,255, 0.04)",
+            border: "1px solid rgba(0,240,255, 0.15)",
+            boxShadow: "0 0 60px rgba(0,240,255, 0.15)",
           }}
         >
-          <img
-            src={PREMIUM_ASSETS.ATMOSPHERE.AURA_LOGO}
-            alt="AURA ARENA Logo"
-            className="w-full h-full object-contain p-4"
-          />
+          <div
+            className="w-16 h-16 rounded-xl flex items-center justify-center shadow-[0_0_30px_rgba(0,240,255,0.4)]"
+            style={{ background: "var(--ac)" }}
+          >
+            <span
+              className="font-black text-3xl text-[#040610] tracking-tighter italic"
+              style={{ transform: "skewX(-10deg)" }}
+            >
+              A
+            </span>
+          </div>
         </div>
       </motion.div>
 
@@ -74,11 +80,9 @@ export default function SplashPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="text-center"
+        className="text-center mt-6 flex flex-col items-center justify-center"
       >
-        <h1 className="text-5xl font-black text-white tracking-tighter text-gradient">
-          AURA ARENA
-        </h1>
+        <AuraLogoText size="xl" glow={true} className="scale-125 mb-4" />
         <p className="text-[10px] text-white/40 font-mono tracking-[0.4em] uppercase mt-2">
           Premium Esports · AI Powered
         </p>
