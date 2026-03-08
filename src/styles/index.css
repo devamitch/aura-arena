@@ -214,11 +214,15 @@ h6 {
 }
 
 /* ─── scrollbars ─────────────────────────────────────────────────────────── */
-.scroll-none {
+.scroll-none,
+.scrollbar-hide,
+.scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scroll-none::-webkit-scrollbar {
+.scroll-none::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
   display: none;
 }
 ::-webkit-scrollbar {

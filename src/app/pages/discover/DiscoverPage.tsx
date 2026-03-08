@@ -31,25 +31,16 @@ export default function DiscoverPage() {
       {/* ── Header Area ── */}
       <div className="pt-12 px-5 pb-6">
         <div className="flex items-center justify-between mb-8 mt-2">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-full flex items-center justify-center border transition-colors shadow-sm"
-              style={{ background: "var(--s1)", borderColor: "var(--b1)" }}
+          <div>
+            <p
+              className="text-[10px] font-bold tracking-widest uppercase mb-0.5"
+              style={{ color: "var(--ac)" }}
             >
-              <ChevronLeft className="w-5 h-5" style={{ color: "var(--ac)" }} />
-            </button>
-            <div>
-              <p
-                className="text-[10px] font-bold tracking-widest uppercase mb-0.5"
-                style={{ color: "var(--ac)" }}
-              >
-                Explore
-              </p>
-              <h1 className="text-xl font-bold text-white leading-none tracking-wide">
-                Athletes & Events
-              </h1>
-            </div>
+              Explore
+            </p>
+            <h1 className="text-xl font-bold text-white leading-none tracking-wide">
+              Athletes & Events
+            </h1>
           </div>
 
           <button

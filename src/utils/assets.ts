@@ -212,12 +212,11 @@ export const INTRO_MISC = [
 // ─── Branding / Logo ─────────────────────────────────────────────────────────
 
 export const LOGOS = [
-  `${G}/aura_arena_typographic_logo_1772728302709.png`,
+  `${G}/aura_arena_typographic_logo_1772979698632.png`,
   "/icons/premium_aura_arena_logo_1772720306119.png",
-  "/logo.png",
 ];
-export const ROOT_BANNERS = ["/banner.png"];
-export const ROOT_INTROS = ["/intro-1.png", "/intro-2.png", "/intro-3.png"];
+export const ROOT_BANNERS = [HERO_BATTLE[1]];
+export const ROOT_INTROS = INTRO_SLIDES;
 
 // ─── PWA Icons ───────────────────────────────────────────────────────────────
 
@@ -226,10 +225,15 @@ export const ICONS = ["/icons/icon-192.png", "/icons/icon-512.png"];
 // ─── 3D Models ───────────────────────────────────────────────────────────────
 
 export const MODELS = {
-  AVATAR_VRM: "/assets/models/avatar.vrm",
   XBOT: "/assets/models/Xbot.glb",
   YBOT: "/assets/models/Ybot.glb",
   ROBOT: "/assets/models/RobotExpressive.glb",
+  SOLDIER: "/assets/models/Soldier.glb",
+  NINJA: "/assets/models/ninja.glb",
+  HUMAN_MALE: "/assets/models/human_vrm_2.glb",
+  HUMAN_FEMALE: "/assets/models/human_vrm_1.glb",
+  VROID_MALE: "/assets/models/vroid_male.vrm",
+  VROID_FEMALE: "/assets/models/vroid_female.vrm",
 };
 export const ALL_MODELS = Object.values(MODELS);
 
@@ -359,7 +363,7 @@ export const PREMIUM_ASSETS = {
   MODELS,
 
   BRANDING: {
-    LOGO: LOGOS[2],
+    LOGO: LOGOS[1], // Fallback to premium icon if base logo requested
     LOGO_PREMIUM: LOGOS[1],
     LOGO_TYPOGRAPHIC: LOGOS[0],
     BANNER: ROOT_BANNERS[0],
@@ -492,15 +496,10 @@ export const AVATAR_PRESETS = [
 // ─── Model options ───────────────────────────────────────────────────────────
 
 export const MODEL_OPTIONS = [
-  {
-    id: "vrm",
-    name: "Custom Avatar",
-    src: MODELS.AVATAR_VRM,
-    preview: AVATAR_ZEN[0],
-  },
-  { id: "xbot", name: "X-Bot", src: MODELS.XBOT, preview: AVATAR_FIGHTER[0] },
-  { id: "ybot", name: "Y-Bot", src: MODELS.YBOT, preview: AVATAR_ROMAN[0] },
-  { id: "robot", name: "Robot", src: MODELS.ROBOT, preview: ATHLETE_ARENA[0] },
+  { id: "xbot",    name: "XBot Alpha",    src: MODELS.XBOT,    preview: PREMIUM_ASSETS.AVATARS.FIGHTER },
+  { id: "soldier", name: "Soldier",       src: MODELS.SOLDIER, preview: PREMIUM_ASSETS.ATHLETES.WARRIOR },
+  { id: "robot",   name: "Android Mk.II", src: MODELS.ROBOT,   preview: PREMIUM_ASSETS.ATHLETES.ARENA },
+  { id: "ninja",   name: "Ninja",         src: MODELS.NINJA,   preview: PREMIUM_ASSETS.AVATARS.ZEN },
 ];
 
 // ─── Helper: cycle through an image array ─────────────────────────────────────

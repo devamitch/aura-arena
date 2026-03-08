@@ -33,17 +33,16 @@ class Canvas3DErrorBoundary extends Component<
   }
 }
 
-export function AvatarCanvas() {
+export function AvatarCanvas({ url }: { url?: string } = {}) {
   return (
-    <div className="w-full h-full relative" style={{ minHeight: "60vh" }}>
-      <Canvas3DErrorBoundary>
+    <div className="w-full h-full relative">
+      <Canvas3DErrorBoundary key={url || "default"}>
         <Canvas
-          camera={{ position: [0, 1.2, 2.5], fov: 40 }}
+          camera={{ position: [0, 1.4, 3.2], fov: 45 }}
           shadows
-          gl={{ alpha: true, antialias: true }}
+          gl={{ alpha: true, antialias: true, baseLayer: true }}
         >
-          <color attach="background" args={["#040914"]} />
-          <fog attach="fog" args={["#040914", 5, 10]} />
+          {/* Removed solid <color> background & fog to allow underlying teal background to show through */}
 
           <ambientLight intensity={0.4} />
           <directionalLight
@@ -62,7 +61,7 @@ export function AvatarCanvas() {
 
           <Suspense fallback={null}>
             <group position={[0, -0.9, 0]}>
-              <AvatarModel />
+              <AvatarModel url={url} />
               <ContactShadows
                 resolution={512}
                 scale={2}

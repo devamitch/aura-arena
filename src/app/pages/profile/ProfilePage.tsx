@@ -206,7 +206,7 @@ export default function ProfilePage() {
                 color: accentColor,
               }}
             >
-              {user?.avatarUrl ? (
+              {user?.avatarUrl && !user.avatarUrl.includes("/assets/models") ? (
                 <img
                   src={user.avatarUrl}
                   alt=""

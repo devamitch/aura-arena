@@ -9,7 +9,7 @@ import { ArcGauge } from "@shared/components/ui/ArcGauge";
 import { DynamicIcon } from "@shared/components/ui/DynamicIcon";
 import { TierBadge } from "@shared/components/ui/TierBadge";
 import { useUser } from "@store";
-import { PREMIUM_ASSETS } from "@utils/assets";
+import { COACH_IMAGES, PREMIUM_ASSETS, pickImage } from "@utils/assets";
 import { motion } from "framer-motion";
 import {
   ChevronRight,

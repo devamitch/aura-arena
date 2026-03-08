@@ -189,6 +189,31 @@ const router = createBrowserRouter([
         path: "/chat",
         element: lazy_(() => import("@app/pages/chat/AIChatPage")),
       },
+      // ── Arcade mini-games ──────────────────────────────────────
+      {
+        path: "/arcade",
+        element: lazy_(() => import("@app/pages/arcade/ArcadePage")),
+      },
+      {
+        path: "/arcade/rps",
+        element: lazy_(() => import("@app/pages/arcade/RockPaperScissors")),
+      },
+      {
+        path: "/arcade/tictactoe",
+        element: lazy_(() => import("@app/pages/arcade/TicTacToe")),
+      },
+      {
+        path: "/arcade/coinflip",
+        element: lazy_(() => import("@app/pages/arcade/CoinFlip")),
+      },
+      {
+        path: "/arcade/reflex",
+        element: lazy_(() => import("@app/pages/arcade/ReflexGame")),
+      },
+      {
+        path: "/arcade/numguess",
+        element: lazy_(() => import("@app/pages/arcade/NumberGuess")),
+      },
     ],
   },
 ]);

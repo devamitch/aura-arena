@@ -188,16 +188,13 @@ export default function IntroPage() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="flex items-center gap-2"
+          className="flex items-center"
         >
           <img
-            src="/logo.png"
+            src={PREMIUM_ASSETS.BRANDING.LOGO_TYPOGRAPHIC}
             alt="Aura Arena"
-            className="w-7 h-7 rounded-lg object-cover"
+            className="w-32 h-10 object-contain drop-shadow-md"
           />
-          <span className="text-white font-black text-sm tracking-tight">
-            AURA<span style={{ color: "var(--ac)" }}>ARENA</span>
-          </span>
         </motion.div>
 
         {/* Text anchored to bottom */}
