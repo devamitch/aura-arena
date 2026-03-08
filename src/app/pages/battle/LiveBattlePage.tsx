@@ -474,6 +474,9 @@ export default function LiveBattlePage() {
                 score={camera.currentScore}
                 accentColor={accentColor}
                 showScore
+                showSkeleton
+                showHands
+                showFace
               />
             </div>
 

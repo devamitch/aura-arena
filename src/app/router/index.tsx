@@ -189,6 +189,10 @@ const router = createBrowserRouter([
         path: "/chat",
         element: lazy_(() => import("@app/pages/chat/AIChatPage")),
       },
+      {
+        path: "/settings/ai",
+        element: lazy_(() => import("@app/pages/settings/AISettingsPage")),
+      },
       // ── Arcade mini-games ──────────────────────────────────────
       {
         path: "/arcade",
@@ -213,6 +217,19 @@ const router = createBrowserRouter([
       {
         path: "/arcade/numguess",
         element: lazy_(() => import("@app/pages/arcade/NumberGuess")),
+      },
+      // ── Arcade pose games (full-screen camera) ─────────────────
+      {
+        path: "/arcade/pose/squat",
+        element: lazy_(() => import("@app/pages/arcade/SquatChallenge")),
+      },
+      {
+        path: "/arcade/pose/jump",
+        element: lazy_(() => import("@app/pages/arcade/JumpCounter")),
+      },
+      {
+        path: "/arcade/pose/boxing",
+        element: lazy_(() => import("@app/pages/arcade/ShadowBoxing")),
       },
     ],
   },

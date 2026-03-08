@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 
 interface RecordResult {
-  blob: Blob;
-  url: string;
+  blob: Blob | null;
+  url: string | null;
 }
 
 export function useVideoRecorder(
@@ -28,7 +28,7 @@ export function useVideoRecorder(
     return compositeCanvasRef.current;
   };
 
-  const drawCompositeFrame = () => {
+  const drawCompositeFrame = useCallback(() => {
     const video = videoRef.current;
     const aiCanvas = aiCanvasRef.current;
     const compCanvas = getCompositeCanvas();
@@ -65,7 +65,7 @@ export function useVideoRecorder(
     );
 
     animationFrameRef.current = requestAnimationFrame(drawCompositeFrame);
-  };
+  }, [videoRef, aiCanvasRef, playerName, accentColor]);
 
   const startRecording = useCallback(() => {
     chunksRef.current = [];
@@ -82,13 +82,13 @@ export function useVideoRecorder(
     setIsRecording(true);
     mr.start(1000); // chunk every second
     drawCompositeFrame(); // Start loop
-  }, []);
+  }, [drawCompositeFrame]);
 
   const stopRecording = useCallback((): Promise<RecordResult> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const mr = mediaRecorderRef.current;
       if (!mr || mr.state === "inactive") {
-        reject(new Error("No active recording"));
+        resolve({ blob: null, url: null });
         return;
       }
 

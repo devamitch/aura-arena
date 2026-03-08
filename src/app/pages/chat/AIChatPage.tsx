@@ -13,7 +13,8 @@ import {
   isOnDeviceLLMLoaded,
   generateOnDevice,
 } from "@lib/mediapipe/onDeviceLLM";
-import { useGeminiApiKey, useUser } from "@store";
+import { callAI, DEFAULT_MODELS, PROVIDER_DISPLAY, PROVIDER_MODELS } from "@lib/ai/providers";
+import { useAiModel, useAiProvider, useApiKeys, useUser } from "@store";
 import { COACH_IMAGES, pickImage } from "@utils/assets";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -98,51 +99,34 @@ const FALLBACK: Record<CoachId, string[]> = {
 };
 
 // ─── AI Inference tiers ───────────────────────────────────────────────────────
-// Tier 1: User's Gemini key (cloud, best quality)
+// Tier 1: Active provider via unified callAI() (BYOK)
 // Tier 2: On-device Gemma 3 (WebGPU, private, no key needed)
 // Tier 3: Chrome Gemini Nano (window.ai, zero-download)
 // Tier 4: Static fallback (always works)
 
 interface ChatMessage { role: "user" | "assistant"; content: string; }
 
-async function callGeminiCloud(
-  messages: ChatMessage[],
-  systemPrompt: string,
-  apiKey: string,
-): Promise<string> {
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: messages.map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        })),
-        generationConfig: { maxOutputTokens: 200, temperature: 0.8 },
-      }),
-    },
-  );
-  if (!resp.ok) throw new Error(`Gemini ${resp.status}`);
-  const data = await resp.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "I couldn't generate a response.";
-}
-
 async function inferBestAvailable(
   messages: ChatMessage[],
   coachId: CoachId,
   systemPrompt: string,
+  provider: import("@lib/ai/providers").AIProvider,
   apiKey: string,
 ): Promise<{ text: string; tier: string }> {
-  // Tier 1 — user's Gemini API key (BYOK)
+  // Tier 1 — user's chosen provider API key (BYOK)
   if (apiKey) {
     try {
-      const text = await callGeminiCloud(messages, systemPrompt, apiKey);
-      return { text, tier: "gemini-cloud" };
+      const resp = await callAI({
+        provider,
+        apiKey,
+        messages,
+        systemPrompt,
+        maxTokens: 200,
+        temperature: 0.8,
+      });
+      return { text: resp.text, tier: provider };
     } catch (err) {
-      log.warn("Gemini cloud failed, trying on-device", err);
+      log.warn(`${provider} cloud failed, trying on-device`, err);
     }
   }
   // Tier 2 — on-device Gemma 3 (WebGPU)
@@ -218,13 +202,16 @@ function TypingIndicator({ color }: { color: string }) {
 }
 
 function AiTierBadge({ tier }: { tier: string }) {
-  const info: Record<string, { label: string; color: string }> = {
-    "gemini-cloud": { label: "Gemini Cloud", color: "#4285F4" },
+  // Provider tiers use their display info; special tiers have fixed entries
+  const special: Record<string, { label: string; color: string }> = {
     "gemma-on-device": { label: "On-Device AI", color: "#00f0ff" },
-    "gemini-nano": { label: "Gemini Nano", color: "#a855f7" },
-    static: { label: "Offline", color: "#6b7280" },
+    "gemini-nano":     { label: "Gemini Nano",  color: "#a855f7" },
+    static:            { label: "Offline",       color: "#6b7280" },
   };
-  const d = info[tier] ?? info.static;
+  const providerInfo = PROVIDER_DISPLAY[tier as keyof typeof PROVIDER_DISPLAY];
+  const d = providerInfo
+    ? { label: providerInfo.name, color: providerInfo.color }
+    : (special[tier] ?? special.static);
   return (
     <span
       className="text-[9px] font-mono px-1.5 py-0.5 rounded-md"
@@ -239,7 +226,10 @@ export default function AIChatPage() {
   const navigate = useNavigate();
   const user = useUser();
   const { accentColor } = usePersonalization();
-  const geminiApiKey = useGeminiApiKey(); // BYOK from Zustand (localStorage)
+  const aiProvider = useAiProvider();
+  const aiModel = useAiModel();
+  const apiKeys = useApiKeys();
+  const activeKey = apiKeys[aiProvider] ?? "";
   const isPremium = user?.isPremium ?? false;
 
   const [selectedCoachId, setSelectedCoachId] = useState<CoachId>("aria");
@@ -249,12 +239,14 @@ export default function AIChatPage() {
   const [dailyCount, setDailyCount] = useState(getDailyCount);
   const [imgIdx, setImgIdx] = useState(0);
   const [lastTier, setLastTier] = useState<string>("");
-  const [showKeyPrompt, setShowKeyPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const coach = COACHES.find((c) => c.id === selectedCoachId)!;
-  // Premium OR user has their own key → unlimited; otherwise 5/day
-  const isLocked = !isPremium && !geminiApiKey && dailyCount >= FREE_MSG_LIMIT;
+  const providerInfo = PROVIDER_DISPLAY[aiProvider];
+  const currentModelId = aiModel || DEFAULT_MODELS[aiProvider];
+  const currentModelLabel = PROVIDER_MODELS[aiProvider].find(m => m.id === currentModelId)?.label ?? currentModelId;
+  // Premium OR user has a key for the active provider → unlimited; otherwise 5/day
+  const isLocked = !isPremium && !activeKey && dailyCount >= FREE_MSG_LIMIT;
   const remaining = Math.max(0, FREE_MSG_LIMIT - dailyCount);
   void accentColor;
 
@@ -284,10 +276,10 @@ export default function AIChatPage() {
       setMessages((prev) => [...prev, userMsg]);
       setInput("");
       setIsTyping(true);
-      if (!geminiApiKey && !isPremium) { incrementDailyCount(); setDailyCount(getDailyCount()); }
+      if (!activeKey && !isPremium) { incrementDailyCount(); setDailyCount(getDailyCount()); }
       try {
         const { text: reply, tier } = await inferBestAvailable(
-          [...messages, userMsg], coach.id, coach.persona, geminiApiKey,
+          [...messages, userMsg], coach.id, coach.persona, aiProvider, activeKey,
         );
         setLastTier(tier);
         setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
@@ -300,7 +292,7 @@ export default function AIChatPage() {
         setIsTyping(false);
       }
     },
-    [messages, isTyping, isLocked, coach, geminiApiKey, isPremium],
+    [messages, isTyping, isLocked, coach, aiProvider, activeKey, isPremium],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -321,10 +313,14 @@ export default function AIChatPage() {
           <div className="flex items-center gap-2">
             <h1 className="font-black text-white text-base leading-none">{coach.name}</h1>
             {isPremium && <Crown className="w-3.5 h-3.5 text-yellow-400" />}
-            {geminiApiKey && <Zap className="w-3 h-3 text-cyan-400" />}
+            {activeKey && <Zap className="w-3 h-3" style={{ color: providerInfo.color }} />}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-[10px] text-white/30 font-mono">{coach.role}</p>
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md"
+              style={{ background: `${providerInfo.color}15`, color: providerInfo.color, border: `1px solid ${providerInfo.color}30` }}>
+              {currentModelLabel}
+            </span>
             {lastTier && <AiTierBadge tier={lastTier} />}
           </div>
         </div>
@@ -335,37 +331,23 @@ export default function AIChatPage() {
               {c.emoji}
             </button>
           ))}
-          <button onClick={() => setShowKeyPrompt((v) => !v)} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <button onClick={() => navigate("/settings/ai")} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
             <Settings className="w-3.5 h-3.5 text-white/40" />
           </button>
         </div>
       </div>
 
-      {/* BYOK prompt panel */}
-      <AnimatePresence>
-        {showKeyPrompt && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex-shrink-0 overflow-hidden">
-            <div className="px-5 py-3" style={{ background: "rgba(0,240,255,0.04)", borderBottom: "1px solid rgba(0,240,255,0.1)" }}>
-              <div className="flex items-start gap-2">
-                <Brain className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-white/80 text-xs font-semibold mb-0.5">
-                    {geminiApiKey ? "Gemini key active — unlimited messages" : "Add your free Gemini key for unlimited AI"}
-                  </p>
-                  <p className="text-white/30 text-[10px]">
-                    Get a free key at aistudio.google.com → API Keys. Stored only on this device — never sent to our servers.
-                  </p>
-                  <button onClick={() => { setShowKeyPrompt(false); navigate("/profile"); }}
-                    className="mt-2 text-[10px] font-bold px-3 py-1 rounded-lg"
-                    style={{ background: "rgba(0,240,255,0.12)", color: "#00f0ff" }}>
-                    {geminiApiKey ? "Manage key →" : "Add key in Profile →"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Active provider banner */}
+      {!activeKey && (
+        <div className="flex-shrink-0 px-5 py-2.5 flex items-center gap-2" style={{ background: "rgba(0,240,255,0.04)", borderBottom: "1px solid rgba(0,240,255,0.08)" }}>
+          <Brain className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+          <p className="text-[10px] text-white/40 flex-1">No key set — add one for unlimited AI</p>
+          <button onClick={() => navigate("/settings/ai")} className="text-[10px] font-bold px-2.5 py-1 rounded-lg flex-shrink-0"
+            style={{ background: "rgba(0,240,255,0.12)", color: "#00f0ff" }}>
+            AI Settings →
+          </button>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ overscrollBehavior: "contain" }}>
@@ -417,14 +399,14 @@ export default function AIChatPage() {
       </div>
 
       {/* Free tier counter */}
-      {!isPremium && !geminiApiKey && (
+      {!isPremium && !activeKey && (
         <div className="flex-shrink-0 px-5 py-2">
           <div className="flex items-center justify-between px-4 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
             <div className="flex items-center gap-2">
               <MessageSquare className="w-3.5 h-3.5 text-white/25" />
               <span className="text-[10px] font-mono text-white/30">{isLocked ? "Daily limit reached" : `${remaining} free messages today`}</span>
             </div>
-            <button onClick={() => setShowKeyPrompt(true)} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: "rgba(0,240,255,0.12)", color: "#00f0ff" }}>
+            <button onClick={() => navigate("/settings/ai")} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: "rgba(0,240,255,0.12)", color: "#00f0ff" }}>
               <Zap className="w-3 h-3" />Add key
             </button>
           </div>
@@ -437,11 +419,11 @@ export default function AIChatPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-shrink-0 mx-5 mb-2 rounded-2xl p-5 text-center" style={{ background: "rgba(0,240,255,0.06)", border: "1px solid rgba(0,240,255,0.2)" }}>
             <Lock className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
             <p className="text-white/70 text-sm font-bold mb-1">Daily limit reached</p>
-            <p className="text-white/30 text-xs mb-3">Add your free Gemini API key for unlimited AI coaching</p>
-            <button onClick={() => { analytics.upgradeViewed("byok_chat"); navigate("/profile"); }}
+            <p className="text-white/30 text-xs mb-3">Add an API key for unlimited AI coaching</p>
+            <button onClick={() => { analytics.upgradeViewed("byok_chat"); navigate("/settings/ai"); }}
               className="px-5 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 mx-auto"
               style={{ background: "linear-gradient(135deg,#00f0ff,#0070ff)", color: "#040914" }}>
-              <Sparkles className="w-4 h-4" />Add Gemini Key (Free)
+              <Sparkles className="w-4 h-4" />AI Settings
             </button>
           </motion.div>
         )}
@@ -452,7 +434,7 @@ export default function AIChatPage() {
         <div className="flex items-end gap-2 rounded-2xl px-4 py-3"
           style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${isLocked ? "rgba(255,255,255,0.06)" : `${coach.color}25`}` }}>
           <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
-            placeholder={isLocked ? "Add Gemini key to continue…" : `Ask ${coach.name} anything…`}
+            placeholder={isLocked ? "Add AI key to continue…" : `Ask ${coach.name} anything…`}
             disabled={isLocked || isTyping} rows={1}
             className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-white/20 resize-none leading-relaxed max-h-24 overflow-y-auto" />
           <motion.button whileTap={{ scale: 0.88 }} onClick={() => sendMessage(input)} disabled={!input.trim() || isLocked || isTyping}
@@ -462,7 +444,7 @@ export default function AIChatPage() {
           </motion.button>
         </div>
         <p className="text-center text-[9px] font-mono text-white/15 mt-2">
-          {geminiApiKey ? "Your Gemini key · private · free" : isOnDeviceLLMLoaded() ? "On-device Gemma 3 · private" : "Add Gemini key for live AI · or enable on-device model"}
+          {activeKey ? `${providerInfo.name} · BYOK · private` : isOnDeviceLLMLoaded() ? "On-device Gemma 3 · private" : "Add AI key for live coaching · or enable on-device model"}
         </p>
       </div>
     </div>

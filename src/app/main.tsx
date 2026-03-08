@@ -10,6 +10,17 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
+  });
+  caches.keys().then((keys) => {
+    keys.forEach((key) => caches.delete(key));
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />

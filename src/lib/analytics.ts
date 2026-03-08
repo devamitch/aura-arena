@@ -38,13 +38,19 @@ async function flush() {
   try {
     const { error } = await supabase.from("analytics_events").insert(batch);
     if (error) {
-      _queue.unshift(...batch);
-      log.warn("Analytics flush failed, re-queued", { count: batch.length });
+      if (error.code === "42P01") {
+        _enabled = false;
+        log.info(
+          "Analytics auto-disabled: table 'analytics_events' does not exist.",
+        );
+      } else {
+        log.warn("Analytics flush failed:", error.message);
+      }
     } else {
       log.debug("Flushed analytics events", { count: batch.length });
     }
-  } catch {
-    _queue.unshift(...batch);
+  } catch (err) {
+    log.warn("Analytics flush threw an exception", err);
   }
 }
 
@@ -61,9 +67,14 @@ export function initAnalytics() {
 
   _enabled = true;
 
-  supabase.auth.getSession().then(({ data }) => {
-    _userId = data.session?.user?.id ?? null;
-  });
+  supabase.auth
+    .getSession()
+    .then(({ data }) => {
+      _userId = data.session?.user?.id ?? null;
+    })
+    .catch(() => {
+      log.info("Failed to get Supabase session for analytics.");
+    });
 
   supabase.auth.onAuthStateChange((_ev, session) => {
     _userId = session?.user?.id ?? null;

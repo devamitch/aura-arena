@@ -30,6 +30,10 @@ export default function DetectionLabPage() {
     discipline: "boxing", // Default for testing
     autoStart: true,
     extraTasks: mode === "all" ? ["hands", "face"] : [mode as any],
+    showSkeleton: true,
+    showHands: true,
+    showFace: true,
+    showObjects: true,
   });
 
   const {

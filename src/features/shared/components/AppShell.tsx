@@ -20,6 +20,7 @@ import {
 } from "framer-motion";
 import {
   Bot,
+  Gamepad2,
   Home,
   MessageSquare,
   Plus,
@@ -37,7 +38,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 // Pages that hide the bottom nav (full-screen camera/battle/feed)
-const FULLSCREEN_PREFIXES = ["/arena/train", "/battle/live", "/discover/reels"];
+const FULLSCREEN_PREFIXES = ["/arena/train", "/battle/live", "/discover/reels", "/arcade/pose"];
 
 const QUICK = [
   {
@@ -74,6 +75,13 @@ const QUICK = [
     sub: "Watch athletes",
     path: "/discover/reels",
     color: "#34d399",
+  },
+  {
+    icon: Gamepad2,
+    label: "Arcade",
+    sub: "Mini games vs AI",
+    path: "/arcade",
+    color: "#f43f5e",
   },
 ] as const;
 

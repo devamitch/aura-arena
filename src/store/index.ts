@@ -66,6 +66,9 @@ export const useStore = create<AppStore>()(
         likedReels: [...s.likedReels],
         savedReels: [...s.savedReels],
         avatarConfig: s.avatarConfig,
+        aiProvider: s.aiProvider,
+        aiModel: s.aiModel,
+        apiKeys: s.apiKeys,
         geminiApiKey: s.geminiApiKey,
         useGeminiVision: s.useGeminiVision,
         feedbackDataCount: s.feedbackDataCount,
@@ -143,6 +146,9 @@ export const useActiveReelIndex = () => useStore((s) => s.activeReelIndex);
 // AvatarSlice
 export const useAvatarConfig = () => useStore((s) => s.avatarConfig);
 // AiSlice
+export const useAiProvider = () => useStore((s) => s.aiProvider);
+export const useAiModel = () => useStore((s) => s.aiModel);
+export const useApiKeys = () => useStore((s) => s.apiKeys);
 export const useGeminiApiKey = () => useStore((s) => s.geminiApiKey);
 export const useGeminiVisionEnabled = () => useStore((s) => s.useGeminiVision);
 export const useFeedbackDataCount = () => useStore((s) => s.feedbackDataCount);

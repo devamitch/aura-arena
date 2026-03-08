@@ -58,11 +58,12 @@ async function flush() {
     });
 
     if (!res.ok) {
-      // Re-queue on failure
-      _queue.unshift(...batch);
+      console.warn(
+        "Analytics worker flush failed. Supabase table missing or unavailable.",
+      );
     }
-  } catch {
-    _queue.unshift(...batch);
+  } catch (err) {
+    console.warn("Analytics worker fetch threw an exception", err);
   }
 }
 

@@ -15,7 +15,7 @@ import {
   Sparkles,
   XCircle,
 } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface CameraViewProps {
   camera: UseCameraReturn;
@@ -28,6 +28,9 @@ interface CameraViewProps {
   blurActive?: boolean;
   /** Whether full body is detected in frame */
   fullBodyDetected?: boolean;
+  showSkeleton?: boolean;
+  showHands?: boolean;
+  showFace?: boolean;
 }
 
 export function CameraView({
@@ -56,6 +59,17 @@ export function CameraView({
     toggleMirror,
   } = camera;
 
+  // If streaming but engine never becomes ready within 15s, show a soft warning
+  const [syncTimeout, setSyncTimeout] = useState(false);
+  useEffect(() => {
+    if (!streaming || engineReady) {
+      setSyncTimeout(false);
+      return;
+    }
+    const t = setTimeout(() => setSyncTimeout(true), 15000);
+    return () => clearTimeout(t);
+  }, [streaming, engineReady]);
+
   return (
     <Card className="relative w-full aspect-[4/3] bg-black overflow-hidden border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-3xl group">
       {/* Video stream (hidden when blur is active, composited canvas takes over) */}
@@ -80,11 +94,10 @@ export function CameraView({
         />
       )}
 
-      {/* Drawing Canvas for Landmarks */}
+      {/* Drawing Canvas for Landmarks — NO CSS mirror: renderFrameToCanvas already handles it in JS */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full z-10 pointer-events-none"
-        style={{ transform: mirrored ? "scaleX(-1)" : "none" }}
       />
 
       {/* Permission States */}
@@ -155,9 +168,21 @@ export function CameraView({
               <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
               <div className="absolute inset-4 rounded-full border-4 border-ac2/20 border-b-ac2 animate-reverse-spin" />
             </div>
-            <p className="text-sm font-mono tracking-widest text-primary animate-pulse">
-              SYNCING MEDIA_PIPE...
+            <p
+              className="text-sm font-mono tracking-widest animate-pulse"
+              style={{ color: syncTimeout ? "#f87171" : "var(--ac)" }}
+            >
+              {syncTimeout
+                ? "LOAD TIMEOUT — CHECK NETWORK"
+                : "SYNCING MEDIA_PIPE..."}
             </p>
+            {syncTimeout && (
+              <p className="text-[10px] text-white/40 mt-2 text-center font-mono">
+                MediaPipe models load from CDN.
+                <br />
+                Reload if this persists.
+              </p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

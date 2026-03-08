@@ -133,6 +133,10 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       include: ["react", "react-dom", "framer-motion", "zustand"],
+      exclude: ["@mediapipe/tasks-vision"],
+    },
+    worker: {
+      format: "es",
     },
     server: {
       // port: 8082,

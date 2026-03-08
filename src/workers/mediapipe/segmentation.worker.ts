@@ -3,13 +3,15 @@
 // Uses MediaPipe ImageSegmenter to produce a person/background mask.
 // The main thread composites: blurred BG + sharp person.
 // ═══════════════════════════════════════════════════════════════════════════════
+// @ts-expect-error: Polyfill self.import for MediaPipe's internal loader in module workers
+if (typeof self.import === "undefined") {
+  (self as any).import = (url: string) => import(url);
+}
 
 import { FilesetResolver, ImageSegmenter } from "@mediapipe/tasks-vision";
 
-const WASM_URL =
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
-const MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
+const WASM_URL = `${self.location.origin}/mediapipe-wasm`;
+const MODEL_URL = `${self.location.origin}/mediapipe-models/selfie_segmenter.tflite`;
 
 let segmenter: ImageSegmenter | null = null;
 let initialized = false;

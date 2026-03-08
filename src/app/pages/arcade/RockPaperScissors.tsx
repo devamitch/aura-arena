@@ -63,7 +63,7 @@ export default function RockPaperScissors() {
       setResult(res);
       setThinking(false);
 
-      const lines = AI_LINES[res];
+      const lines = AI_LINES[res as NonNullable<Result>];
       setAiLine(lines[Math.floor(Math.random() * lines.length)]);
       setAiMoodImg(res === "win" ? PREMIUM_ASSETS.COACHES.ARIA_ALT : PREMIUM_ASSETS.COACHES.ARIA);
 

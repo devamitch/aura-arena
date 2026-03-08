@@ -7,8 +7,6 @@
 import type { DisciplineId, Landmark, MediaPipeTask } from "@types";
 
 // ─── CDN BASES ────────────────────────────────────────────────────────────────
-const WASM_VISION =
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
 const WASM_TEXT =
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-text@latest/wasm";
 const WASM_AUDIO =
@@ -65,6 +63,15 @@ export const initVisionTask = async (task: MediaPipeTask): Promise<void> => {
 
 const _doInitVisionTask = async (task: MediaPipeTask): Promise<void> => {
   try {
+    let pkg;
+    try {
+      pkg = await import("@mediapipe/tasks-vision");
+    } catch (e) {
+      console.warn("Failed to load local bundle", e);
+      throw e;
+    }
+    const wasmPath = "/mediapipe-wasm";
+
     const {
       FilesetResolver,
       PoseLandmarker,
@@ -73,9 +80,9 @@ const _doInitVisionTask = async (task: MediaPipeTask): Promise<void> => {
       FaceDetector,
       GestureRecognizer,
       ObjectDetector,
-    } = await import("@mediapipe/tasks-vision");
+    } = pkg;
 
-    const vision = await FilesetResolver.forVisionTasks(WASM_VISION);
+    const vision = await FilesetResolver.forVisionTasks(wasmPath);
 
     switch (task) {
       case "pose":

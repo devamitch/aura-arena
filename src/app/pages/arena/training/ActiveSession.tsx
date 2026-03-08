@@ -1,8 +1,8 @@
 import { CameraView } from "@features/arena/components/CameraView";
 import { MetricsPanel } from "@features/arena/components/MetricsPanel";
 import type { UseCameraReturn as CameraControls } from "@hooks/useCamera";
-import type { FrameScore as Score } from "@types";
 import type { PersonalizationConfig as Personalization } from "@hooks/usePersonalization";
+import type { FrameScore as Score } from "@types";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -46,6 +46,9 @@ export function ActiveSession({
           score={currentScore}
           accentColor={accentColor}
           showScore
+          showSkeleton
+          showHands
+          showFace
         />
       </div>
 

@@ -208,7 +208,7 @@ export default function OnboardingPage() {
   const [experience, setExperience] = useState<string>("beginner");
   const [goals, setGoals] = useState<string[]>([]);
   const [frequency, setFrequency] = useState(3);
-  const [avatarUrl, setAvatarUrl] = useState<string>(MODELS.XBOT);
+  const [avatarUrl, setAvatarUrl] = useState<string>(MODELS.VROID_MALE);
   const [avatarType, setAvatarType] = useState<"3d" | "photo">("3d");
   const [coachName, setCoachName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -634,6 +634,10 @@ export default function OnboardingPage() {
                         onClick={() => {
                           setDisciplineId(d.id);
                           setSubDisciplineId(undefined);
+                          const newDisc = getDiscipline(d.id);
+                          setTimeout(() => {
+                            setStep(newDisc.subDisciplines.length > 0 ? 2 : 3);
+                          }, 380);
                         }}
                         className="h-36 rounded-[20px] overflow-hidden relative group transition-transform active:scale-[0.97]"
                         whileTap={{ scale: 0.96 }}
@@ -776,7 +780,7 @@ export default function OnboardingPage() {
                     return (
                       <motion.button
                         key={level.id}
-                        onClick={() => setExperience(level.id)}
+                        onClick={() => { setExperience(level.id); setTimeout(next, 320); }}
                         whileTap={{ scale: 0.95 }}
                         className="rounded-[20px] p-5 flex flex-col items-center text-center relative overflow-hidden transition-all"
                         style={
@@ -1012,7 +1016,7 @@ export default function OnboardingPage() {
                       key={t}
                       onClick={() => {
                         setAvatarType(t);
-                        if (t === "3d") setAvatarUrl(MODELS.XBOT);
+                        if (t === "3d") setAvatarUrl(MODELS.VROID_MALE);
                         else { setAvatarUrl(ALL_AVATARS[0]); setAvatarConfig({ modelUrl: ALL_AVATARS[0] }); }
                       }}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-bold transition-all"
@@ -1049,25 +1053,26 @@ export default function OnboardingPage() {
                     {/* 3D model grid */}
                     <div className="grid grid-cols-2 gap-3 pb-8">
                       {[
-                        { id: MODELS.XBOT,    title: "XBot Alpha",    desc: "Military Synth",    preview: PREMIUM_ASSETS.AVATARS.FIGHTER,  color: "var(--ac)" },
-                        { id: MODELS.SOLDIER, title: "Soldier",       desc: "Combat Specialist", preview: PREMIUM_ASSETS.ATHLETES.WARRIOR,  color: "#f59e0b" },
-                        { id: MODELS.ROBOT,   title: "Android Mk.II", desc: "Expressive Robot",  preview: PREMIUM_ASSETS.ATHLETES.ARENA,    color: "#a855f7" },
-                        { id: MODELS.NINJA,   title: "Ninja",         desc: "Silent Striker",    preview: PREMIUM_ASSETS.AVATARS.ZEN,       color: "#f43f5e" },
+                        { id: MODELS.VROID_MALE,   title: "VRoid Male",   desc: "Human · Realistic", preview: PREMIUM_ASSETS.ATHLETES.BOXER,    color: "var(--ac)",  glyph: "♂" },
+                        { id: MODELS.VROID_FEMALE, title: "VRoid Female", desc: "Human · Graceful",  preview: PREMIUM_ASSETS.AVATARS.FIGHTER,   color: "#f43f5e",    glyph: "♀" },
+                        { id: MODELS.XBOT,         title: "XBot Alpha",   desc: "Military Synth",    preview: PREMIUM_ASSETS.AVATARS.FIGHTER,   color: "#3b82f6",    glyph: "🤖" },
+                        { id: MODELS.ROBOT,        title: "Android",      desc: "Expressive Bot",    preview: PREMIUM_ASSETS.ATHLETES.ARENA,    color: "#a855f7",    glyph: "⚡" },
                       ].map((av) => {
                         const sel = avatarUrl === av.id;
                         return (
                           <motion.button
                             key={av.id}
-                            onClick={() => { setAvatarUrl(av.id); setAvatarConfig({ modelUrl: av.id }); }}
+                            onClick={() => { setAvatarUrl(av.id); setAvatarConfig({ modelUrl: av.id }); setTimeout(next, 300); }}
                             whileTap={{ scale: 0.95 }}
-                            className="rounded-[20px] min-h-[120px] relative overflow-hidden flex flex-col items-center justify-center p-4"
+                            className="rounded-[20px] min-h-[130px] relative overflow-hidden flex flex-col items-center justify-center p-4"
                             style={sel
-                              ? { border: `1px solid ${av.color}55`, boxShadow: `0 0 20px ${av.color}18`, background: "rgba(8,12,24,0.95)" }
+                              ? { border: `2px solid ${av.color}70`, boxShadow: `0 0 24px ${av.color}25`, background: "rgba(8,12,24,0.95)" }
                               : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(16,22,40,0.8)" }}
                           >
                             <img src={av.preview} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
                             <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(4,9,20,0.92) 40%, rgba(4,9,20,0.4) 100%)" }} />
-                            <div className="relative z-10 flex flex-col items-center gap-1">
+                            <div className="relative z-10 flex flex-col items-center gap-1.5">
+                              <span className="text-2xl">{av.glyph}</span>
                               <span className="font-black text-[12px] text-white uppercase tracking-wide">{av.title}</span>
                               <span className="text-[10px] text-white/35 font-bold">{av.desc}</span>
                             </div>
@@ -1115,7 +1120,7 @@ export default function OnboardingPage() {
                         return (
                           <motion.button
                             key={i}
-                            onClick={() => { setAvatarUrl(img); setAvatarConfig({ modelUrl: img }); }}
+                            onClick={() => { setAvatarUrl(img); setAvatarConfig({ modelUrl: img }); setTimeout(next, 300); }}
                             whileTap={{ scale: 0.93 }}
                             className="relative rounded-[16px] overflow-hidden"
                             style={{ aspectRatio: "3/4", border: sel ? "2px solid var(--ac)" : "1px solid rgba(255,255,255,0.08)", boxShadow: sel ? "0 0 16px rgba(0,240,255,0.3)" : "none" }}

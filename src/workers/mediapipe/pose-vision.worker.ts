@@ -1,3 +1,7 @@
+// @ts-expect-error: Polyfill self.import for MediaPipe's internal loader in module workers
+if (typeof self.import === "undefined") {
+  (self as any).import = (url: string) => import(url);
+}
 import type { Landmark } from "@/types";
 import {
   FilesetResolver,
@@ -5,12 +9,9 @@ import {
   PoseLandmarker,
 } from "@mediapipe/tasks-vision";
 
-const WASM_URL =
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
-const POSE_MODEL =
-  "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
-const HAND_MODEL =
-  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const WASM_URL = `${self.location.origin}/mediapipe-wasm`;
+const POSE_MODEL = `${self.location.origin}/mediapipe-models/pose_landmarker_lite.task`;
+const HAND_MODEL = `${self.location.origin}/mediapipe-models/hand_landmarker.task`;
 
 let poseLandmarker: PoseLandmarker | null = null;
 let handLandmarker: HandLandmarker | null = null;
@@ -64,7 +65,7 @@ async function processFrame(msg: any) {
           msg.timestamp,
         );
         handLandmarks = (rawHand.landmarks ?? []) as Landmark[][];
-      } catch (e) {
+      } catch {
         // Hand optional
       }
     }
@@ -77,7 +78,7 @@ async function processFrame(msg: any) {
       handLandmarks,
       timestamp: msg.timestamp,
     });
-  } catch (err) {
+  } catch {
     msg.bitmap?.close();
   }
 }

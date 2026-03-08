@@ -73,9 +73,17 @@ const STATS = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const { loginWithGoogleCredential, loading } = useAuth();
-  const { setUser, setAuthError } = useStore();
+  const { user, setUser, setAuthError } = useStore();
 
   const [bgIdx, setBgIdx] = useState(0);
+
+  // ── Redirect if already logged in ──
+  useEffect(() => {
+    if (user && user.id !== "guest") {
+      navigate("/home", { replace: true });
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     const t = setInterval(() => setBgIdx((i) => i + 1), 4500);
     return () => clearInterval(t);

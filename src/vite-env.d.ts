@@ -22,3 +22,15 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js" {
+  export * from "@mediapipe/tasks-vision";
+}
+
+declare module "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs" {
+  export * from "@mediapipe/tasks-vision";
+}
+
+declare module "/mediapipe-wasm/vision_bundle.mjs" {
+  export * from "@mediapipe/tasks-vision";
+}

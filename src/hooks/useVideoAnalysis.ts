@@ -56,7 +56,7 @@ export function useVideoAnalysis(): UseVideoAnalysisReturn {
 
       // Spawn pose-vision worker
       const worker = new Worker(
-        new URL("../workers/mediapipe/pose-vision.worker.ts", import.meta.url),
+        new URL("/workers/pose-vision.worker.js", window.location.origin),
         { type: "module" },
       );
       workerRef.current = worker;

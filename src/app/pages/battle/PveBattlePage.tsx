@@ -74,6 +74,241 @@ function AnimatedScore({
   );
 }
 
+// ─── AI Skeleton PiP ─────────────────────────────────────────────────────────
+// Renders an animated SVG stick figure that simulates the AI opponent moving
+
+const AI_KEYFRAMES = [
+  // Standing guard
+  {
+    lShoulder: [0.35, 0.38],
+    rShoulder: [0.65, 0.38],
+    lElbow: [0.28, 0.52],
+    rElbow: [0.72, 0.52],
+    lWrist: [0.32, 0.62],
+    rWrist: [0.68, 0.62],
+    lHip: [0.4, 0.62],
+    rHip: [0.6, 0.62],
+    lKnee: [0.38, 0.78],
+    rKnee: [0.62, 0.78],
+    lAnkle: [0.36, 0.92],
+    rAnkle: [0.64, 0.92],
+    head: [0.5, 0.22],
+  },
+  // Left jab
+  {
+    lShoulder: [0.35, 0.38],
+    rShoulder: [0.65, 0.38],
+    lElbow: [0.22, 0.44],
+    rElbow: [0.72, 0.52],
+    lWrist: [0.14, 0.38],
+    rWrist: [0.68, 0.62],
+    lHip: [0.4, 0.62],
+    rHip: [0.6, 0.62],
+    lKnee: [0.38, 0.78],
+    rKnee: [0.62, 0.78],
+    lAnkle: [0.36, 0.92],
+    rAnkle: [0.64, 0.92],
+    head: [0.5, 0.22],
+  },
+  // Guard
+  {
+    lShoulder: [0.35, 0.38],
+    rShoulder: [0.65, 0.38],
+    lElbow: [0.28, 0.52],
+    rElbow: [0.72, 0.52],
+    lWrist: [0.32, 0.62],
+    rWrist: [0.68, 0.62],
+    lHip: [0.4, 0.62],
+    rHip: [0.6, 0.62],
+    lKnee: [0.38, 0.78],
+    rKnee: [0.62, 0.78],
+    lAnkle: [0.36, 0.92],
+    rAnkle: [0.64, 0.92],
+    head: [0.5, 0.22],
+  },
+  // Right cross
+  {
+    lShoulder: [0.35, 0.38],
+    rShoulder: [0.65, 0.38],
+    lElbow: [0.28, 0.52],
+    rElbow: [0.78, 0.44],
+    lWrist: [0.32, 0.62],
+    rWrist: [0.86, 0.38],
+    lHip: [0.4, 0.62],
+    rHip: [0.6, 0.62],
+    lKnee: [0.38, 0.78],
+    rKnee: [0.62, 0.78],
+    lAnkle: [0.36, 0.92],
+    rAnkle: [0.64, 0.92],
+    head: [0.5, 0.22],
+  },
+  // Squat/bob
+  {
+    lShoulder: [0.35, 0.44],
+    rShoulder: [0.65, 0.44],
+    lElbow: [0.28, 0.57],
+    rElbow: [0.72, 0.57],
+    lWrist: [0.32, 0.67],
+    rWrist: [0.68, 0.67],
+    lHip: [0.4, 0.66],
+    rHip: [0.6, 0.66],
+    lKnee: [0.37, 0.82],
+    rKnee: [0.63, 0.82],
+    lAnkle: [0.36, 0.94],
+    rAnkle: [0.64, 0.94],
+    head: [0.5, 0.28],
+  },
+];
+
+type KF = (typeof AI_KEYFRAMES)[0];
+function lerpKF(a: KF, b: KF, t: number): KF {
+  const lerp = (va: [number, number], vb: [number, number]): [number, number] =>
+    [va[0] + (vb[0] - va[0]) * t, va[1] + (vb[1] - va[1]) * t] as [
+      number,
+      number,
+    ];
+  return Object.fromEntries(
+    Object.keys(a).map((k) => [
+      k,
+      lerp(
+        a[k as keyof KF] as [number, number],
+        b[k as keyof KF] as [number, number],
+      ),
+    ]),
+  ) as unknown as KF;
+}
+
+function AISkeletonPip({ color }: { color: string }) {
+  const [frame, setFrame] = useState(0);
+  const [t, setT] = useState(0);
+  const TIMING = [600, 300, 600, 300, 700]; // ms per keyframe
+  const elRef = useRef(0);
+
+  useEffect(() => {
+    let kf = 0;
+    let start = performance.now();
+    let raf: number;
+    const loop = () => {
+      raf = requestAnimationFrame(loop);
+      const elapsed = performance.now() - start;
+      const dur = TIMING[kf];
+      const progress = Math.min(elapsed / dur, 1);
+      setFrame(kf);
+      setT(
+        progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - (-2 * progress + 2) ** 3 / 2,
+      );
+      if (elapsed >= dur) {
+        kf = (kf + 1) % AI_KEYFRAMES.length;
+        start = performance.now();
+      }
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  void elRef;
+  const a = AI_KEYFRAMES[frame];
+  const b = AI_KEYFRAMES[(frame + 1) % AI_KEYFRAMES.length];
+  const kf = lerpKF(a, b, t);
+  const W = 80,
+    H = 120;
+  const pt = ([x, y]: [number, number]) => `${x * W},${y * H}`;
+  const line = (a2: [number, number], b2: [number, number]) => (
+    <line
+      key={`${a2}${b2}`}
+      x1={a2[0] * W}
+      y1={a2[1] * H}
+      x2={b2[0] * W}
+      y2={b2[1] * H}
+      stroke={color}
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
+  );
+
+  return (
+    <svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      style={{ display: "block" }}
+    >
+      {/* Head */}
+      <circle
+        cx={kf.head[0] * W}
+        cy={kf.head[1] * H}
+        r={8}
+        stroke={color}
+        fill="none"
+        strokeWidth="2.5"
+      />
+      {/* Torso */}
+      {line(
+        [kf.lShoulder[0], kf.lShoulder[1]],
+        [kf.rShoulder[0], kf.rShoulder[1]],
+      )}
+      {line(
+        [
+          (kf.lShoulder[0] + kf.rShoulder[0]) / 2,
+          (kf.lShoulder[1] + kf.rShoulder[1]) / 2,
+        ],
+        [(kf.lHip[0] + kf.rHip[0]) / 2, (kf.lHip[1] + kf.rHip[1]) / 2],
+      )}
+      {line([kf.lHip[0], kf.lHip[1]], [kf.rHip[0], kf.rHip[1]])}
+      {/* Left arm */}
+      {line([kf.lShoulder[0], kf.lShoulder[1]], [kf.lElbow[0], kf.lElbow[1]])}
+      {line([kf.lElbow[0], kf.lElbow[1]], [kf.lWrist[0], kf.lWrist[1]])}
+      {/* Right arm */}
+      {line([kf.rShoulder[0], kf.rShoulder[1]], [kf.rElbow[0], kf.rElbow[1]])}
+      {line([kf.rElbow[0], kf.rElbow[1]], [kf.rWrist[0], kf.rWrist[1]])}
+      {/* Left leg */}
+      {line([kf.lHip[0], kf.lHip[1]], [kf.lKnee[0], kf.lKnee[1]])}
+      {line([kf.lKnee[0], kf.lKnee[1]], [kf.lAnkle[0], kf.lAnkle[1]])}
+      {/* Right leg */}
+      {line([kf.rHip[0], kf.rHip[1]], [kf.rKnee[0], kf.rKnee[1]])}
+      {line([kf.rKnee[0], kf.rKnee[1]], [kf.rAnkle[0], kf.rAnkle[1]])}
+      {/* Joint dots */}
+      {(
+        [
+          kf.lShoulder,
+          kf.rShoulder,
+          kf.lElbow,
+          kf.rElbow,
+          kf.lWrist,
+          kf.rWrist,
+          kf.lHip,
+          kf.rHip,
+          kf.lKnee,
+          kf.rKnee,
+        ] as [number, number][]
+      ).map((j, i) => (
+        <circle
+          key={i}
+          cx={j[0] * W}
+          cy={j[1] * H}
+          r={3}
+          fill={color}
+          opacity={0.7}
+        />
+      ))}
+      {/* Label */}
+      <text
+        x={W / 2}
+        y={H - 2}
+        textAnchor="middle"
+        fontSize="7"
+        fill={color}
+        opacity={0.6}
+        fontFamily="monospace"
+      >
+        AI
+      </text>
+    </svg>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PveBattlePage() {
@@ -561,14 +796,34 @@ export default function PveBattlePage() {
           </div>
         </div>
 
-        {/* Camera fills remaining space */}
-        <div className="flex-1 px-3 pb-2">
+        {/* Camera fills remaining space with AI skeleton PiP */}
+        <div className="flex-1 px-3 pb-2 relative">
           <CameraView
             camera={camera}
             score={camera.currentScore}
             accentColor={accentColor}
             showScore
+            showSkeleton
+            showHands
+            showFace
           />
+          {/* AI Skeleton PiP — opponent "camera" */}
+          <div
+            className="absolute bottom-4 right-5 z-20 rounded-[18px] flex flex-col items-center gap-0.5 px-3 py-2"
+            style={{
+              background: "rgba(4,9,20,0.8)",
+              border: `1px solid ${accentColor}30`,
+              backdropFilter: "blur(16px)",
+            }}
+          >
+            <AISkeletonPip color={accentColor} />
+            <p
+              className="text-[7px] font-mono uppercase tracking-widest"
+              style={{ color: `${accentColor}80` }}
+            >
+              {opp.name.split(" ")[0]} · AI
+            </p>
+          </div>
         </div>
 
         {/* Video Download Action */}

@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // AURA ARENA — Arcade Hub
 // Mini-games vs AI: RPS, Tic Tac Toe, Coin Flip, Reflex, Number Guess
+// Pose games: Squat Challenge, Jump Counter, Shadow Boxing
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useXP } from "@store";
@@ -9,10 +10,12 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Brain,
+  Camera,
   Dices,
   Gamepad2,
   Hash,
   Sigma,
+  Swords,
   Zap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -72,6 +75,42 @@ const GAMES = [
     path: "/arcade/numguess",
     xpReward: 20,
     tag: "PUZZLE",
+  },
+] as const;
+
+const POSE_GAMES = [
+  {
+    id: "squat",
+    title: "Squat Challenge",
+    desc: "30s · count your squats with AI",
+    icon: Zap,
+    emoji: "🏋️",
+    color: "#00f0ff",
+    path: "/arcade/pose/squat",
+    xpReward: "3 XP/rep",
+    tag: "CAMERA",
+  },
+  {
+    id: "jump",
+    title: "Jump Counter",
+    desc: "30s · jump as high as you can",
+    icon: Swords,
+    emoji: "⬆️",
+    color: "#a855f7",
+    path: "/arcade/pose/jump",
+    xpReward: "5 XP/jump",
+    tag: "CAMERA",
+  },
+  {
+    id: "boxing",
+    title: "Shadow Boxing",
+    desc: "45s · throw punches + build combos",
+    icon: Camera,
+    emoji: "🥊",
+    color: "#f43f5e",
+    path: "/arcade/pose/boxing",
+    xpReward: "0.5 XP/punch",
+    tag: "CAMERA",
   },
 ] as const;
 
@@ -205,6 +244,55 @@ export default function ArcadePage() {
             </div>
           </motion.button>
         ))}
+
+        {/* ── Pose Games (Camera) ── */}
+        <div className="pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Camera className="w-3.5 h-3.5 text-white/30" />
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/30">
+              Body Tracking · Requires Camera
+            </p>
+          </div>
+          {POSE_GAMES.map((game, i) => (
+            <motion.button
+              key={game.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: (GAMES.length + i) * 0.07, type: "spring", stiffness: 300, damping: 24 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate(game.path)}
+              className="w-full flex items-center gap-4 p-4 rounded-[20px] text-left relative overflow-hidden mb-3"
+              style={{
+                background: `${game.color}08`,
+                border: `1px solid ${game.color}22`,
+              }}
+            >
+              <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
+                style={{ background: `radial-gradient(circle at 20% 50%, ${game.color}10 0%, transparent 60%)` }} />
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
+                style={{ background: `${game.color}14`, border: `1px solid ${game.color}30` }}>
+                {game.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-black text-white text-[15px]">{game.title}</span>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                    style={{ background: `${game.color}20`, color: game.color }}>
+                    {game.tag}
+                  </span>
+                </div>
+                <p className="text-[12px] text-white/40">{game.desc}</p>
+                <p className="text-[11px] font-bold mt-1" style={{ color: game.color }}>
+                  {game.xpReward}
+                </p>
+              </div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: `${game.color}18` }}>
+                <span style={{ color: game.color }} className="text-sm font-black">→</span>
+              </div>
+            </motion.button>
+          ))}
+        </div>
       </div>
     </div>
   );
