@@ -1,21 +1,12 @@
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
   return {
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(mode),
-      ...Object.keys(env).reduce(
-        (prev, key) => {
-          prev[`process.env.${key}`] = JSON.stringify(env[key]);
-          return prev;
-        },
-        {} as Record<string, string>,
-      ),
-    },
+    // Removed custom define block. Vite implicitly handles process.env.NODE_ENV.
+    // Injecting the whole process.env object or fragments can crash production builds and React internals.
     plugins: [
       react(),
       VitePWA({
@@ -93,7 +84,7 @@ export default defineConfig(({ mode }) => {
               },
             },
           ],
-          navigateFallback: "/offline.html",
+          navigateFallback: "/index.html",
           navigateFallbackDenylist: [/^\/api\//],
         },
         devOptions: { enabled: false },
@@ -139,6 +130,7 @@ export default defineConfig(({ mode }) => {
       target: "es2020",
       sourcemap: false,
       minify: "esbuild",
+      chunkSizeWarningLimit: 10000,
     },
     optimizeDeps: {
       include: ["react", "react-dom", "framer-motion", "zustand"],

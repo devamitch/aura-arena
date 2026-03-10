@@ -33,47 +33,47 @@ npm run dev                  # Opens localhost:5173
 
 ## Environment Variables
 
-| Variable | Source |
-|---|---|
-| `VITE_SUPABASE_URL` | [supabase.com](https://supabase.com) → Project → Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | Same page |
-| `VITE_GOOGLE_CLIENT_ID` | [console.cloud.google.com](https://console.cloud.google.com) → OAuth credentials |
-| `VITE_GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| Variable                 | Source                                                                           |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | [supabase.com](https://supabase.com) → Project → Settings → API                  |
+| `VITE_SUPABASE_ANON_KEY` | Same page                                                                        |
+| `VITE_GOOGLE_CLIENT_ID`  | [console.cloud.google.com](https://console.cloud.google.com) → OAuth credentials |
+| `VITE_GEMINI_API_KEY`    | [aistudio.google.com/apikey](https://aistudio.google.com/apikey)                 |
 
 ---
 
 ## Technology Stack
 
-| Layer | Technology |
-|---|---|
-| **Framework** | React 19 + TypeScript 5.8 (strict) |
-| **Build** | Vite 6 + SWC compiler |
-| **Routing** | React Router 7 (lazy routes, code splitting) |
-| **Animation** | Framer Motion 12 (spring physics, shared elements) |
-| **State** | Zustand 5 + Immer (5 slices, persist middleware) |
-| **Server State** | TanStack Query 5 + Virtual 3 + Table 8 |
-| **Backend** | Supabase (Auth, Postgres, Realtime, Storage) |
-| **AI Cloud** | Gemini 2.5/2.0/1.5 Flash (3-model fallback waterfall) |
-| **AI On-Device** | Gemma 2B via MediaPipe GenAI + WebGPU |
-| **CV** | MediaPipe Tasks Vision (11 tasks), Audio, Text, GenAI |
-| **Design** | Tailwind CSS 3 + shadcn/ui + custom design tokens |
-| **Typography** | Syne 800 (display) · DM Sans (body) · Space Mono (HUD) |
-| **PWA** | vite-plugin-pwa · Workbox · IndexedDB offline queue |
-| **Icons** | lucide-react (exclusively) |
-| **Charts** | Recharts |
+| Layer            | Technology                                             |
+| ---------------- | ------------------------------------------------------ |
+| **Framework**    | React 19 + TypeScript 5.8 (strict)                     |
+| **Build**        | Vite 6 + SWC compiler                                  |
+| **Routing**      | React Router 7 (lazy routes, code splitting)           |
+| **Animation**    | Framer Motion 12 (spring physics, shared elements)     |
+| **State**        | Zustand 5 + Immer (5 slices, persist middleware)       |
+| **Server State** | TanStack Query 5 + Virtual 3 + Table 8                 |
+| **Backend**      | Supabase (Auth, Postgres, Realtime, Storage)           |
+| **AI Cloud**     | Gemini 2.5/2.0/1.5 Flash (3-model fallback waterfall)  |
+| **AI On-Device** | Gemma 2B via MediaPipe GenAI + WebGPU                  |
+| **CV**           | MediaPipe Tasks Vision (11 tasks), Audio, Text, GenAI  |
+| **Design**       | Tailwind CSS 3 + shadcn/ui + custom design tokens      |
+| **Typography**   | Syne 800 (display) · DM Sans (body) · Space Mono (HUD) |
+| **PWA**          | vite-plugin-pwa · Workbox · IndexedDB offline queue    |
+| **Icons**        | lucide-react (exclusively)                             |
+| **Charts**       | Recharts                                               |
 
 ---
 
 ## Disciplines & Sub-Disciplines (100+)
 
-| 🥊 Boxing | 💃 Dance | 🥋 Martial Arts |
-|---|---|---|
+| 🥊 Boxing                                    | 💃 Dance                                                                    | 🥋 Martial Arts                                                          |
+| -------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Orthodox, Southpaw, Switch, Muay Thai Hybrid | **Classical**: Bharatanatyam, Kathak, Odissi, Kuchipudi, Manipuri, Sattriya | Shotokan, Goju-Ryu, Taekwondo, Muay Thai, Wing Chun, BJJ, Judo, Capoeira |
-| | **Urban**: Krump, Breaking, Waacking, Voguing, Popping, Locking | Kalaripayattu, Silat, Escrima, Ninjutsu |
-| | **Western**: Ballet, Contemporary, Jazz, Hip-Hop, K-Pop | |
+|                                              | **Urban**: Krump, Breaking, Waacking, Voguing, Popping, Locking             | Kalaripayattu, Silat, Escrima, Ninjutsu                                  |
+|                                              | **Western**: Ballet, Contemporary, Jazz, Hip-Hop, K-Pop                     |                                                                          |
 
-| 🧘 Yoga | 🤸 Gymnastics | 💪 Others |
-|---|---|---|
+| 🧘 Yoga                                                   | 🤸 Gymnastics                                | 💪 Others                                             |
+| --------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------- |
 | Ashtanga, Iyengar, Vinyasa, Bikram, Yin, Kundalini, Hatha | Floor, Beam, Vault, Bars, Rhythmic, Tumbling | Fitness, Bodybuilding, Calisthenics, Parkour, Pilates |
 
 ---
@@ -110,17 +110,27 @@ npm run dev                  # Opens localhost:5173
 
 ## Architecture
 
+### Production Readiness & Scalability
+
+- **Global Error Boundaries**: Catches React render errors at the root level (`App.tsx`), preventing white screens and offering a graceful recovery UI.
+- **Route-Level Code Splitting**: Complete code-splitting via `React.lazy()` and `Suspense` in `router/index.tsx`, reducing the initial bundle size and loading heavy dependencies on-demand.
+- **Web Worker Offloading**: CPU-intensive MediaPipe Vision tasks (Pose, Hands, Face) are fully offloaded to dedicated Web Workers, ensuring the main React UI thread remains fluid at 60fps.
+- **Secure Environment Variables**: Secure Vite `define` configuration prevents production build crashes and prevents environment leakage across client bundles.
+- **PWA Local Caching**: Aggressively caches `.wasm` and `.task` ML model files (up to 25 MiB) via Workbox Service Workers, ensuring zero-latency offline performance.
+
 ### 5-Slice Zustand Store
 
 ```ts
 useStore = create<AppStore>()(
-  persist(immer((...a) => ({
-    ...createGameSlice(...a),      // XP, tiers, missions, achievements, notifications
-    ...createLeagueSlice(...a),    // sessions, battles, drill state, history
-    ...createFeedSlice(...a),      // reels (liked/saved as Set<string>)
-    ...createDetectionSlice(...a), // camera, MediaPipe model states
-    ...createUserSlice(...a),      // auth, profile, preferences
-  })))
+  persist(
+    immer((...a) => ({
+      ...createGameSlice(...a), // XP, tiers, missions, achievements, notifications
+      ...createLeagueSlice(...a), // sessions, battles, drill state, history
+      ...createFeedSlice(...a), // reels (liked/saved as Set<string>)
+      ...createDetectionSlice(...a), // camera, MediaPipe model states
+      ...createUserSlice(...a), // auth, profile, preferences
+    })),
+  ),
 );
 ```
 
@@ -158,14 +168,14 @@ src/
 
 6 dimensions, discipline-weighted:
 
-| | Boxing | Dance | Yoga | Martial Arts |
-|---|---|---|---|---|
-| Accuracy | 25% | 20% | 25% | 30% |
-| Stability | 20% | 10% | 20% | 15% |
-| Timing | 25% | 25% | 5% | 25% |
-| Expressiveness | 5% | 30% | 10% | 5% |
-| Power | 30% | 5% | 0% | 25% |
-| Balance | 0% | 10% | 40% | 0% |
+|                | Boxing | Dance | Yoga | Martial Arts |
+| -------------- | ------ | ----- | ---- | ------------ |
+| Accuracy       | 25%    | 20%   | 25%  | 30%          |
+| Stability      | 20%    | 10%   | 20%  | 15%          |
+| Timing         | 25%    | 25%   | 5%   | 25%          |
+| Expressiveness | 5%     | 30%   | 10%  | 5%           |
+| Power          | 30%    | 5%    | 0%   | 25%          |
+| Balance        | 0%     | 10%   | 40%  | 0%           |
 
 → Deep dive: **[docs/SCORING_ENGINE.md](docs/SCORING_ENGINE.md)**
 
@@ -173,21 +183,21 @@ src/
 
 ## Documentation
 
-| Document | Description |
-|---|---|
-| [docs/SETUP.md](docs/SETUP.md) | Complete setup, Supabase config, deployment |
-| [docs/FEATURES.md](docs/FEATURES.md) | Full feature specification |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Technical architecture deep dive |
-| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Colors, typography, motion, components |
-| [docs/SCORING_ENGINE.md](docs/SCORING_ENGINE.md) | Scoring algorithm documentation |
-| [docs/MONETIZATION.md](docs/MONETIZATION.md) | Revenue model and pricing strategy |
-| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Store selectors, hooks, services API |
-| [docs/MEDIAPIPE.md](docs/MEDIAPIPE.md) | MediaPipe tasks integration guide |
-| [docs/AUDIO_SYSTEM.md](docs/AUDIO_SYSTEM.md) | Audio system and sound inventory |
-| [docs/PWA.md](docs/PWA.md) | PWA, offline, install, push notifications |
-| [supabase/schema.sql](supabase/schema.sql) | Complete database schema (run in Supabase) |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| Document                                         | Description                                 |
+| ------------------------------------------------ | ------------------------------------------- |
+| [docs/SETUP.md](docs/SETUP.md)                   | Complete setup, Supabase config, deployment |
+| [docs/FEATURES.md](docs/FEATURES.md)             | Full feature specification                  |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)     | Technical architecture deep dive            |
+| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)   | Colors, typography, motion, components      |
+| [docs/SCORING_ENGINE.md](docs/SCORING_ENGINE.md) | Scoring algorithm documentation             |
+| [docs/MONETIZATION.md](docs/MONETIZATION.md)     | Revenue model and pricing strategy          |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md)   | Store selectors, hooks, services API        |
+| [docs/MEDIAPIPE.md](docs/MEDIAPIPE.md)           | MediaPipe tasks integration guide           |
+| [docs/AUDIO_SYSTEM.md](docs/AUDIO_SYSTEM.md)     | Audio system and sound inventory            |
+| [docs/PWA.md](docs/PWA.md)                       | PWA, offline, install, push notifications   |
+| [supabase/schema.sql](supabase/schema.sql)       | Complete database schema (run in Supabase)  |
+| [CONTRIBUTING.md](CONTRIBUTING.md)               | Contribution guidelines                     |
+| [CHANGELOG.md](CHANGELOG.md)                     | Version history                             |
 
 ---
 
