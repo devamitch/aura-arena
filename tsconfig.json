@@ -62,7 +62,8 @@
     "src/features/shared/components/ui/toggle.tsx",
     "src/features/shared/components/ui/toggle-group.tsx",
     "src/constants/index.ts",
-    "src/components/3d"
+    "src/components/3d",
+    "src/workers/mediapipe/backup"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { getGeminiCoaching } from "@/lib/gemini/coaching";
+import { MoveDetector, type MoveStat } from "@/lib/training/moveDetector";
 import { MetricsPanel } from "@features/arena/components/MetricsPanel";
 import { useCamera } from "@hooks/useCamera";
 import { usePersonalization } from "@hooks/usePersonalization";
@@ -28,6 +29,7 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
+import { bus } from "@/lib/eventBus";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -72,7 +74,24 @@ export default function TrainingPage() {
   const [geminiLoading, setGeminiLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const camera = useCamera({ discipline: disc.id });
+  // ── Move detection state ──────────────────────────────────────────────────
+  const [moveStats, setMoveStats] = useState<MoveStat[]>([]);
+  const [lastMove, setLastMove] = useState<{ name: string; power: number } | null>(null);
+  const detectorRef = useRef<MoveDetector | null>(null);
+  const lastMoveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const camera = useCamera({
+    discipline: disc.id,
+    showSkeleton: true,
+    showHands: true,
+    // showFace omitted: loading all 3 models simultaneously exceeds worker timeout
+  });
+  // ── Init MoveDetector per discipline ─────────────────────────────────────
+  useEffect(() => {
+    detectorRef.current = new MoveDetector(disc.id);
+    return () => { detectorRef.current = null; };
+  }, [disc.id]);
+
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const recorder = useVideoRecorder(
     camera.videoRef,
@@ -97,6 +116,26 @@ export default function TrainingPage() {
       recorder.stopRecording();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Move detection via MoveDetector (all disciplines) ────────────────────
+  useEffect(() => {
+    const unsub = bus.on("pose:result", ({ poseLandmarks, timestamp }) => {
+      const lms = (poseLandmarks as { x: number; y: number; z?: number; visibility?: number }[][])[0] ?? [];
+      if (!lms.length || !detectorRef.current) return;
+      const detected = detectorRef.current.update(lms, (timestamp as number) ?? performance.now());
+      if (detected.length > 0) {
+        const top = detected.reduce((a, b) => b.power > a.power ? b : a);
+        setLastMove({ name: top.name, power: top.power });
+        if (lastMoveTimerRef.current) clearTimeout(lastMoveTimerRef.current);
+        lastMoveTimerRef.current = setTimeout(() => setLastMove(null), 1800);
+        setMoveStats(detectorRef.current.getStats().slice(0, 5));
+      }
+    });
+    return () => {
+      unsub();
+      if (lastMoveTimerRef.current) clearTimeout(lastMoveTimerRef.current);
+    };
   }, []);
 
   // ── Toggle video recording ─────────────────────────────────────────────────
@@ -222,10 +261,11 @@ export default function TrainingPage() {
           playsInline
           muted
         />
+        {/* Canvas: objectFit:cover matches video scale so landmarks align */}
         <canvas
           ref={camera.canvasRef}
           className="absolute inset-0 w-full h-full z-10 pointer-events-none"
-          style={{ transform: "scaleX(-1)" }}
+          style={{ objectFit: "cover" }}
         />
         <div
           className="absolute inset-0 pointer-events-none"
@@ -234,6 +274,74 @@ export default function TrainingPage() {
               "radial-gradient(circle, transparent 40%, rgba(4,9,20,0.8) 100%)",
           }}
         />
+
+        {/* ── Move Detection HUD ── */}
+        {camera.streaming && camera.engineReady && (
+          <div className="absolute bottom-6 left-4 right-4 z-20 flex items-end justify-between pointer-events-none">
+            {/* Move stats list */}
+            <div
+              className="flex flex-col gap-1 px-3 py-2 rounded-2xl backdrop-blur-xl"
+              style={{ background: "rgba(4,9,20,0.75)", border: "1px solid rgba(0,240,255,0.2)", minWidth: 130 }}
+            >
+              {moveStats.length === 0 ? (
+                <div className="flex items-center gap-1.5">
+                  <Activity className="w-3 h-3 opacity-40" style={{ color: "var(--ac)" }} />
+                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Detecting…</span>
+                </div>
+              ) : (
+                moveStats.slice(0, 3).map((s) => (
+                  <div key={s.name} className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-white/70 flex-1 truncate">{s.name}</span>
+                    <span className="text-[10px] font-black tabular-nums" style={{ color: "var(--ac)" }}>{s.count}×</span>
+                    <span className="text-[9px] font-mono text-white/40">{s.maxPower}pw</span>
+                  </div>
+                ))
+              )}
+            </div>
+            {/* Total moves counter */}
+            <div
+              className="flex flex-col items-center px-4 py-2 rounded-2xl backdrop-blur-xl"
+              style={{ background: "rgba(4,9,20,0.75)", border: "1px solid rgba(0,240,255,0.2)" }}
+            >
+              <span
+                className="text-[28px] font-black leading-none tabular-nums"
+                style={{ color: "var(--ac)", textShadow: "0 0 16px rgba(0,240,255,0.5)" }}
+              >
+                {moveStats.reduce((t, s) => t + s.count, 0)}
+              </span>
+              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">moves</span>
+            </div>
+          </div>
+        )}
+
+        {/* ── Last Move Flash ── */}
+        <AnimatePresence>
+          {lastMove && (
+            <motion.div
+              key={lastMove.name + lastMove.power}
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+              className="absolute bottom-[30%] left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+            >
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl backdrop-blur-xl"
+                style={{
+                  background: "rgba(0,240,255,0.15)",
+                  border: "1px solid rgba(0,240,255,0.45)",
+                  boxShadow: "0 0 24px rgba(0,240,255,0.25)",
+                }}
+              >
+                <Zap className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--ac)" }} />
+                <span className="font-black text-sm text-white">{lastMove.name}</span>
+                <span className="text-xs font-mono font-bold" style={{ color: "var(--ac)" }}>
+                  {lastMove.power}pw
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Top HUD ── */}

@@ -17,6 +17,18 @@ import { getDiscipline } from "@utils/constants/disciplines";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameEngine } from "./useGameEngine";
 
+// Helper: merge explicit extraTasks with showFace/showHands options
+function deriveExtraTasks(
+  extraTasks: MediaPipeTask[] | undefined,
+  showFace?: boolean,
+  showHands?: boolean,
+): MediaPipeTask[] | undefined {
+  const base: MediaPipeTask[] = extraTasks ? [...extraTasks] : [];
+  if (showFace && !base.includes("face")) base.push("face");
+  if (showHands && !base.includes("hands")) base.push("hands");
+  return base.length > 0 ? base : undefined;
+}
+
 export type CameraPermission =
   | "idle"
   | "requesting"
@@ -104,6 +116,12 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
     [discipline],
   );
 
+  // Merge showFace/showHands into extraTasks so VisionWorker initialises the right landmarkers
+  const effectiveExtraTasks = useMemo(
+    () => deriveExtraTasks(opts.extraTasks, opts.showFace, opts.showHands),
+    [opts.extraTasks, opts.showFace, opts.showHands],
+  );
+
   // Delegate detection + scoring to useGameEngine (worker-based)
   const engine = useGameEngine(
     videoRef,
@@ -118,6 +136,9 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
       showObjects: opts.showObjects,
       showBrackets: true,
     },
+    undefined,
+    undefined,
+    effectiveExtraTasks,
   );
 
   // Accumulate frame scores from event bus (synchronous session summary)
@@ -251,7 +272,7 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
     scanProgress,
     currentScore: engine.currentScore,
     poseCorrectness: engine.poseCorrectness ?? POSE_OK,
-    lastResult: null,
+    lastResult: engine.latestResult.current,
     errorMessage,
     coachMessage: engine.coachMessage,
     outOfFrame,

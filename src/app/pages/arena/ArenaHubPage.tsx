@@ -18,6 +18,7 @@ import {
   Play,
   Radio,
   RefreshCw,
+  Sword,
   Swords,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -70,6 +71,16 @@ export default function ArenaHubPage() {
       locked: !liveUnlocked,
       lockMsg: "Win 1 PvE battle to unlock",
       desc: "Battle real athletes globally, live.",
+    },
+    {
+      label: "Combat Arena",
+      sub: "3D fighter · all disciplines",
+      icon: <Sword className="w-6 h-6" />,
+      color: "#ef4444",
+      path: `/arena/combat/${disc.id}`,
+      locked: false,
+      lockMsg: "",
+      desc: "Fight a 3D AI opponent with real hit detection, damage maps, and lifelines.",
     },
     {
       label: "Detection Lab",

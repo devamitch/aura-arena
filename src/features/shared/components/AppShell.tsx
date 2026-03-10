@@ -38,7 +38,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 // Pages that hide the bottom nav (full-screen camera/battle/feed)
-const FULLSCREEN_PREFIXES = ["/arena/train", "/battle/live", "/discover/reels", "/arcade/pose"];
+const FULLSCREEN_PREFIXES = ["/arena/train", "/arena/boxing", "/arena/combat", "/battle/live", "/discover/reels", "/arcade/pose"];
 
 const QUICK = [
   {

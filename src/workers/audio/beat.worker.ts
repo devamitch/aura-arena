@@ -1,5 +1,6 @@
 // Aura Arena — Beat Detection Worker (audio BPM + energy tracking)
 // Runs on AudioWorklet message bridge pattern
+export {}; // make this a module so TS doesn't conflict with other workers
 
 let _bpm = 90;
 let _lastBeat = 0;

@@ -1,10 +1,11 @@
 // Aura Arena — Game Engine Hook (coordinates all workers via event bus)
 import { bus } from "@/lib/eventBus";
+import type { VisionFrameResult } from "@/lib/mediapipe/types";
 import { renderFrameToCanvas } from "@/lib/mediapipe/canvas";
 import type { PoseCorrectness } from "@/lib/poseCorrectness";
 import { createRhythmState } from "@/lib/score/rhythm";
 import { zeroScore } from "@/lib/score/session";
-import type { FrameScore } from "@/types";
+import type { FrameScore, MediaPipeTask } from "@/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useScoringWorker } from "./useScoringWorker";
 import { useSupabaseSync } from "./useSupabaseSync";
@@ -16,6 +17,7 @@ export interface GameEngineState {
   poseCorrectness: PoseCorrectness;
   combo: number;
   coachMessage: string | null;
+  latestResult: React.RefObject<VisionFrameResult>;
 }
 
 export function useGameEngine(
@@ -33,6 +35,7 @@ export function useGameEngine(
   },
   userId?: string,
   sessionId?: string,
+  extraTasks?: MediaPipeTask[],
 ): GameEngineState & {
   startLoop: () => void;
   stopLoop: () => void;
@@ -40,7 +43,7 @@ export function useGameEngine(
   resetSession: () => void;
   getSessionSummary: () => Promise<unknown>;
 } {
-  const vision = useVisionWorker(discipline);
+  const vision = useVisionWorker(discipline, extraTasks);
   const scoring = useScoringWorker(discipline, subDiscipline);
   const sync = useSupabaseSync();
   const lastSyncSecRef = useRef(-1); // throttle: 1 frame/second saved
@@ -66,6 +69,9 @@ export function useGameEngine(
   const sessionStartRef = useRef(0);
   const comboRef = useRef(combo);
   const scoreRef = useRef(score);
+  // Frame throttle: only run detection every other frame (~30fps at 60fps RAF)
+  // Canvas rendering still runs every RAF frame for smooth visuals
+  const detectionFrameRef = useRef(0);
 
   comboRef.current = combo;
   scoreRef.current = score;
@@ -202,12 +208,13 @@ export function useGameEngine(
           drawObjects: drawOptionsRef.current?.showObjects ?? true,
         },
       );
-      // Send frame to workers only when ready — use ref so we never miss the transition
-      if (engineReadyRef.current && video.readyState >= 2) {
+      // Detection throttle: only send every 2nd frame (~30fps at 60fps RAF)
+      // Canvas rendering still runs every frame for smooth overlays
+      detectionFrameRef.current = (detectionFrameRef.current + 1) % 2;
+      if (engineReadyRef.current && video.readyState >= 2 && detectionFrameRef.current === 0) {
+        const ts = video.currentTime * 1000;
         createImageBitmap(video)
-          .then((bmp) =>
-            visionRef.current.sendFrame(bmp, video.currentTime * 1000),
-          )
+          .then((bmp) => visionRef.current.sendFrame(bmp, ts))
           .catch(() => {});
       }
     };
@@ -225,6 +232,7 @@ export function useGameEngine(
     poseCorrectness: correctness,
     combo,
     coachMessage: coach,
+    latestResult: vision.latestResult,
     startLoop,
     stopLoop,
     addFrame: scoring.addFrame,

@@ -14,6 +14,7 @@ import {
   Flame,
   Search,
   Shield,
+  Sword,
   Swords,
   Trophy,
   Users,
@@ -484,6 +485,63 @@ export default function PvePrePage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* ── Combat Modes ── */}
+      <div className="px-5 mt-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Sword className="w-3.5 h-3.5 text-red-400" />
+          <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
+            Combat Modes
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            {
+              label: "Combat Arena",
+              sub: "3D AI opponent · all disciplines",
+              icon: Sword,
+              color: "#ef4444",
+              path: "/arena/combat/boxing",
+            },
+            {
+              label: "Boxing Arena",
+              sub: "Hit detection · damage maps",
+              icon: Swords,
+              color: "#f97316",
+              path: "/arena/boxing",
+            },
+          ].map((m) => {
+            const Icon = m.icon;
+            return (
+              <motion.button
+                key={m.label}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate(m.path)}
+                className="relative overflow-hidden rounded-[20px] p-4 text-left"
+                style={{
+                  background: `${m.color}08`,
+                  border: `1px solid ${m.color}20`,
+                }}
+              >
+                <div
+                  className="absolute top-0 left-3 right-3 h-[1px]"
+                  style={{
+                    background: `linear-gradient(90deg, transparent, ${m.color}50, transparent)`,
+                  }}
+                />
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: `${m.color}14`, border: `1px solid ${m.color}20` }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: m.color }} />
+                </div>
+                <p className="text-sm font-black text-white leading-none mb-1">{m.label}</p>
+                <p className="text-[10px]" style={{ color: `${m.color}90` }}>{m.sub}</p>
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Featured (Hot) Opponents ── */}

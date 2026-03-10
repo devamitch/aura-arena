@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // AURA ARENA — useAuth Hook
-// Google OAuth via @react-oauth/google GoogleLogin component → Supabase session
+// Google OAuth via supabase.auth.signInWithOAuth (redirect flow) → Supabase session
 // Gemini key is user-provided (BYOK), stored in Zustand/localStorage, NOT Supabase
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -99,73 +99,83 @@ export const useAuth = () => {
 };
 
 // ─── HELPER: Fetch or create profile from Supabase ────────────────────────────
+// Gracefully degrades: always calls setUser even if the profiles table is missing.
 
 export async function hydrateUser(
   userId: string,
   authUser: { email?: string; user_metadata?: Record<string, string> } | null,
   setUser: (u: any) => void,
 ): Promise<any> {
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-
-  // If no profile exists (new user), the DB trigger should have created one.
-  // Upsert to fill any missing columns.
   const meta = authUser?.user_metadata ?? {};
-  if (!profile) {
-    await supabase.from("profiles").upsert({
-      id: userId,
-      email: authUser?.email ?? "",
-      display_name: meta.full_name ?? meta.name ?? authUser?.email ?? "",
-      avatar_url: meta.avatar_url ?? meta.picture ?? "",
-      onboarding_complete: false,
-    }, { onConflict: "id" });
+
+  let p: Record<string, any> | null = null;
+
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (!profile) {
+      // New user — upsert a skeleton profile (DB trigger may have already created it)
+      await supabase.from("profiles").upsert({
+        id: userId,
+        email: authUser?.email ?? "",
+        display_name: meta.full_name ?? meta.name ?? authUser?.email ?? "",
+        avatar_url: meta.avatar_url ?? meta.picture ?? "",
+        onboarding_complete: false,
+      }, { onConflict: "id" });
+
+      const { data: fresh } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      p = fresh ?? null;
+    } else {
+      p = profile;
+    }
+  } catch {
+    // Profiles table might not exist yet — gracefully fall through
+    p = null;
   }
 
-  const { data: p } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-
-  if (p) {
-    setUser({
-      id: userId,
-      email: p.email ?? authUser?.email ?? "",
-      displayName: p.display_name ?? "",
-      arenaName: p.arena_name ?? "",
-      username: p.username ?? "",
-      avatar: p.avatar_url ?? p.avatar ?? "",
-      avatarUrl: p.avatar_url ?? "",
-      discipline: p.discipline ?? "boxing",
-      subDiscipline: p.sub_discipline ?? undefined,
-      experienceLevel: p.experience_level ?? "beginner",
-      goals: p.goals ?? [],
-      trainingFrequency: p.training_frequency ?? 3,
-      aiCoachName: p.ai_coach_name ?? "Aria",
-      onboardingComplete: p.onboarding_complete ?? false,
-      xp: p.xp ?? 0,
-      totalPoints: p.total_points ?? 0,
-      sessionsCompleted: p.sessions_completed ?? 0,
-      pveWins: p.pve_wins ?? 0,
-      pveLosses: p.pve_losses ?? 0,
-      winStreak: p.win_streak ?? 0,
-      dailyStreak: p.daily_streak ?? 0,
-      bestStreak: p.best_streak ?? 0,
-      streakFreezeCount: p.streak_freeze_count ?? 0,
-      averageScore: p.average_score ?? 0,
-      bestScore: p.best_score ?? 0,
-      bio: p.bio ?? "",
-      lastActiveDate: p.last_active_date ?? "",
-      tier: p.tier ?? "beginner",
-      isPremium: p.is_premium ?? false,
-      country: p.country ?? "UN",
-      createdAt: p.created_at ?? new Date().toISOString(),
-      updatedAt: p.updated_at ?? new Date().toISOString(),
-    });
-  }
+  // Always hydrate user store — use profile data if available, auth metadata as fallback
+  setUser({
+    id: userId,
+    email: p?.email ?? authUser?.email ?? "",
+    displayName: p?.display_name ?? meta.full_name ?? meta.name ?? authUser?.email ?? "",
+    arenaName: p?.arena_name ?? "",
+    username: p?.username ?? "",
+    avatar: p?.avatar_url ?? meta.picture ?? "",
+    avatarUrl: p?.avatar_url ?? meta.picture ?? "",
+    discipline: p?.discipline ?? "boxing",
+    subDiscipline: p?.sub_discipline ?? undefined,
+    experienceLevel: p?.experience_level ?? "beginner",
+    goals: p?.goals ?? [],
+    trainingFrequency: p?.training_frequency ?? 3,
+    aiCoachName: p?.ai_coach_name ?? "Aria",
+    onboardingComplete: p?.onboarding_complete ?? false,
+    xp: p?.xp ?? 0,
+    totalPoints: p?.total_points ?? 0,
+    sessionsCompleted: p?.sessions_completed ?? 0,
+    pveWins: p?.pve_wins ?? 0,
+    pveLosses: p?.pve_losses ?? 0,
+    winStreak: p?.win_streak ?? 0,
+    dailyStreak: p?.daily_streak ?? 0,
+    bestStreak: p?.best_streak ?? 0,
+    streakFreezeCount: p?.streak_freeze_count ?? 0,
+    averageScore: p?.average_score ?? 0,
+    bestScore: p?.best_score ?? 0,
+    bio: p?.bio ?? "",
+    lastActiveDate: p?.last_active_date ?? "",
+    tier: p?.tier ?? "beginner",
+    isPremium: p?.is_premium ?? false,
+    country: p?.country ?? "UN",
+    createdAt: p?.created_at ?? new Date().toISOString(),
+    updatedAt: p?.updated_at ?? new Date().toISOString(),
+  });
 
   return p;
 }

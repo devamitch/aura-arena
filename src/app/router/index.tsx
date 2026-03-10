@@ -218,6 +218,20 @@ const router = createBrowserRouter([
         path: "/arcade/numguess",
         element: lazy_(() => import("@app/pages/arcade/NumberGuess")),
       },
+      // ── Boxing Arena (3D hit detection + adaptive AI) ──────────
+      {
+        path: "/arena/boxing",
+        element: lazy_(() => import("@app/pages/arena/BoxingArenaPage")),
+      },
+      // ── Combat Arena (unified 3D combat for all disciplines) ───
+      {
+        path: "/arena/combat/:discipline",
+        element: lazy_(() => import("@app/pages/arena/CombatArenaPage")),
+      },
+      {
+        path: "/arena/combat",
+        element: lazy_(() => import("@app/pages/arena/CombatArenaPage")),
+      },
       // ── Arcade pose games (full-screen camera) ─────────────────
       {
         path: "/arcade/pose/squat",

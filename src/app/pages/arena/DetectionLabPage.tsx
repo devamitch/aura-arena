@@ -105,9 +105,11 @@ export default function DetectionLabPage() {
       <div className="relative flex-1 mx-4 mb-2 rounded-2xl overflow-hidden bg-card/60 backdrop-blur-xl border-white/10 shadow-sm">
         <video
           ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover opacity-0"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ transform: "scaleX(-1)" }}
           playsInline
           muted
+          autoPlay
         />
         <canvas
           ref={canvasRef}

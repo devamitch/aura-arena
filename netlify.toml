@@ -1,0 +1,40 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/mediapipe-wasm/*"
+    [headers.values]
+    Cache-Control = "public, max-age=2592000, immutable"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+[[headers]]
+  for = "/mediapipe-models/*"
+    [headers.values]
+    Cache-Control = "public, max-age=2592000, immutable"
+
+[[headers]]
+  for = "/*.js"
+    [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+    [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.wasm"
+    [headers.values]
+    Cache-Control = "public, max-age=2592000, immutable"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+[context.production]
+  environment = { NODE_VERSION = "20" }

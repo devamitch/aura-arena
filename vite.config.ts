@@ -7,7 +7,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
     define: {
-      "process.env": env,
+      "process.env.NODE_ENV": JSON.stringify(mode),
+      ...Object.keys(env).reduce(
+        (prev, key) => {
+          prev[`process.env.${key}`] = JSON.stringify(env[key]);
+          return prev;
+        },
+        {} as Record<string, string>,
+      ),
     },
     plugins: [
       react(),
@@ -55,8 +62,10 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
-          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,mp3}"],
+          maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MiB to accommodate large model files
+          globPatterns: [
+            "**/*.{js,css,html,ico,png,svg,woff2,mp3,wasm,task,tflite}",
+          ],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -139,8 +148,13 @@ export default defineConfig(({ mode }) => {
       format: "es",
     },
     server: {
-      // port: 8082,
       host: true,
+      headers: {
+        // Required for SharedArrayBuffer + WASM threads in dev mode
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "require-corp",
+        "Cross-Origin-Resource-Policy": "cross-origin",
+      },
     },
   };
 });
