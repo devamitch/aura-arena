@@ -43,6 +43,27 @@
     <title>AURA ARENA</title>
   </head>
   <body>
+    <script>
+      // VISUAL ERROR CATCHER FOR DIAGNOSIS
+      window.addEventListener("error", function (e) {
+        document.body.innerHTML +=
+          '<div style="color:red; background:black; border:2px solid red; padding: 20px; font-size: 16px; font-family: monospace; position:absolute; top:0; left:0; z-index:99999; width: 100vw; height: 100vh;"><h3>FATAL JS ERROR</h3><br>Message: ' +
+          e.message +
+          "<br>File: " +
+          e.filename +
+          ":" +
+          e.lineno +
+          ":<br><pre>" +
+          (e.error ? e.error.stack : "") +
+          "</pre></div>";
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        document.body.innerHTML +=
+          '<div style="color:yellow; background:black; border:2px solid yellow; padding: 20px; font-size: 16px; font-family: monospace; position:absolute; top:0; left:0; z-index:99999; width: 100vw; height: 100vh;"><h3>UNHANDLED PROMISE REJECTION</h3><br>Reason: ' +
+          (e.reason ? e.reason.stack || e.reason : "Unknown") +
+          "</div>";
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/app/main.tsx"></script>
   </body>

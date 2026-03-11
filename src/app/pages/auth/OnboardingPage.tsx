@@ -209,7 +209,7 @@ export default function OnboardingPage() {
   const [goals, setGoals] = useState<string[]>([]);
   const [frequency, setFrequency] = useState(3);
   const [avatarUrl, setAvatarUrl] = useState<string>(MODELS.VROID_MALE);
-  const [avatarType, setAvatarType] = useState<"3d" | "photo">("3d");
+  const [avatarType, setAvatarType] = useState<"3d" | "photo">("photo");
   const [coachName, setCoachName] = useState("");
   const [saving, setSaving] = useState(false);
 

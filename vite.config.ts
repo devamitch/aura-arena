@@ -107,25 +107,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
-        output: {
-          manualChunks: {
-            "react-vendor": ["react", "react-dom"],
-            router: ["react-router-dom"],
-            framer: ["framer-motion"],
-            supabase: ["@supabase/supabase-js"],
-            tanstack: [
-              "@tanstack/react-query",
-              "@tanstack/react-virtual",
-              "@tanstack/react-table",
-            ],
-            recharts: ["recharts"],
-            mediapipe: [
-              "@mediapipe/pose",
-              "@mediapipe/hands",
-              "@mediapipe/face_mesh",
-            ],
-          },
-        },
+        output: {},
       },
       target: "es2020",
       sourcemap: false,
