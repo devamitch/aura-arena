@@ -19,23 +19,24 @@ export const useAuth = () => {
   const { setUser, setLoading, setAuthError, signOut: storeSignOut, addSavedAccount } = useStore();
 
   // ── Restore session on mount ───────────────────────────────────────────────
+  // Uses onAuthStateChange with INITIAL_SESSION to avoid race with PKCE exchange.
+  // The INITIAL_SESSION event fires after Supabase has fully resolved any pending
+  // OAuth code in the URL — safe to call setLoading(false) only here.
   useEffect(() => {
     setLoading(true);
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        identifyUser(session.user.id);
-        await hydrateUser(session.user.id, session.user, setUser);
-      }
-      // Re-init Gemini from stored key (BYOK — user provided, lives in localStorage)
-      const storedKey = useStore.getState().geminiApiKey;
-      if (storedKey) initGemini(storedKey);
-      setLoading(false);
-    });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
+        if (event === "INITIAL_SESSION") {
+          // Fires once on mount, after any pending OAuth code exchange is done
+          if (session?.user) {
+            identifyUser(session.user.id);
+            await hydrateUser(session.user.id, session.user, setUser);
+          }
+          const storedKey = useStore.getState().geminiApiKey;
+          if (storedKey) initGemini(storedKey);
+          setLoading(false);
+        } else if (event === "SIGNED_IN" && session?.user) {
           identifyUser(session.user.id);
           await hydrateUser(session.user.id, session.user, setUser);
         } else if (event === "SIGNED_OUT") {

@@ -24,9 +24,7 @@ interface CoachingResponse {
 export async function getGeminiCoaching(
   session: SessionData,
 ): Promise<CoachingResponse | null> {
-  const apiKey = (import.meta.env as Record<string, string>)[
-    "VITE_GEMINI_API_KEY"
-  ];
+  const apiKey = import.meta.env.GEMINI_API_KEY;
   if (!apiKey) return null;
   const prompt = buildPrompt(session);
   try {
@@ -76,9 +74,7 @@ Respond with ONLY valid JSON matching this schema:
 export async function* streamGeminiCoaching(
   session: SessionData,
 ): AsyncGenerator<string> {
-  const apiKey = (import.meta.env as Record<string, string>)[
-    "VITE_GEMINI_API_KEY"
-  ];
+  const apiKey = import.meta.env.GEMINI_API_KEY;
   if (!apiKey) return;
   try {
     const res = await fetch(

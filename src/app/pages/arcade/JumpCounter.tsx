@@ -38,7 +38,7 @@ export default function JumpCounter() {
   const phaseRef = useRef<Phase>("idle");
   phaseRef.current = phase;
 
-  const camera = useCamera({ discipline: "fitness" });
+  const camera = useCamera({ discipline: "fitness", showSkeleton: true, showHands: true, showFace: true });
 
   useEffect(() => {
     const handler = ({ poseLandmarks }: { poseLandmarks: unknown[][]; poseWorldLandmarks: unknown[][]; timestamp: number }) => {

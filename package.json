@@ -4,6 +4,7 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/sync-wasm.js",
     "start": "vite preview",
     "dev": "vite",
     "build": "tsc -b && vite build",

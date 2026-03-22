@@ -39,7 +39,7 @@ export default function ShadowBoxing() {
   const comboRef = useRef(0);
   phaseRef.current = phase;
 
-  const camera = useCamera({ discipline: "boxing" });
+  const camera = useCamera({ discipline: "boxing", showSkeleton: true, showHands: true, showFace: true });
 
   const registerPunch = useCallback((side: "left" | "right") => {
     const now = Date.now();

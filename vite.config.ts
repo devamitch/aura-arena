@@ -1,13 +1,42 @@
 import react from "@vitejs/plugin-react-swc";
+import { copyFileSync, mkdirSync, readdirSync } from "fs";
+import { join } from "path";
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+// Copies WASM files from node_modules so they always match the installed package version
+const syncMediaPipeWasm = {
+  name: "sync-mediapipe-wasm",
+  buildStart() {
+    const src = "node_modules/@mediapipe/tasks-vision/wasm";
+    const dest = "public/mediapipe-wasm";
+    try {
+      mkdirSync(dest, { recursive: true });
+      for (const file of readdirSync(src)) {
+        copyFileSync(join(src, file), join(dest, file));
+      }
+      console.log("[vite] ✓ MediaPipe WASM synced from node_modules");
+    } catch {
+      console.warn("[vite] Could not sync MediaPipe WASM — using existing files");
+    }
+  },
+};
+
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+
   return {
-    // Removed custom define block. Vite implicitly handles process.env.NODE_ENV.
-    // Injecting the whole process.env object or fragments can crash production builds and React internals.
+    define: {
+      "import.meta.env.SUPABASE_URL":           JSON.stringify(env.SUPABASE_URL ?? ""),
+      "import.meta.env.SUPABASE_ANON_KEY":      JSON.stringify(env.SUPABASE_ANON_KEY ?? ""),
+      "import.meta.env.GOOGLE_CLIENT_ID":       JSON.stringify(env.GOOGLE_CLIENT_ID ?? ""),
+      "import.meta.env.GEMINI_API_KEY":         JSON.stringify(env.GEMINI_API_KEY ?? ""),
+      "import.meta.env.STRIPE_PAYMENT_LINK":    JSON.stringify(env.STRIPE_PAYMENT_LINK ?? ""),
+      "import.meta.env.STRIPE_PUBLISHABLE_KEY": JSON.stringify(env.STRIPE_PUBLISHABLE_KEY ?? ""),
+    },
     plugins: [
+      syncMediaPipeWasm,
       react(),
       VitePWA({
         registerType: "autoUpdate",

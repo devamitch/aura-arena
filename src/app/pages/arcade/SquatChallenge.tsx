@@ -41,7 +41,7 @@ export default function SquatChallenge() {
   const phaseRef = useRef<Phase>("idle");
   phaseRef.current = phase;
 
-  const camera = useCamera({ discipline: "calisthenics" });
+  const camera = useCamera({ discipline: "calisthenics", showSkeleton: true, showHands: true, showFace: true });
 
   // Pose landmark detection
   useEffect(() => {

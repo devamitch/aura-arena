@@ -1,14 +1,39 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AURA ARENA — useSupabaseSync
-// React hook that bridges the supabaseSync Web Worker with the app.
-// Initialises once per session, exposes queueFrames / queueSamples / flush.
+// AURA ARENA — useSupabaseSync (main-thread, no web worker)
+// Batches pose frames and training samples, flushes to Supabase every 15 s
+// or when flush() is called explicitly.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { createClient } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef } from "react";
-import type { PoseFrameRow, TrainingSampleRow } from "@/workers/io/supabaseSync.worker";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const SUPABASE_URL = import.meta.env.SUPABASE_URL as string | undefined;
+const SUPABASE_KEY = import.meta.env.SUPABASE_ANON_KEY as string | undefined;
+
+// ── Row types (previously imported from supabaseSync.worker) ──────────────────
+// Callers only provide the per-frame data; queueFrames() fills in the IDs.
+export interface PoseFrameRow {
+  second: number;
+  landmarks: unknown;
+  score: number;
+}
+
+export interface TrainingSampleRow {
+  user_id: string;
+  discipline: string;
+  landmarks: unknown;
+  label: string;
+  confidence: number;
+}
+
+// ── Supabase client (module-level singleton) ──────────────────────────────────
+const supabase =
+  SUPABASE_URL && SUPABASE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
+
+const FLUSH_INTERVAL_MS = 15_000;
+const MAX_BATCH = 500;
 
 export interface SupabaseSyncHandle {
   queueFrames: (
@@ -27,39 +52,37 @@ export interface SupabaseSyncHandle {
 }
 
 export function useSupabaseSync(): SupabaseSyncHandle {
-  const workerRef = useRef<Worker | null>(null);
-  const readyRef  = useRef(false);
+  const frameQueue  = useRef<PoseFrameRow[]>([]);
+  const sampleQueue = useRef<TrainingSampleRow[]>([]);
 
-  // ── Boot worker once ────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!SUPABASE_URL || !SUPABASE_KEY) return; // no-op without env vars
+  const doFlush = useCallback(async () => {
+    if (!supabase) return;
 
-    const worker = new Worker(
-      new URL("../workers/io/supabaseSync.worker.ts", import.meta.url),
-      { type: "module" },
-    );
+    const frames  = frameQueue.current.splice(0);
+    const samples = sampleQueue.current.splice(0);
 
-    worker.onmessage = (evt) => {
-      const msg = evt.data as { type: string };
-      if (msg.type === "READY") readyRef.current = true;
-    };
-
-    worker.postMessage({
-      type: "INIT",
-      supabaseUrl: SUPABASE_URL,
-      supabaseKey: SUPABASE_KEY,
-    });
-
-    workerRef.current = worker;
-    return () => {
-      worker.postMessage({ type: "FLUSH" });
-      setTimeout(() => worker.terminate(), 3000);
-      readyRef.current = false;
-      workerRef.current = null;
-    };
+    if (frames.length) {
+      supabase.from("pose_frames").insert(frames).then(({ error }) => {
+        if (error) console.warn("[SupabaseSync] pose_frames insert error:", error.message);
+      });
+    }
+    if (samples.length) {
+      supabase.from("training_samples").insert(samples).then(({ error }) => {
+        if (error) console.warn("[SupabaseSync] training_samples insert error:", error.message);
+      });
+    }
   }, []);
 
-  // ── Public API ──────────────────────────────────────────────────────────────
+  // Auto-flush every 15 s
+  useEffect(() => {
+    if (!supabase) return;
+    const id = setInterval(doFlush, FLUSH_INTERVAL_MS);
+    return () => {
+      clearInterval(id);
+      doFlush(); // flush on unmount
+    };
+  }, [doFlush]);
+
   const queueFrames = useCallback(
     (
       userId: string,
@@ -68,39 +91,29 @@ export function useSupabaseSync(): SupabaseSyncHandle {
       frames: PoseFrameRow[],
       subDiscipline?: string,
     ) => {
-      if (!readyRef.current || !workerRef.current || !frames.length) return;
-      workerRef.current.postMessage({
-        type: "QUEUE_FRAMES",
-        userId,
-        sessionId,
+      if (!supabase || !frames.length) return;
+      const rows = frames.map((f) => ({
+        ...f,
+        user_id: userId,
+        session_id: sessionId,
         discipline,
-        subDiscipline,
-        frames,
-      });
+        sub_discipline: subDiscipline,
+      }));
+      frameQueue.current = [...frameQueue.current, ...rows].slice(-MAX_BATCH);
     },
     [],
   );
 
   const queueSamples = useCallback(
-    (
-      userId: string,
-      discipline: string,
-      samples: TrainingSampleRow[],
-    ) => {
-      if (!readyRef.current || !workerRef.current || !samples.length) return;
-      workerRef.current.postMessage({
-        type: "QUEUE_SAMPLES",
-        userId,
-        discipline,
-        samples,
-      });
+    (userId: string, discipline: string, samples: TrainingSampleRow[]) => {
+      if (!supabase || !samples.length) return;
+      const rows = samples.map((s) => ({ ...s, user_id: userId, discipline }));
+      sampleQueue.current = [...sampleQueue.current, ...rows].slice(-MAX_BATCH);
     },
     [],
   );
 
-  const flush = useCallback(() => {
-    workerRef.current?.postMessage({ type: "FLUSH" });
-  }, []);
+  const flush = useCallback(() => { doFlush(); }, [doFlush]);
 
   return { queueFrames, queueSamples, flush };
 }

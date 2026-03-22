@@ -59,9 +59,9 @@ async function flush() {
 export function initAnalytics() {
   if (_enabled) return;
 
-  const url = import.meta.env.VITE_SUPABASE_URL ?? "";
+  const url = import.meta.env.SUPABASE_URL ?? "";
   if (!url) {
-    log.info("Analytics disabled — set VITE_SUPABASE_URL to enable");
+    log.info("Analytics disabled — set SUPABASE_URL to enable");
     return;
   }
 

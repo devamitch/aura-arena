@@ -360,6 +360,9 @@ export default function PveBattlePage() {
 
   const camera = useCamera({
     discipline: disc.id,
+    showSkeleton: true,
+    showHands: true,
+    showFace: true,
     onFrame: useCallback(
       (res: any, s: any) => {
         if (phase === "battle") {

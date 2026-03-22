@@ -84,7 +84,7 @@ export default function TrainingPage() {
     discipline: disc.id,
     showSkeleton: true,
     showHands: true,
-    // showFace omitted: loading all 3 models simultaneously exceeds worker timeout
+    showFace: true,
   });
   // ── Init MoveDetector per discipline ─────────────────────────────────────
   useEffect(() => {

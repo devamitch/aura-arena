@@ -1,13 +1,12 @@
-// Aura Arena — Vision Hook (Worker-first with main-thread fallback)
+// Aura Arena — Vision Hook (Main-thread only, no web workers)
 //
 // STRATEGY:
-//   1. Spawn vision.worker.ts (combined Pose + Hands + Face)
-//   2. Worker uses @vite-ignore dynamic import — works in dev AND production
-//   3. If worker sends READY within WORKER_TIMEOUT_MS → use worker path (off main thread)
-//   4. If worker errors / times out → fall back to main-thread landmarkers
-//   5. sendFrame() transparently routes to whichever backend is active
+//   Runs PoseLandmarker + HandLandmarker + FaceLandmarker directly on the
+//   main thread. All three models are ALWAYS initialized regardless of discipline,
+//   so every camera view shows pose skeleton + hand mesh + face contours.
+//
+//   Backup of the previous worker-based version: useVisionWorker.worker.bak.ts
 
-import disciplineConfig from "@/data/discipline-config.json";
 import { bus } from "@/lib/eventBus";
 import type { VisionFrameResult } from "@/lib/mediapipe/types";
 import { EMPTY_VISION_RESULT } from "@/lib/mediapipe/types";
@@ -18,19 +17,17 @@ import {
   HandLandmarker,
   PoseLandmarker,
 } from "@mediapipe/tasks-vision";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-type DC = Record<string, { handTracking: boolean; faceTracking: boolean }>;
-const DC_MAP = disciplineConfig as DC;
-
-const WASM = "/mediapipe-wasm";
+const LOCAL_WASM = "/mediapipe-wasm";
+const CDN_WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm";
 const POSE_MODEL = "/mediapipe-models/pose_landmarker_lite.task";
 const HANDS_MODEL = "/mediapipe-models/hand_landmarker.task";
 const FACE_MODEL = "/mediapipe-models/face_landmarker.task";
 
-const WORKER_TIMEOUT_MS = 20000;
-
-// ── Module-level FilesetResolver singleton (shared by main-thread fallback) ──
+// ── Module-level FilesetResolver singleton ────────────────────────────────────
+// Prevents double WASM initialization on React StrictMode double-mount.
+// Tries local WASM first (fast, offline-capable), falls back to versioned CDN.
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 let _sharedFileset: Fileset | null = null;
 let _sharedFilesetPromise: Promise<Fileset> | null = null;
@@ -38,10 +35,15 @@ let _sharedFilesetPromise: Promise<Fileset> | null = null;
 async function getFileset(): Promise<Fileset> {
   if (_sharedFileset) return _sharedFileset;
   if (!_sharedFilesetPromise) {
-    _sharedFilesetPromise = FilesetResolver.forVisionTasks(WASM).then((fs) => {
-      _sharedFileset = fs;
-      return fs;
-    });
+    _sharedFilesetPromise = FilesetResolver.forVisionTasks(LOCAL_WASM)
+      .catch(() => {
+        console.warn("[Vision] Local WASM failed, falling back to CDN…");
+        return FilesetResolver.forVisionTasks(CDN_WASM);
+      })
+      .then((fs) => {
+        _sharedFileset = fs;
+        return fs;
+      });
   }
   return _sharedFilesetPromise;
 }
@@ -51,15 +53,16 @@ interface VisionState {
   handsReady: boolean;
   faceReady: boolean;
   error: string | null;
-  usingWorker: boolean;
+  usingWorker: false;
 }
 
+// MediaPipeTask accepted for API compatibility but all landmarks always enabled
 export function useVisionWorker(
-  discipline: string,
-  extraTasks?: MediaPipeTask[],
+  _discipline: string,
+  _extraTasks?: MediaPipeTask[],
 ): VisionState & {
   sendFrame: (bitmap: ImageBitmap, timestamp: number) => void;
-  latestResult: React.MutableRefObject<VisionFrameResult>;
+  latestResult: React.RefObject<VisionFrameResult>;
 } {
   const [state, setState] = useState<VisionState>({
     poseReady: false,
@@ -72,96 +75,61 @@ export function useVisionWorker(
   const poseRef = useRef<PoseLandmarker | null>(null);
   const handsRef = useRef<HandLandmarker | null>(null);
   const faceRef = useRef<FaceLandmarker | null>(null);
-  const workerRef = useRef<Worker | null>(null);
-  const workerModeRef = useRef<"pending" | "worker" | "main">("pending");
 
   const latestResult = useRef<VisionFrameResult>({ ...EMPTY_VISION_RESULT });
-  const poseBusyRef = useRef(false);
+  const busyRef = useRef(false);
   const lastTsRef = useRef(-1);
 
-  const cfg = useMemo(() => {
-    const base = DC_MAP[discipline] ?? { handTracking: false, faceTracking: false };
-    if (extraTasks && extraTasks.length > 0) {
-      return {
-        handTracking: extraTasks.includes("hands"),
-        faceTracking: extraTasks.includes("face"),
-      };
-    }
-    return base;
-  }, [discipline, extraTasks]);
+  // ── Init all three landmarkers on main thread ─────────────────────────────
+  useEffect(() => {
+    setState({ poseReady: false, handsReady: false, faceReady: false, error: null, usingWorker: false });
+    latestResult.current = { ...EMPTY_VISION_RESULT };
+    busyRef.current = false;
+    lastTsRef.current = -1;
 
-  // ── Worker result handler ────────────────────────────────────────────────
-  const handleWorkerResult = useCallback((data: {
-    poseLandmarks: VisionFrameResult["poseLandmarks"];
-    poseWorldLandmarks: VisionFrameResult["poseWorldLandmarks"];
-    handLandmarks: VisionFrameResult["handLandmarks"];
-    handedness: string[];
-    faceLandmarks: VisionFrameResult["faceLandmarks"];
-    faceBlendshapes: VisionFrameResult["faceBlendshapes"];
-    timestamp: number;
-  }) => {
-    latestResult.current = {
-      ...latestResult.current,
-      poseLandmarks: data.poseLandmarks,
-      poseWorldLandmarks: data.poseWorldLandmarks,
-      handLandmarks: data.handLandmarks,
-      handedness: data.handedness,
-      faceLandmarks: data.faceLandmarks,
-      faceBlendshapes: data.faceBlendshapes,
-      timestamp: data.timestamp,
-    };
-    bus.emit("pose:result", {
-      poseLandmarks: data.poseLandmarks,
-      poseWorldLandmarks: data.poseWorldLandmarks,
-      timestamp: data.timestamp,
-    });
-    if (data.handLandmarks.length > 0) {
-      bus.emit("hands:result", { handLandmarks: data.handLandmarks, handedness: data.handedness, timestamp: data.timestamp });
-    }
-    if (data.faceLandmarks.length > 0) {
-      bus.emit("face:result", { faceLandmarks: data.faceLandmarks, faceBlendshapes: data.faceBlendshapes, timestamp: data.timestamp });
-    }
-    poseBusyRef.current = false;
-  }, []);
+    const cancelled = { value: false };
 
-  // ── Main-thread fallback init ────────────────────────────────────────────
-  const initMainThread = useCallback(async (cancelled: { value: boolean }) => {
-    workerModeRef.current = "main";
-    try {
-      const vision = await getFileset();
-      if (cancelled.value) return;
+    (async () => {
+      try {
+        const vision = await getFileset();
+        if (cancelled.value) return;
 
-      const lm = await PoseLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: POSE_MODEL, delegate: "CPU" },
-        runningMode: "VIDEO",
-        numPoses: 1,
-        minPoseDetectionConfidence: 0.5,
-        minPosePresenceConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-        outputSegmentationMasks: false,
-      });
-      if (cancelled.value) { lm.close(); return; }
-      poseRef.current = lm;
-      setState(s => ({ ...s, poseReady: true }));
-      bus.emit("worker:ready", { worker: "pose" });
+        // ── Pose (always) ──────────────────────────────────────────────────
+        const pose = await PoseLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: POSE_MODEL, delegate: "CPU" },
+          runningMode: "VIDEO",
+          numPoses: 1,
+          minPoseDetectionConfidence: 0.5,
+          minPosePresenceConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+          outputSegmentationMasks: false,
+        });
+        if (cancelled.value) { pose.close(); return; }
+        poseRef.current = pose;
+        setState(s => ({ ...s, poseReady: true }));
+        bus.emit("worker:ready", { worker: "pose" });
 
-      if (cfg.handTracking) {
+        // ── Hands (always) ─────────────────────────────────────────────────
         try {
-          const hlm = await HandLandmarker.createFromOptions(vision, {
+          const hands = await HandLandmarker.createFromOptions(vision, {
             baseOptions: { modelAssetPath: HANDS_MODEL, delegate: "CPU" },
             runningMode: "VIDEO",
             numHands: 2,
+            minHandDetectionConfidence: 0.5,
+            minHandPresenceConfidence: 0.5,
+            minTrackingConfidence: 0.5,
           });
-          if (cancelled.value) { hlm.close(); }
-          else { handsRef.current = hlm; setState(s => ({ ...s, handsReady: true })); }
-        } catch { setState(s => ({ ...s, handsReady: true })); }
-      } else {
-        setState(s => ({ ...s, handsReady: true }));
-      }
+          if (cancelled.value) { hands.close(); return; }
+          handsRef.current = hands;
+          setState(s => ({ ...s, handsReady: true }));
+        } catch (err) {
+          console.warn("[Vision] HandLandmarker failed to load, continuing without hands:", err);
+          setState(s => ({ ...s, handsReady: true }));
+        }
 
-      if (cfg.faceTracking) {
+        // ── Face (always) ──────────────────────────────────────────────────
         try {
-          const flm = await FaceLandmarker.createFromOptions(vision, {
+          const face = await FaceLandmarker.createFromOptions(vision, {
             baseOptions: { modelAssetPath: FACE_MODEL, delegate: "CPU" },
             runningMode: "VIDEO",
             numFaces: 1,
@@ -171,167 +139,94 @@ export function useVisionWorker(
             outputFaceBlendshapes: true,
             outputFacialTransformationMatrixes: false,
           });
-          if (cancelled.value) { flm.close(); }
-          else { faceRef.current = flm; setState(s => ({ ...s, faceReady: true })); }
-        } catch { setState(s => ({ ...s, faceReady: true })); }
-      } else {
-        setState(s => ({ ...s, faceReady: true }));
-      }
-    } catch (err) {
-      if (!cancelled.value) {
-        const msg = String(err);
-        setState(s => ({ ...s, error: msg }));
-        bus.emit("worker:error", { worker: "pose", message: msg });
-      }
-    }
-  }, [cfg.handTracking, cfg.faceTracking]);
-
-  // ── Primary init: try worker → fall back to main thread ──────────────────
-  useEffect(() => {
-    setState({ poseReady: false, handsReady: false, faceReady: false, error: null, usingWorker: false });
-    latestResult.current = { ...EMPTY_VISION_RESULT };
-    poseBusyRef.current = false;
-    lastTsRef.current = -1;
-    workerModeRef.current = "pending";
-
-    const cancelled = { value: false };
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const fallback = (reason: string) => {
-      if (cancelled.value) return;
-      console.warn(`[Vision] ${reason} — using main-thread MediaPipe`);
-      workerRef.current = null;
-      initMainThread(cancelled);
-    };
-
-    try {
-      const worker = new Worker(
-        new URL("../workers/mediapipe/vision.worker.ts", import.meta.url),
-        { type: "module" },
-      );
-      workerRef.current = worker;
-
-      timeoutId = setTimeout(() => {
-        worker.terminate();
-        fallback("Worker INIT timeout");
-      }, WORKER_TIMEOUT_MS);
-
-      worker.onerror = (err) => {
-        if (timeoutId) clearTimeout(timeoutId);
-        worker.terminate();
-        workerRef.current = null;
-        fallback(`Worker onerror: ${err.message}`);
-      };
-
-      worker.onmessage = (e: MessageEvent) => {
-        if (cancelled.value) return;
-        const { type } = e.data as { type: string };
-
-        if (type === "READY") {
-          if (timeoutId) clearTimeout(timeoutId);
-          workerModeRef.current = "worker";
-          console.info("[Vision] Worker READY ✓ (detection off main thread)");
-          setState({ poseReady: true, handsReady: true, faceReady: true, error: null, usingWorker: true });
-          bus.emit("worker:ready", { worker: "pose" });
-          worker.onmessage = (ev: MessageEvent) => {
-            if (ev.data.type === "VISION_RESULT") handleWorkerResult(ev.data);
-          };
-        } else if (type === "ERROR") {
-          if (timeoutId) clearTimeout(timeoutId);
-          worker.terminate();
-          workerRef.current = null;
-          fallback(`Worker ERROR: ${e.data.message}`);
+          if (cancelled.value) { face.close(); return; }
+          faceRef.current = face;
+          setState(s => ({ ...s, faceReady: true }));
+        } catch (err) {
+          console.warn("[Vision] FaceLandmarker failed to load, continuing without face:", err);
+          setState(s => ({ ...s, faceReady: true }));
         }
-      };
-
-      worker.postMessage({ type: "INIT", enableHands: cfg.handTracking, enableFace: cfg.faceTracking });
-    } catch (spawnErr) {
-      if (timeoutId) clearTimeout(timeoutId);
-      fallback(`Worker spawn failed: ${spawnErr}`);
-    }
+      } catch (err) {
+        if (!cancelled.value) {
+          const msg = String(err);
+          console.error("[Vision] Failed to initialize MediaPipe:", msg);
+          setState(s => ({ ...s, error: msg }));
+          bus.emit("worker:error", { worker: "pose", message: msg });
+        }
+      }
+    })();
 
     return () => {
       cancelled.value = true;
-      if (timeoutId) clearTimeout(timeoutId);
-      if (workerRef.current) {
-        workerRef.current.postMessage({ type: "DESTROY" });
-        setTimeout(() => workerRef.current?.terminate(), 300);
-        workerRef.current = null;
-      }
       poseRef.current?.close(); poseRef.current = null;
       handsRef.current?.close(); handsRef.current = null;
       faceRef.current?.close(); faceRef.current = null;
     };
-  }, [discipline, cfg.handTracking, cfg.faceTracking]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // ── Per-frame detection ─────────────────────────────────────────────────
+  // ── Per-frame detection (main thread) ────────────────────────────────────
   const sendFrame = useCallback((bitmap: ImageBitmap, timestamp: number) => {
     if (timestamp <= lastTsRef.current) { bitmap.close(); return; }
+    if (!poseRef.current) { bitmap.close(); return; }
+    if (busyRef.current) { bitmap.close(); return; }
 
-    const mode = workerModeRef.current;
+    busyRef.current = true;
+    lastTsRef.current = timestamp;
 
-    // Worker path — transfer bitmap ownership (zero-copy)
-    if (mode === "worker" && workerRef.current) {
-      if (poseBusyRef.current) { bitmap.close(); return; }
-      poseBusyRef.current = true;
-      lastTsRef.current = timestamp;
-      workerRef.current.postMessage({ type: "DETECT", bitmap, timestamp }, [bitmap]);
-      return;
-    }
+    try {
+      // ── Pose ─────────────────────────────────────────────────────────────
+      const pr = poseRef.current.detectForVideo(bitmap, timestamp);
+      const poseLandmarks = pr.landmarks ?? [];
+      const poseWorldLandmarks = pr.worldLandmarks ?? [];
 
-    // Main-thread path
-    if (mode === "main" && poseRef.current) {
-      if (poseBusyRef.current) { bitmap.close(); return; }
-      poseBusyRef.current = true;
-      lastTsRef.current = timestamp;
-      try {
-        const pr = poseRef.current.detectForVideo(bitmap, timestamp);
-        const poseLandmarks = pr.landmarks ?? [];
-        const poseWorldLandmarks = pr.worldLandmarks ?? [];
-
-        let handLandmarks: VisionFrameResult["handLandmarks"] = [];
-        let handedness: string[] = [];
-        if (handsRef.current && cfg.handTracking) {
-          const hr = handsRef.current.detectForVideo(bitmap, timestamp);
-          handLandmarks = hr.landmarks ?? [];
-          handedness = (hr.handedness ?? []).map(
-            (h: { categoryName?: string }[]) => h[0]?.categoryName ?? "",
-          );
-          bus.emit("hands:result", { handLandmarks, handedness, timestamp });
-        }
-
-        let faceLandmarks: VisionFrameResult["faceLandmarks"] = [];
-        let faceBlendshapes: VisionFrameResult["faceBlendshapes"] = [];
-        if (faceRef.current && cfg.faceTracking) {
-          const fr = faceRef.current.detectForVideo(bitmap, timestamp);
-          faceLandmarks = fr.faceLandmarks ?? [];
-          faceBlendshapes = (fr.faceBlendshapes ?? []).map(
-            (bs: { categories?: { categoryName: string; score: number }[] }) =>
-              (bs.categories ?? []).slice(0, 20).map(c => ({ categoryName: c.categoryName, score: c.score })),
-          );
-          bus.emit("face:result", { faceLandmarks, faceBlendshapes, timestamp });
-        }
-
-        latestResult.current = {
-          ...latestResult.current,
-          poseLandmarks, poseWorldLandmarks,
-          handLandmarks, handedness,
-          faceLandmarks, faceBlendshapes,
-          timestamp,
-        };
-        bus.emit("pose:result", { poseLandmarks, poseWorldLandmarks, timestamp });
-      } catch (err) {
-        console.error("[Vision] main-thread detectForVideo error:", err);
-      } finally {
-        bitmap.close();
-        poseBusyRef.current = false;
+      // ── Hands ────────────────────────────────────────────────────────────
+      let handLandmarks: VisionFrameResult["handLandmarks"] = [];
+      let handedness: string[] = [];
+      if (handsRef.current) {
+        const hr = handsRef.current.detectForVideo(bitmap, timestamp);
+        handLandmarks = hr.landmarks ?? [];
+        handedness = (hr.handedness ?? []).map(
+          (h: { categoryName?: string }[]) => h[0]?.categoryName ?? "",
+        );
       }
-      return;
-    }
 
-    // Still initializing — discard
-    bitmap.close();
-  }, [cfg.handTracking, cfg.faceTracking, handleWorkerResult]); // eslint-disable-line react-hooks/exhaustive-deps
+      // ── Face ─────────────────────────────────────────────────────────────
+      let faceLandmarks: VisionFrameResult["faceLandmarks"] = [];
+      let faceBlendshapes: VisionFrameResult["faceBlendshapes"] = [];
+      if (faceRef.current) {
+        const fr = faceRef.current.detectForVideo(bitmap, timestamp);
+        faceLandmarks = fr.faceLandmarks ?? [];
+        faceBlendshapes = (fr.faceBlendshapes ?? []).map(
+          (bs: { categories?: { categoryName: string; score: number }[] }) =>
+            (bs.categories ?? []).slice(0, 20).map(c => ({ categoryName: c.categoryName, score: c.score })),
+        );
+      }
+
+      latestResult.current = {
+        ...latestResult.current,
+        poseLandmarks,
+        poseWorldLandmarks,
+        handLandmarks,
+        handedness,
+        faceLandmarks,
+        faceBlendshapes,
+        timestamp,
+      };
+
+      bus.emit("pose:result", { poseLandmarks, poseWorldLandmarks, timestamp });
+      if (handLandmarks.length > 0) {
+        bus.emit("hands:result", { handLandmarks, handedness, timestamp });
+      }
+      if (faceLandmarks.length > 0) {
+        bus.emit("face:result", { faceLandmarks, faceBlendshapes, timestamp });
+      }
+    } catch (err) {
+      console.error("[Vision] detectForVideo error:", err);
+    } finally {
+      bitmap.close();
+      busyRef.current = false;
+    }
+  }, []);
 
   return { ...state, sendFrame, latestResult };
 }

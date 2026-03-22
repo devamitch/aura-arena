@@ -733,7 +733,7 @@ const SettingsTab = ({ navigate }: { navigate: any }) => {
       analytics.upgradeViewed("premium_monthly");
       upgradeTracked.current = true;
     }
-    const link = import.meta.env.VITE_STRIPE_PAYMENT_LINK as string | undefined;
+    const link = import.meta.env.STRIPE_PAYMENT_LINK as string | undefined;
     if (link) window.open(link, "_blank", "noopener");
     else navigate("/chat");
   };

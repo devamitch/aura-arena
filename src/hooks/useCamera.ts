@@ -156,6 +156,14 @@ export const useCamera = (opts: UseCameraOptions): UseCameraReturn => {
     return unsub;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Surface MediaPipe init errors so pages show the real message instead of spinning
+  useEffect(() => {
+    const unsub = bus.on("worker:error", ({ worker, message }) => {
+      if (worker === "pose") setErrorMessage(message);
+    });
+    return unsub;
+  }, []);
+
   // Out-of-frame detection from pose landmarks
   useEffect(() => {
     const unsub = bus.on("pose:result", ({ poseLandmarks }) => {
