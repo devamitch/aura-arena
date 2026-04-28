@@ -153,7 +153,8 @@ export default defineConfig(({ mode }) => {
       format: "es",
     },
     server: {
-      host: true,
+      host: "::",
+      port: 8080,
       headers: {
         // Required for SharedArrayBuffer + WASM threads in dev mode
         "Cross-Origin-Opener-Policy": "same-origin",

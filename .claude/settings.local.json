@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "Bash(head -10 grep -n \"export.*FrameScore\" /Volumes/Amit/aura-arena-final/src/lib/*.ts)",
+      "Bash(grep -o 'BASE}/[^`\"\"'''']*' src/utils/assets.ts)",
+      "Bash(npx vite build)",
+      "Bash(npm run build)",
+      "Bash(npm uninstall posthog-js)",
+      "Bash(node -e \":*)",
+      "Bash(/Volumes/Amit/aura-arena-final/supabase/schema.sql:*)",
+      "Bash(npm install @tensorflow/tfjs-core @tensorflow/tfjs-backend-cpu)",
+      "Bash(ls /Volumes/Amit/aura-arena-final/*.lock /Volumes/Amit/aura-arena-final/yarn.lock /Volumes/Amit/aura-arena-final/pnpm-lock.yaml)",
+      "Bash(pnpm add @tensorflow/tfjs-core @tensorflow/tfjs-backend-cpu)",
+      "Bash(pnpm tsc --noEmit)",
+      "Bash(ls /Volumes/Amit/aura-arena-final/src/*.ts)",
+      "Bash(ls /Volumes/Amit/aura-arena-final/*.ts /Volumes/Amit/aura-arena-final/src/sw*)",
+      "Bash(pnpm build)",
+      "Bash(ls /Volumes/Amit/aura-arena-final/.env*)",
+      "Bash(pnpm add @react-oauth/google@latest)"
+    ]
+  }
+}
