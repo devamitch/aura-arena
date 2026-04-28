@@ -14,7 +14,8 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
     "@google/genai": "^1.44.0",
@@ -86,6 +87,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.33.2",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.0",
@@ -111,6 +113,7 @@
     "vite": "^6.3.5",
     "vite-plugin-pwa": "^0.21.1",
     "vitest": "^3.2.4",
-    "workbox-window": "^7.3.0"
+    "workbox-window": "^7.3.0",
+    "wrangler": "^4.86.0"
   }
 }

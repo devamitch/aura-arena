@@ -4,6 +4,7 @@ import { join } from "path";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 // Copies WASM files from node_modules so they always match the installed package version
 const syncMediaPipeWasm = {
@@ -38,6 +39,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       syncMediaPipeWasm,
       react(),
+      cloudflare(),
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.ico", "icons/*.png", "sounds/*.mp3"],
