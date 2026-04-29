@@ -25,3 +25,12 @@ dist-ssr
 .env
 .env*
 supabase/.temp
+
+# Environments
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
