@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://auraarena.devamit.co.in/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://auraarena.devamit.co.in/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://auraarena.devamit.co.in/" />
+    <image:image>
+      <image:loc>https://auraarena.devamit.co.in/og-image.png</image:loc>
+      <image:title>Aura Arena — AI Movement Intelligence Platform</image:title>
+      <image:caption>Real-time MediaPipe BlazePose at under 16ms, WebGPU rendering, 1v1 competitive gameplay</image:caption>
+    </image:image>
+  </url>
+</urlset>

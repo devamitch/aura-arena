@@ -2,68 +2,116 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Primary SEO -->
+    <title>Aura Arena — AI Movement Intelligence Platform | Real-Time CV Scoring</title>
+    <meta name="description" content="Aura Arena is a real-time AI movement intelligence platform. Live camera feeds into competitive gameplay — boxing, dance, martial arts & fitness — powered by MediaPipe at under 16ms/frame. Compete 1v1, climb global leaderboards, earn biometric scores." />
+    <meta name="keywords" content="AI movement scoring, real-time computer vision, MediaPipe fitness, movement intelligence, AI sports platform, pose estimation, WebGPU, Aura Arena, biometric scoring, 1v1 movement battle, fitness AI, boxing AI, dance AI, martial arts scoring, Amit Chakraborty" />
+    <meta name="author" content="Amit Chakraborty" />
+    <meta name="creator" content="Amit Chakraborty" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://auraarena.devamit.co.in/" />
+
+    <!-- PWA & Mobile -->
+    <meta name="theme-color" content="#040610" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="AURA ARENA" />
-    <meta name="theme-color" content="#040610" />
-    <meta
-      name="description"
-      content="AI-powered movement performance scoring — boxing, dance, martial arts & more"
-    />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="AURA ARENA" />
-    <meta
-      property="og:description"
-      content="Score your movement with real-time AI"
-    />
-    <meta property="og:type" content="website" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Aura Arena" />
+    <meta name="application-name" content="Aura Arena" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Fonts: preconnect for speed -->
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aura Arena" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://auraarena.devamit.co.in/" />
+    <meta property="og:title" content="Aura Arena — AI Movement Intelligence Platform" />
+    <meta property="og:description" content="Real-time computer vision meets competitive gameplay. MediaPipe at &lt;16ms/frame. Box, dance, and compete — AI scores every move." />
+    <meta property="og:image" content="https://auraarena.devamit.co.in/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aura Arena — AI Movement Intelligence Platform" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@devamitch" />
+    <meta name="twitter:creator" content="@devamitch" />
+    <meta name="twitter:title" content="Aura Arena — AI Movement Intelligence Platform" />
+    <meta name="twitter:description" content="Real-time computer vision meets competitive gameplay. MediaPipe at &lt;16ms/frame. Box, dance, and compete — AI scores every move." />
+    <meta name="twitter:image" content="https://auraarena.devamit.co.in/og-image.png" />
+
+    <!-- AI / AEO crawlers -->
+    <meta name="GPTBot" content="index, follow" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Aura Arena",
+          "url": "https://auraarena.devamit.co.in",
+          "description": "Real-time AI movement intelligence platform. Live camera into competitive gameplay — boxing, dance, martial arts powered by MediaPipe at under 16ms/frame with WebGPU acceleration.",
+          "applicationCategory": "SportsApplication",
+          "operatingSystem": "Web, PWA",
+          "browserRequirements": "Requires camera access and modern browser",
+          "featureList": [
+            "Real-time MediaPipe BlazePose at under 16ms per frame",
+            "WebGPU-accelerated inference",
+            "1v1 multiplayer battle mode via Supabase Realtime",
+            "Global leaderboard with biometric scoring",
+            "Adaptive AI coaching",
+            "Boxing, Dance, Martial Arts, and Fitness modes",
+            "PWA — installable, offline-capable"
+          ],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Amit Chakraborty",
+            "url": "https://devamit.co.in",
+            "sameAs": [
+              "https://github.com/devamitch",
+              "https://linkedin.com/in/devamitch",
+              "https://x.com/devamitch"
+            ]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://auraarena.devamit.co.in/#website",
+          "url": "https://auraarena.devamit.co.in",
+          "name": "Aura Arena",
+          "description": "AI-powered movement intelligence platform",
+          "publisher": {
+            "@type": "Person",
+            "name": "Amit Chakraborty",
+            "url": "https://devamit.co.in"
+          },
+          "inLanguage": "en-US"
+        }
+      ]
+    }
+    </script>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
-      rel="stylesheet"
-    />
-
-    <title>AURA ARENA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <script>
-      // VISUAL ERROR CATCHER FOR DIAGNOSIS
-      window.addEventListener("error", function (e) {
-        document.body.innerHTML +=
-          '<div style="color:red; background:black; border:2px solid red; padding: 20px; font-size: 16px; font-family: monospace; position:absolute; top:0; left:0; z-index:99999; width: 100vw; height: 100vh;"><h3>FATAL JS ERROR</h3><br>Message: ' +
-          e.message +
-          "<br>File: " +
-          e.filename +
-          ":" +
-          e.lineno +
-          ":<br><pre>" +
-          (e.error ? e.error.stack : "") +
-          "</pre></div>";
-      });
-      window.addEventListener("unhandledrejection", function (e) {
-        document.body.innerHTML +=
-          '<div style="color:yellow; background:black; border:2px solid yellow; padding: 20px; font-size: 16px; font-family: monospace; position:absolute; top:0; left:0; z-index:99999; width: 100vw; height: 100vh;"><h3>UNHANDLED PROMISE REJECTION</h3><br>Reason: ' +
-          (e.reason ? e.reason.stack || e.reason : "Unknown") +
-          "</div>";
-      });
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/app/main.tsx"></script>
   </body>
