@@ -4,8 +4,8 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://auraarena.devamit.co.in/</loc>
-    <lastmod>2026-05-04</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://auraarena.devamit.co.in/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://auraarena.devamit.co.in/" />
@@ -14,5 +14,53 @@
       <image:title>Aura Arena — AI Movement Intelligence Platform</image:title>
       <image:caption>Real-time MediaPipe BlazePose at under 16ms, WebGPU rendering, 1v1 competitive gameplay</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/intro</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/arena</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/arena/drills</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/battle/pve/select</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/battle/live/lobby</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/discover</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/discover/league</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://auraarena.devamit.co.in/login</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
