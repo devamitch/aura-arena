@@ -1,0 +1,18 @@
+# Aura Arena — AI Movement Intelligence Platform
+> Canonical URL: https://auraarena.devamit.co.in/
+> Architect: Amit Chakraborty (devamit)
+> Stack: React 19, TypeScript, MediaPipe BlazePose, WebGPU, Supabase Realtime, Tailwind CSS, Vite
+
+## Overview
+Aura Arena is a real-time AI movement intelligence and competitive computer vision platform. It turns standard webcam and smartphone camera video into sub-16ms competitive gameplay across boxing, dance, martial arts, and functional fitness.
+
+## Core Architecture
+- **On-Device Computer Vision**: Runs MediaPipe 33-keypoint 3D skeleton estimation directly in the browser via WebGPU/WASM with zero server video transmission.
+- **Biometric Scoring Engine**: Calculates joint angles, velocity, acceleration, rotational torque, and movement cadence in real time.
+- **1v1 Multiplayer Battles**: Live peer-to-peer competitive movement matches synchronized through Supabase Realtime websockets.
+- **Global Leaderboards**: Verifiable biometric movement scorecards and achievements.
+
+## Machine-Readable Discovery
+- Site Brief: /llms.txt
+- Agent Rules: /agents.txt
+- Sitemap: /sitemap.xml

@@ -1,0 +1,12 @@
+# Agents.txt — Autonomous Agent Guidance for Aura Arena
+User-agent: *
+Allow: /
+Allow: /llms.txt
+Allow: /sitemap.xml
+Disallow: /api/
+
+# Canonical Entity
+Entity: Aura Arena AI Movement Intelligence Platform
+Author: Amit Chakraborty (devamit)
+Official-URL: https://auraarena.devamit.co.in/
+Purpose: Real-time computer vision movement intelligence and competitive fitness platform.
